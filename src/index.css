@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
 :root {
   --ink: #f4f4ef;
@@ -539,55 +540,13 @@ a:focus-visible {
   mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent);
 }
 
-.timeline {
-  --progress: 0%;
+.timeline-slider {
   position: relative;
   z-index: 1;
   width: 100%;
   height: 29px;
   margin: 0;
-  appearance: none;
-  background: transparent;
   cursor: ew-resize;
-}
-
-.timeline::-webkit-slider-runnable-track {
-  height: 3px;
-  border-radius: 3px;
-  background: linear-gradient(
-    90deg,
-    var(--acid) 0 var(--progress),
-    #3b3b37 var(--progress) 100%
-  );
-}
-
-.timeline::-webkit-slider-thumb {
-  width: 14px;
-  height: 22px;
-  margin-top: -9px;
-  appearance: none;
-  border: 2px solid #111110;
-  border-radius: 3px;
-  background: var(--acid);
-  box-shadow: 0 0 0 1px var(--acid);
-}
-
-.timeline::-moz-range-track {
-  height: 3px;
-  background: #3b3b37;
-}
-
-.timeline::-moz-range-progress {
-  height: 3px;
-  background: var(--acid);
-}
-
-.timeline::-moz-range-thumb {
-  width: 12px;
-  height: 20px;
-  border: 2px solid #111110;
-  border-radius: 3px;
-  background: var(--acid);
 }
 
 .transport {
@@ -640,18 +599,14 @@ a:focus-visible {
   gap: 10px;
 }
 
-.fps-control label {
+.fps-control > span {
   color: #74746e;
   font-size: 11px;
 }
 
-.fps-control select {
+.fps-select {
   height: 34px;
-  padding: 0 29px 0 10px;
-  border: 1px solid #393936;
-  border-radius: 7px;
-  color: #c6c6be;
-  background: #20201e;
+  min-width: 92px;
 }
 
 .export-panel {
@@ -700,7 +655,8 @@ a:focus-visible {
   margin-top: 29px;
 }
 
-.control-group > label {
+.control-group > label,
+.control-group > span {
   display: block;
   margin-bottom: 11px;
   color: #a7a79f;
@@ -750,10 +706,9 @@ a:focus-visible {
   font-size: 11px;
 }
 
-.quality-group input {
+.quality-group [data-slot="slider"] {
   width: 100%;
   margin-top: 10px;
-  accent-color: var(--acid);
 }
 
 .export-button {
@@ -997,11 +952,11 @@ kbd {
     width: 44px;
   }
 
-  .fps-control label {
+  .fps-control > span {
     display: none;
   }
 
-  .fps-control select {
+  .fps-select {
     max-width: 90px;
   }
 

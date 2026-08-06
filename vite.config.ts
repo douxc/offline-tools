@@ -1,59 +1,83 @@
-import vinext from "vinext";
+import path from "node:path";
+import { cloudflare } from "@cloudflare/vite-plugin";
+import tailwindcss from "@tailwindcss/vite";
+import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
+import { VitePWA } from "vite-plugin-pwa";
 import hostingConfig from "./.openai/hosting.json";
 import { sites } from "./build/sites-vite-plugin";
 
-const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
-  "00000000-0000-4000-8000-000000000000";
-
-const { d1, r2 } = hostingConfig;
-
-// macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
-const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
-
-const localBindingConfig = {
-  main: "./worker/index.ts",
-  compatibility_flags: ["nodejs_compat"],
-  d1_databases: d1
-    ? [
-        {
-          binding: d1,
-          database_name: "site-creator-d1",
-          database_id: SITE_CREATOR_PLACEHOLDER_DATABASE_ID,
+export default defineConfig({
+  resolve: {
+    alias: {
+      "@": path.resolve(import.meta.dirname, "./src"),
+    },
+  },
+  plugins: [
+    react(),
+    tailwindcss(),
+    VitePWA({
+      registerType: "prompt",
+      injectRegister: "auto",
+      manifest: {
+        name: "帧切 · 离线视频取帧",
+        short_name: "帧切",
+        description: "视频不上传，在浏览器中精准选帧并导出图片。",
+        lang: "zh-CN",
+        start_url: "/",
+        scope: "/",
+        display: "standalone",
+        background_color: "#111110",
+        theme_color: "#111110",
+        icons: [
+          {
+            src: "/pwa-192.png",
+            sizes: "192x192",
+            type: "image/png",
+          },
+          {
+            src: "/pwa-512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "any maskable",
+          },
+        ],
+      },
+      workbox: {
+        cleanupOutdatedCaches: true,
+        navigateFallback: "/index.html",
+        globPatterns: ["**/*.{js,css,html,png,svg,webp,ico}"],
+      },
+    }),
+    sites(),
+    cloudflare({
+      viteEnvironment: { name: "server" },
+      config: {
+        main: "./worker/index.ts",
+        compatibility_date: "2026-05-22",
+        compatibility_flags: ["nodejs_compat"],
+        assets: {
+          binding: "ASSETS",
+          not_found_handling: "single-page-application",
         },
-      ]
-    : [],
-  r2_buckets: r2
-    ? [
-        {
-          binding: r2,
-          bucket_name: "site-creator-r2",
-        },
-      ]
-    : [],
-};
-
-export default defineConfig(async () => {
-  // Keep Wrangler and Miniflare state project-local. These are non-secret tool
-  // settings; application environment belongs in ignored `.env*` files.
-  process.env.WRANGLER_WRITE_LOGS ??= "false";
-  process.env.WRANGLER_LOG_PATH ??= ".wrangler/logs";
-  process.env.MINIFLARE_REGISTRY_PATH ??= ".wrangler/registry";
-
-  // Wrangler snapshots its log path while the Cloudflare plugin is imported.
-  const { cloudflare } = await import("@cloudflare/vite-plugin");
-
-  return {
-    server: isCodexSeatbeltSandbox
-      ? { watch: { useFsEvents: false, usePolling: true } }
-      : undefined,
-    plugins: [
-      vinext(),
-      sites(),
-      cloudflare({
-        viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] },
-        config: localBindingConfig,
-      }),
-    ],
-  };
+        d1_databases: hostingConfig.d1
+          ? [
+              {
+                binding: hostingConfig.d1,
+                database_name: "framecut-d1",
+                database_id: "00000000-0000-4000-8000-000000000000",
+              },
+            ]
+          : [],
+        r2_buckets: hostingConfig.r2
+          ? [
+              {
+                binding: hostingConfig.r2,
+                bucket_name: "framecut-r2",
+              },
+            ]
+          : [],
+      },
+    }),
+  ],
 });

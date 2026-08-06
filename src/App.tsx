@@ -1,5 +1,3 @@
-"use client";
-
 import {
   ChangeEvent,
   DragEvent,
@@ -10,6 +8,16 @@ import {
   useRef,
   useState,
 } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 
 type ImageFormat = "png" | "jpeg" | "webp";
 
@@ -238,22 +246,27 @@ export function FrameExtractor() {
   return (
     <main className="app-shell">
       <header className="topbar">
-        <a className="brand" href="#" aria-label="帧切首页">
+        <div className="brand" aria-label="帧切">
           <span className="brand-mark" aria-hidden="true">
             <i />
             <i />
             <i />
           </span>
           <span>帧切</span>
-        </a>
+        </div>
         <div className="privacy-note">
           <span className="status-dot" aria-hidden="true" />
           本地处理 · 不上传文件
         </div>
         {videoUrl && (
-          <button className="ghost-button" type="button" onClick={reset}>
+          <Button
+            className="ghost-button"
+            variant="outline"
+            type="button"
+            onClick={reset}
+          >
             重新选择
-          </button>
+          </Button>
         )}
       </header>
 
@@ -337,7 +350,7 @@ export function FrameExtractor() {
           </div>
 
           <div className="workspace">
-            <div className="viewer-panel">
+            <Card className="viewer-panel">
               <div className="video-stage-shell">
                 <div
                   className={`video-stage ${
@@ -355,6 +368,8 @@ export function FrameExtractor() {
                     } as React.CSSProperties
                   }
                 >
+                  {/* User-selected videos do not provide a caption track. */}
+                  {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
                   <video
                     ref={videoRef}
                     src={videoUrl}
@@ -398,71 +413,76 @@ export function FrameExtractor() {
                 </div>
                 <div className="timeline-wrap">
                   <div className="timeline-ticks" aria-hidden="true" />
-                  <input
-                    className="timeline"
-                    type="range"
-                    min="0"
-                    max={duration || 0}
-                    step="0.001"
-                    value={Math.min(currentTime, duration || 0)}
-                    onChange={(event) => seekTo(Number(event.target.value))}
+                  <Slider
+                    className="timeline-slider"
+                    min={0}
+                    max={duration > 0 ? duration : 1}
+                    step={0.001}
+                    value={[Math.min(currentTime, duration || 0)]}
+                    onValueChange={([value]) => seekTo(value)}
+                    disabled={!duration}
                     aria-label="视频时间轴"
-                    style={
-                      {
-                        "--progress": `${
-                          duration ? (currentTime / duration) * 100 : 0
-                        }%`,
-                      } as React.CSSProperties
-                    }
                   />
                 </div>
                 <div className="transport">
-                  <button
+                  <Button
                     type="button"
+                    variant="secondary"
+                    size="icon"
                     className="transport-button"
                     onClick={() => stepFrame(-1)}
                     aria-label="后退一帧"
                     title="后退一帧（←）"
                   >
                     <span aria-hidden="true">|‹</span>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    size="icon"
                     className="play-button"
                     onClick={() => void togglePlayback()}
                     aria-label={isPlaying ? "暂停" : "播放"}
                     title="播放/暂停（空格）"
                   >
                     <span aria-hidden="true">{isPlaying ? "Ⅱ" : "▶"}</span>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="secondary"
+                    size="icon"
                     className="transport-button"
                     onClick={() => stepFrame(1)}
                     aria-label="前进一帧"
                     title="前进一帧（→）"
                   >
                     <span aria-hidden="true">›|</span>
-                  </button>
+                  </Button>
                   <div className="fps-control">
-                    <label htmlFor="fps">帧率参考</label>
-                    <select
-                      id="fps"
-                      value={fps}
-                      onChange={(event) => setFps(Number(event.target.value))}
+                    <span>帧率参考</span>
+                    <Select
+                      value={String(fps)}
+                      onValueChange={(value) => setFps(Number(value))}
                     >
-                      {FPS_OPTIONS.map((value) => (
-                        <option value={value} key={value}>
-                          {value} FPS
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger
+                        className="fps-select"
+                        aria-label="帧率参考"
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {FPS_OPTIONS.map((value) => (
+                          <SelectItem value={String(value)} key={value}>
+                            {value} FPS
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </div>
-            </div>
+            </Card>
 
-            <aside className="export-panel">
+            <Card className="export-panel" role="complementary">
               <div>
                 <p className="panel-number">01</p>
                 <h2>当前帧</h2>
@@ -474,17 +494,19 @@ export function FrameExtractor() {
 
               <div className="control-group">
                 <p className="panel-number">02</p>
-                <label>图片格式</label>
+                <span>图片格式</span>
                 <div className="segmented">
                   {(["png", "jpeg", "webp"] as ImageFormat[]).map((item) => (
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
+                      size="sm"
                       className={format === item ? "active" : ""}
                       onClick={() => setFormat(item)}
                       key={item}
                     >
                       {item === "jpeg" ? "JPG" : item.toUpperCase()}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
@@ -495,21 +517,22 @@ export function FrameExtractor() {
                     <label htmlFor="quality">图片质量</label>
                     <span>{Math.round(quality * 100)}%</span>
                   </div>
-                  <input
+                  <Slider
                     id="quality"
-                    type="range"
-                    min="0.5"
-                    max="1"
-                    step="0.01"
-                    value={quality}
-                    onChange={(event) => setQuality(Number(event.target.value))}
+                    min={0.5}
+                    max={1}
+                    step={0.01}
+                    value={[quality]}
+                    onValueChange={([value]) => setQuality(value)}
+                    aria-label="图片质量"
                   />
                 </div>
               )}
 
-              <button
+              <Button
                 className={`export-button ${exported ? "success" : ""}`}
                 type="button"
+                size="lg"
                 onClick={() => void exportFrame()}
                 disabled={exporting || !dimensions.width}
               >
@@ -519,11 +542,11 @@ export function FrameExtractor() {
                   : exported
                     ? "已保存到下载"
                     : "导出当前帧"}
-              </button>
+              </Button>
               <p className="export-note">
                 按视频原始分辨率导出，不做缩放或裁剪。
               </p>
-            </aside>
+            </Card>
           </div>
 
           <div className="shortcut-hint">
@@ -541,9 +564,15 @@ export function FrameExtractor() {
       {error && (
         <div className="error-toast" role="alert">
           <span>{error}</span>
-          <button type="button" onClick={() => setError("")} aria-label="关闭">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => setError("")}
+            aria-label="关闭"
+          >
             ×
-          </button>
+          </Button>
         </div>
       )}
 
