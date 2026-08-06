@@ -338,40 +338,57 @@ export function FrameExtractor() {
 
           <div className="workspace">
             <div className="viewer-panel">
-              <div className="video-stage">
-                <video
-                  ref={videoRef}
-                  src={videoUrl}
-                  playsInline
-                  preload="auto"
-                  onLoadedMetadata={(event) => {
-                    const video = event.currentTarget;
-                    setDuration(video.duration);
-                    setDimensions({
-                      width: video.videoWidth,
-                      height: video.videoHeight,
-                    });
-                  }}
-                  onTimeUpdate={(event) =>
-                    setCurrentTime(event.currentTarget.currentTime)
+              <div className="video-stage-shell">
+                <div
+                  className={`video-stage ${
+                    dimensions.width > 0 &&
+                    dimensions.width <= dimensions.height
+                      ? "is-portrait"
+                      : "is-landscape"
+                  }`}
+                  style={
+                    {
+                      aspectRatio:
+                        dimensions.width > 0 && dimensions.height > 0
+                          ? `${dimensions.width} / ${dimensions.height}`
+                          : "16 / 9",
+                    } as React.CSSProperties
                   }
-                  onSeeked={(event) =>
-                    setCurrentTime(event.currentTarget.currentTime)
-                  }
-                  onPlay={() => setIsPlaying(true)}
-                  onPause={() => setIsPlaying(false)}
-                  onEnded={() => setIsPlaying(false)}
-                  onError={() =>
-                    setError("浏览器无法播放这个视频，请换一种编码或格式。")
-                  }
-                  aria-label="视频画面预览"
-                />
-                <span className="resolution-badge">
-                  {dimensions.width > 0
-                    ? `${dimensions.width} × ${dimensions.height}`
-                    : "正在读取"}
-                </span>
-                <span className="timecode-badge">{timecode}</span>
+                >
+                  <video
+                    ref={videoRef}
+                    src={videoUrl}
+                    playsInline
+                    preload="auto"
+                    onLoadedMetadata={(event) => {
+                      const video = event.currentTarget;
+                      setDuration(video.duration);
+                      setDimensions({
+                        width: video.videoWidth,
+                        height: video.videoHeight,
+                      });
+                    }}
+                    onTimeUpdate={(event) =>
+                      setCurrentTime(event.currentTarget.currentTime)
+                    }
+                    onSeeked={(event) =>
+                      setCurrentTime(event.currentTarget.currentTime)
+                    }
+                    onPlay={() => setIsPlaying(true)}
+                    onPause={() => setIsPlaying(false)}
+                    onEnded={() => setIsPlaying(false)}
+                    onError={() =>
+                      setError("浏览器无法播放这个视频，请换一种编码或格式。")
+                    }
+                    aria-label="视频画面预览"
+                  />
+                  <span className="resolution-badge">
+                    {dimensions.width > 0
+                      ? `${dimensions.width} × ${dimensions.height}`
+                      : "正在读取"}
+                  </span>
+                  <span className="timecode-badge">{timecode}</span>
+                </div>
               </div>
 
               <div className="timeline-card">

@@ -439,13 +439,11 @@ a:focus-visible {
   overflow: hidden;
 }
 
-.video-stage {
-  position: relative;
+.video-stage-shell {
   width: 100%;
-  height: min(61vh, 680px);
-  min-height: 350px;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
   background:
     linear-gradient(45deg, #0b0b0a 25%, transparent 25%),
@@ -457,10 +455,31 @@ a:focus-visible {
   background-size: 16px 16px;
 }
 
+.video-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #080808;
+  transition: width 180ms ease, height 180ms ease;
+}
+
+.video-stage.is-landscape {
+  width: 100%;
+  height: auto;
+}
+
+.video-stage.is-portrait {
+  width: auto;
+  height: min(68vh, 720px);
+  max-width: 100%;
+}
+
 .video-stage video {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  display: block;
+  object-fit: cover;
 }
 
 .resolution-badge,
@@ -954,9 +973,11 @@ kbd {
     text-align: left;
   }
 
-  .video-stage {
-    min-height: 220px;
-    height: 52vw;
+  .video-stage.is-landscape,
+  .video-stage.is-portrait {
+    width: 100%;
+    height: auto;
+    max-width: none;
   }
 
   .timeline-card {
