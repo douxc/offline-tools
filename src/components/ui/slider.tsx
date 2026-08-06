@@ -16,13 +16,13 @@ function Slider({
       )}
       {...props}
     >
-      <SliderPrimitive.Track className="relative h-1 w-full grow overflow-hidden rounded-full bg-[#3b3b37]">
-        <SliderPrimitive.Range className="absolute h-full bg-[#d6ff3f]" />
+      <SliderPrimitive.Track className="relative h-1 w-full grow overflow-hidden rounded-full bg-[var(--slider-track)]">
+        <SliderPrimitive.Range className="absolute h-full bg-[var(--acid)]" />
       </SliderPrimitive.Track>
       {Array.from({ length: values.length }, (_, index) => (
         <SliderPrimitive.Thumb
           key={index}
-          className="block size-3.5 shrink-0 rounded-full border-2 border-[#111110] bg-[#d6ff3f] shadow-[0_0_0_1px_#d6ff3f] outline-none focus-visible:ring-2 focus-visible:ring-[#d6ff3f]/60"
+          className="block size-3.5 shrink-0 rounded-full border-2 border-[var(--page)] bg-[var(--acid)] shadow-[0_0_0_1px_var(--acid)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--acid)]/60"
         />
       ))}
     </SliderPrimitive.Root>

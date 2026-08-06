@@ -10,8 +10,7 @@ const eslintConfig = defineConfig([
   globalIgnores([
     ".next/**",
     "dist/**",
-    "build/**",
-    ".wrangler/**",
+    "public/assets/image-compress-worker.js",
   ]),
   eslint.configs.recommended,
   ...tseslint.configs.recommended,

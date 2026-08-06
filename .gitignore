@@ -35,6 +35,6 @@ yarn-error.log*
 .vercel
 
 /dist/
-/.wrangler/
+/public/assets/image-compress-worker.js
 /outputs/
 /work/

@@ -1,17 +1,19 @@
 import { Toaster as Sonner, type ToasterProps } from "sonner";
+import { useTheme } from "@/lib/theme";
 
 function Toaster(props: ToasterProps) {
+  const { theme } = useTheme();
+
   return (
     <Sonner
-      theme="dark"
+      theme={theme}
       position="bottom-center"
       toastOptions={{
         classNames: {
-          toast:
-            "!border-[#3b3b38] !bg-[#20201e] !text-[#f4f4ef] !shadow-2xl",
-          description: "!text-[#9a9a91]",
-          actionButton: "!bg-[#d6ff3f] !text-[#171a0b]",
-          cancelButton: "!bg-[#30302e] !text-[#f4f4ef]",
+          toast: "app-toast !shadow-2xl",
+          description: "app-toast-description",
+          actionButton: "app-toast-action",
+          cancelButton: "app-toast-cancel",
         },
       }}
       {...props}

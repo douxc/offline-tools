@@ -1,13 +1,29 @@
 import path from "node:path";
-import { cloudflare } from "@cloudflare/vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
-import hostingConfig from "./.openai/hosting.json";
-import { sites } from "./build/sites-vite-plugin";
 
 export default defineConfig({
+  build: {
+    rollupOptions: {
+      input: {
+        home: path.resolve(import.meta.dirname, "index.html"),
+        videoFrame: path.resolve(
+          import.meta.dirname,
+          "video-frame/index.html",
+        ),
+        imageCompress: path.resolve(
+          import.meta.dirname,
+          "image-compress/index.html",
+        ),
+        imageWatermark: path.resolve(
+          import.meta.dirname,
+          "image-watermark/index.html",
+        ),
+      },
+    },
+  },
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "./src"),
@@ -20,9 +36,9 @@ export default defineConfig({
       registerType: "prompt",
       injectRegister: "auto",
       manifest: {
-        name: "帧切 · 离线视频取帧",
-        short_name: "帧切",
-        description: "视频不上传，在浏览器中精准选帧并导出图片。",
+        name: "离线工具 · 视频取帧与图片处理",
+        short_name: "离线工具",
+        description: "视频与图片不上传，在浏览器中完成取帧、压缩和水印。",
         lang: "zh-CN",
         start_url: "/",
         scope: "/",
@@ -46,37 +62,8 @@ export default defineConfig({
       workbox: {
         cleanupOutdatedCaches: true,
         navigateFallback: "/index.html",
-        globPatterns: ["**/*.{js,css,html,png,svg,webp,ico}"],
-      },
-    }),
-    sites(),
-    cloudflare({
-      viteEnvironment: { name: "server" },
-      config: {
-        main: "./worker/index.ts",
-        compatibility_date: "2026-05-22",
-        compatibility_flags: ["nodejs_compat"],
-        assets: {
-          binding: "ASSETS",
-          not_found_handling: "single-page-application",
-        },
-        d1_databases: hostingConfig.d1
-          ? [
-              {
-                binding: hostingConfig.d1,
-                database_name: "framecut-d1",
-                database_id: "00000000-0000-4000-8000-000000000000",
-              },
-            ]
-          : [],
-        r2_buckets: hostingConfig.r2
-          ? [
-              {
-                binding: hostingConfig.r2,
-                bucket_name: "framecut-r2",
-              },
-            ]
-          : [],
+        navigateFallbackDenylist: [/^\/legal\//],
+        globPatterns: ["**/*.{js,css,html,png,svg,webp,ico,md,txt}"],
       },
     }),
   ],

@@ -15,7 +15,7 @@ function SelectTrigger({
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
       className={cn(
-        "flex h-[34px] items-center justify-between gap-2 rounded-[7px] border border-[#393936] bg-[#20201e] px-2.5 text-xs text-[#c6c6be] outline-none focus-visible:ring-2 focus-visible:ring-[#d6ff3f]",
+        "flex h-[34px] items-center justify-between gap-2 rounded-[7px] border border-[var(--control-border)] bg-[var(--panel-raised)] px-2.5 text-xs text-[var(--control-text)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--acid)]",
         className,
       )}
       {...props}
@@ -40,7 +40,7 @@ function SelectContent({
         data-slot="select-content"
         position={position}
         className={cn(
-          "z-50 min-w-[8rem] overflow-hidden rounded-md border border-[#393936] bg-[#20201e] text-[#f4f4ef] shadow-xl",
+          "z-50 min-w-[8rem] overflow-hidden rounded-md border border-[var(--control-border)] bg-[var(--panel-raised)] text-[var(--ink)] shadow-xl",
           className,
         )}
         {...props}
@@ -62,14 +62,14 @@ function SelectItem({
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        "relative flex cursor-default select-none items-center rounded-sm py-2 pr-8 pl-2 text-xs outline-none focus:bg-[#31312d] data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        "relative flex cursor-default select-none items-center rounded-sm py-2 pr-8 pl-2 text-xs outline-none focus:bg-[var(--surface-hover)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         className,
       )}
       {...props}
     >
       <span className="absolute right-2 flex size-3.5 items-center justify-center">
         <SelectPrimitive.ItemIndicator>
-          <Check className="size-3.5 text-[#d6ff3f]" />
+          <Check className="size-3.5 text-[var(--acid)]" />
         </SelectPrimitive.ItemIndicator>
       </span>
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>

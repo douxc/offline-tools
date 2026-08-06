@@ -10,6 +10,8 @@ import {
 } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ToolHeader } from "@/components/tool-header";
+import { ToolSeoContent } from "@/components/tool-seo-content";
 import {
   Select,
   SelectContent,
@@ -245,37 +247,28 @@ export function FrameExtractor() {
 
   return (
     <main className="app-shell">
-      <header className="topbar">
-        <div className="brand" aria-label="帧切">
-          <span className="brand-mark" aria-hidden="true">
-            <i />
-            <i />
-            <i />
-          </span>
-          <span>帧切</span>
-        </div>
-        <div className="privacy-note">
-          <span className="status-dot" aria-hidden="true" />
-          本地处理 · 不上传文件
-        </div>
-        {videoUrl && (
-          <Button
-            className="ghost-button"
-            variant="outline"
-            type="button"
-            onClick={reset}
-          >
-            重新选择
-          </Button>
-        )}
-      </header>
+      <ToolHeader
+        active="video"
+        trailing={
+          videoUrl ? (
+            <Button
+              className="ghost-button"
+              variant="outline"
+              type="button"
+              onClick={reset}
+            >
+              重新选择
+            </Button>
+          ) : undefined
+        }
+      />
 
       {!videoUrl ? (
         <section className="welcome">
           <div className="welcome-copy">
             <p className="eyebrow">VIDEO FRAME EXTRACTOR</p>
             <h1>
-              从视频里，
+              视频取帧，
               <br />
               <span>定格这一帧。</span>
             </h1>
@@ -560,6 +553,8 @@ export function FrameExtractor() {
           </div>
         </section>
       )}
+
+      <ToolSeoContent tool="video" />
 
       {error && (
         <div className="error-toast" role="alert">

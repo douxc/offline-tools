@@ -4,28 +4,86 @@ import test from "node:test";
 
 const root = new URL("../", import.meta.url);
 
-test("build emits a static offline SPA and hosting adapter", async () => {
-  const [html, manifest, packageJson] = await Promise.all([
-    readFile(new URL("dist/client/index.html", root), "utf8"),
-    readFile(new URL("dist/client/manifest.webmanifest", root), "utf8"),
+test("build emits a static offline multi-page app", async () => {
+  const [
+    homeHtml,
+    videoHtml,
+    compressHtml,
+    watermarkHtml,
+    manifest,
+    packageJson,
+    robots,
+    sitemap,
+  ] = await Promise.all([
+    readFile(new URL("dist/index.html", root), "utf8"),
+    readFile(new URL("dist/video-frame/index.html", root), "utf8"),
+    readFile(new URL("dist/image-compress/index.html", root), "utf8"),
+    readFile(new URL("dist/image-watermark/index.html", root), "utf8"),
+    readFile(new URL("dist/manifest.webmanifest", root), "utf8"),
     readFile(new URL("package.json", root), "utf8"),
-    access(new URL("dist/client/sw.js", root)),
-    access(new URL("dist/client/pwa-192.png", root)),
-    access(new URL("dist/client/pwa-512.png", root)),
-    access(new URL("dist/server/index.js", root)),
-    access(new URL("dist/.openai/hosting.json", root)),
+    readFile(new URL("dist/robots.txt", root), "utf8"),
+    readFile(new URL("dist/sitemap.xml", root), "utf8"),
+    access(new URL("dist/sw.js", root)),
+    access(new URL("dist/pwa-192.png", root)),
+    access(new URL("dist/pwa-512.png", root)),
+    access(new URL("dist/assets/image-compress-worker.js", root)),
+    access(new URL("dist/legal/LICENSE.txt", root)),
+    access(new URL("dist/legal/THIRD_PARTY_NOTICES.md", root)),
+    access(new URL("dist/legal/CORRESPONDING_SOURCE.md", root)),
   ]);
 
-  assert.match(html, /<html lang="zh-CN"/i);
-  assert.match(html, /帧切 · 离线视频取帧/);
-  assert.match(html, /manifest\.webmanifest/);
-  assert.match(html, /id="root"/);
-  assert.doesNotMatch(html, /__next|_rsc|vinext/i);
+  const pages = [homeHtml, videoHtml, compressHtml, watermarkHtml];
+  for (const html of pages) {
+    assert.match(html, /<html lang="zh-CN"/i);
+    assert.match(html, /manifest\.webmanifest/);
+    assert.match(html, /id="root"/);
+    assert.match(html, /rel="canonical"/);
+    assert.match(html, /name="keywords"/);
+    assert.match(html, /name="robots"/);
+    assert.match(html, /property="og:url"/);
+    assert.match(html, /name="twitter:title"/);
+    assert.match(html, /id="structured-data" type="application\/ld\+json"/);
+    assert.doesNotMatch(html, /__next|_rsc|vinext|#\/(video|image)/i);
+  }
+
+  assert.match(
+    homeHtml,
+    /<title>离线工具箱｜在线视频取帧、图片压缩与图片加水印<\/title>/,
+  );
+  assert.match(
+    videoHtml,
+    /<title>视频取帧工具｜在线逐帧截图、视频转图片 - 离线工具<\/title>/,
+  );
+  assert.match(
+    compressHtml,
+    /<title>在线图片压缩工具｜批量压缩 PNG、JPG、WebP - 离线工具<\/title>/,
+  );
+  assert.match(
+    watermarkHtml,
+    /<title>图片加水印工具｜在线批量添加文字水印 - 离线工具<\/title>/,
+  );
+  assert.match(robots, /^User-agent: \*/m);
+  assert.match(robots, /Sitemap: .*\/sitemap\.xml/);
+  for (const path of [
+    "/video-frame/",
+    "/image-compress/",
+    "/image-watermark/",
+  ]) {
+    assert.match(sitemap, new RegExp(`<loc>[^<]+${path}</loc>`));
+  }
 
   const parsedManifest = JSON.parse(manifest);
-  assert.equal(parsedManifest.name, "帧切 · 离线视频取帧");
+  assert.equal(parsedManifest.name, "离线工具 · 视频取帧与图片处理");
   assert.equal(parsedManifest.display, "standalone");
   assert.equal(parsedManifest.theme_color, "#111110");
 
-  assert.doesNotMatch(packageJson, /next|vinext|react-server-dom-webpack/i);
+  assert.doesNotMatch(
+    packageJson,
+    /next|vinext|react-server-dom-webpack|cloudflare|wrangler|workerd/i,
+  );
+
+  await Promise.all([
+    assert.rejects(access(new URL("dist/server/index.js", root))),
+    assert.rejects(access(new URL("dist/.openai/hosting.json", root))),
+  ]);
 });
