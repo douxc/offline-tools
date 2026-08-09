@@ -19,6 +19,12 @@
   --acid: #0a84ff;
   --acid-ink: #fff;
   --danger: #ff453a;
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --radius-full: 999px;
 }
 
 [data-theme="light"] {
@@ -139,7 +145,7 @@ a:focus-visible {
 .status-dot {
   width: 7px;
   height: 7px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   background: var(--acid);
   box-shadow: 0 0 0 4px rgba(214, 255, 63, 0.1);
 }
@@ -149,7 +155,7 @@ a:focus-visible {
   min-height: 40px;
   padding: 0 17px;
   border: 1px solid #3b3b38;
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   color: var(--ink);
   background: transparent;
   cursor: pointer;
@@ -214,7 +220,7 @@ a:focus-visible {
 .feature-row span {
   padding: 8px 12px;
   border: 1px solid #353532;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   color: #d5d5ce;
   font-size: 12px;
 }
@@ -233,7 +239,7 @@ a:focus-visible {
   justify-content: center;
   padding: 42px;
   border: 1px solid #373733;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   background:
     linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
@@ -347,7 +353,7 @@ a:focus-visible {
   display: grid;
   place-items: center;
   margin-top: 28px;
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   color: var(--acid-ink);
   background: var(--acid);
   font-size: 14px;
@@ -376,7 +382,7 @@ a:focus-visible {
   display: grid;
   place-items: center;
   border: 1px solid #333330;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   color: var(--acid);
   font-size: 10px;
 }
@@ -447,7 +453,7 @@ a:focus-visible {
 .viewer-panel,
 .export-panel {
   border: 1px solid var(--line);
-  border-radius: 15px;
+  border-radius: var(--radius-md);
   background: var(--panel);
 }
 
@@ -505,7 +511,7 @@ a:focus-visible {
   bottom: 14px;
   padding: 6px 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 5px;
+  border-radius: var(--radius-xs);
   color: #c5c5bd;
   background: rgba(12, 12, 11, 0.74);
   backdrop-filter: blur(10px);
@@ -586,7 +592,7 @@ a:focus-visible {
 .transport-button {
   width: 40px;
   height: 36px;
-  border-radius: 7px;
+  border-radius: var(--radius-sm);
   font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
   font-size: 18px;
 }
@@ -594,7 +600,7 @@ a:focus-visible {
 .play-button {
   width: 48px;
   height: 42px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   color: var(--acid-ink);
   background: var(--acid);
   font-size: 14px;
@@ -647,7 +653,7 @@ a:focus-visible {
 .time-readout {
   padding: 18px 14px;
   border: 1px solid #32322f;
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   background: #141413;
 }
 
@@ -685,14 +691,14 @@ a:focus-visible {
   gap: 4px;
   padding: 4px;
   border: 1px solid #32322f;
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   background: #141413;
 }
 
 .segmented button {
   height: 34px;
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
   color: #7e7e76;
   background: transparent;
   font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
@@ -736,7 +742,7 @@ a:focus-visible {
   gap: 10px;
   margin-top: auto;
   border: 0;
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   color: var(--acid-ink);
   background: var(--acid);
   font-size: 14px;
@@ -791,7 +797,7 @@ kbd {
   padding: 0 6px;
   border: 1px solid #3b3b37;
   border-bottom-color: #55554f;
-  border-radius: 5px;
+  border-radius: var(--radius-xs);
   color: #a8a8a0;
   background: #1e1e1c;
   font-family: inherit;
@@ -810,7 +816,7 @@ kbd {
   gap: 20px;
   padding: 13px 16px;
   border: 1px solid rgba(255, 115, 95, 0.42);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   color: #ffd5cf;
   background: #2a1714;
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.34);
@@ -998,7 +1004,7 @@ kbd {
   gap: 4px;
   padding: 4px;
   border: 1px solid #30302e;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: #161615;
 }
 
@@ -1007,7 +1013,7 @@ kbd {
   display: grid;
   place-items: center;
   padding: 0 15px;
-  border-radius: 7px;
+  border-radius: var(--radius-sm);
   color: #85857d;
   text-decoration: none;
   font-size: 12px;
@@ -1034,14 +1040,14 @@ kbd {
 
 .theme-toggle {
   position: relative;
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   flex: 0 0 auto;
   display: grid;
   place-items: center;
   padding: 0;
   border: 1px solid var(--control-border);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   color: var(--soft-text);
   background: var(--panel);
   cursor: pointer;
@@ -1061,8 +1067,10 @@ kbd {
 
 .theme-icon {
   position: absolute;
-  width: 17px;
-  height: 17px;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 14px;
   transition:
     opacity 180ms ease,
     transform 180ms ease;
@@ -1071,13 +1079,13 @@ kbd {
 [data-theme="dark"] .theme-icon-sun,
 [data-theme="light"] .theme-icon-moon {
   opacity: 0;
-  transform: scale(0.55) rotate(-30deg);
+  transform: translate(-50%, -50%) scale(0.55) rotate(-30deg);
 }
 
 [data-theme="dark"] .theme-icon-moon,
 [data-theme="light"] .theme-icon-sun {
   opacity: 1;
-  transform: scale(1) rotate(0);
+  transform: translate(-50%, -50%) scale(1) rotate(0);
 }
 
 .image-editor {
@@ -1115,7 +1123,7 @@ kbd {
   gap: 4px;
   padding: 4px;
   border: 1px solid #343431;
-  border-radius: 11px;
+  border-radius: var(--radius-md);
   background: #181817;
 }
 
@@ -1124,7 +1132,7 @@ kbd {
   min-height: 39px;
   display: grid;
   place-items: center;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   color: #85857d;
   text-decoration: none;
   font-size: 12px;
@@ -1144,7 +1152,7 @@ kbd {
   justify-content: center;
   padding: 42px;
   border: 1px dashed #44443f;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   background:
     linear-gradient(rgba(255, 255, 255, 0.017) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.017) 1px, transparent 1px),
@@ -1168,7 +1176,7 @@ kbd {
   place-items: center;
   margin-bottom: 24px;
   border: 1px solid #44443f;
-  border-radius: 22px;
+  border-radius: var(--radius-xl);
   color: var(--acid);
   background: #20201e;
 }
@@ -1185,7 +1193,7 @@ kbd {
   width: 29px;
   height: 29px;
   padding: 6px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   color: var(--acid-ink);
   background: var(--acid);
 }
@@ -1219,7 +1227,7 @@ kbd {
 .image-settings-panel {
   min-width: 0;
   border: 1px solid var(--line);
-  border-radius: 15px;
+  border-radius: var(--radius-md);
   background: var(--panel);
 }
 
@@ -1276,7 +1284,7 @@ kbd {
   gap: 9px;
   padding: 7px;
   border: 1px solid transparent;
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   background: transparent;
 }
 
@@ -1307,7 +1315,7 @@ kbd {
   width: 50px;
   height: 50px;
   display: block;
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
   object-fit: cover;
   background: #0d0d0c;
 }
@@ -1350,7 +1358,7 @@ kbd {
   height: 28px;
   display: grid;
   place-items: center;
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
   color: #74746e;
 }
 
@@ -1447,7 +1455,7 @@ kbd {
   height: 41px;
   padding: 0 12px;
   border: 1px solid #373733;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   color: var(--ink);
   background: #141413;
 }
@@ -1475,7 +1483,7 @@ kbd {
   margin-top: 26px;
   padding: 12px;
   border: 1px solid #30302d;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   color: #85857d;
   background: #151514;
   font-size: 10px;
@@ -1499,7 +1507,7 @@ kbd {
   margin-top: 14px;
   padding: 12px;
   border: 1px solid rgba(214, 255, 63, 0.22);
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   background: rgba(214, 255, 63, 0.045);
 }
 
@@ -1586,7 +1594,7 @@ kbd {
   padding: 27px;
   overflow: hidden;
   border: 1px solid #333330;
-  border-radius: 16px;
+  border-radius: var(--radius-md);
   color: inherit;
   background:
     linear-gradient(145deg, rgba(214, 255, 63, 0.03), transparent 45%),
@@ -1613,7 +1621,7 @@ kbd {
   place-items: center;
   margin: 42px 0 24px;
   border: 1px solid #44443f;
-  border-radius: 13px;
+  border-radius: var(--radius-md);
   color: var(--acid);
   background: #20201e;
 }
@@ -2076,7 +2084,7 @@ kbd {
 .seo-detail-grid article {
   padding: 24px;
   border: 1px solid var(--line);
-  border-radius: 13px;
+  border-radius: var(--radius-md);
   background: var(--panel);
 }
 
@@ -2110,7 +2118,7 @@ kbd {
 .seo-related-links a {
   padding: 7px 10px;
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   color: var(--acid);
   text-decoration: none;
   transition:
@@ -2184,14 +2192,14 @@ body {
   gap: 2px;
   padding: 3px;
   border: 0;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: var(--panel-raised);
 }
 
 .tool-nav a {
   min-height: 38px;
   padding: 0 18px;
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   color: var(--muted);
   font-size: 13px;
 }
@@ -2208,10 +2216,10 @@ body {
 }
 
 .theme-toggle {
-  width: 44px;
-  height: 44px;
+  width: 32px;
+  height: 32px;
   border-color: var(--line);
-  border-radius: 50%;
+  border-radius: 8px;
   color: var(--soft-text);
   background: var(--panel);
 }
@@ -2225,7 +2233,7 @@ body {
 .ghost-button {
   min-height: 44px;
   border-color: var(--control-border);
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   padding-inline: 18px;
 }
 
@@ -2266,7 +2274,7 @@ body {
   min-height: 330px;
   padding: 32px;
   border-color: transparent;
-  border-radius: 24px;
+  border-radius: var(--radius-xl);
   background: var(--panel);
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.055);
 }
@@ -2287,7 +2295,7 @@ body {
   height: 58px;
   margin: 4px 0 28px;
   border: 0;
-  border-radius: 16px;
+  border-radius: var(--radius-md);
   color: var(--acid);
   background: rgba(10, 132, 255, 0.12);
 }
@@ -2361,7 +2369,7 @@ body {
 .drop-card,
 .image-dropzone {
   border: 1px solid var(--line);
-  border-radius: 26px;
+  border-radius: var(--radius-xl);
   background: var(--panel);
   background-image: none;
   box-shadow: 0 18px 56px rgba(0, 0, 0, 0.06);
@@ -2384,7 +2392,7 @@ body {
   width: 108px;
   height: 108px;
   margin-bottom: 28px;
-  border-radius: 24px;
+  border-radius: var(--radius-xl);
   background: rgba(10, 132, 255, 0.12);
 }
 
@@ -2428,22 +2436,22 @@ body {
 
 .drop-card .corner-tl {
   border-width: 1px 0 0 1px;
-  border-top-left-radius: 4px;
+  border-top-left-radius: var(--radius-xs);
 }
 
 .drop-card .corner-tr {
   border-width: 1px 1px 0 0;
-  border-top-right-radius: 4px;
+  border-top-right-radius: var(--radius-xs);
 }
 
 .drop-card .corner-bl {
   border-width: 0 0 1px 1px;
-  border-bottom-left-radius: 4px;
+  border-bottom-left-radius: var(--radius-xs);
 }
 
 .drop-card .corner-br {
   border-width: 0 1px 1px 0;
-  border-bottom-right-radius: 4px;
+  border-bottom-right-radius: var(--radius-xs);
 }
 
 .drop-card .scan-line {
@@ -2471,7 +2479,7 @@ body {
 
 .primary-button,
 .export-button {
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   box-shadow: none;
 }
 
@@ -2503,13 +2511,13 @@ body {
 .image-mode-tabs {
   padding: 4px;
   border: 0;
-  border-radius: 13px;
+  border-radius: var(--radius-md);
   background: var(--panel-raised);
 }
 
 .image-mode-tabs a {
   min-height: 42px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   color: var(--muted);
   font-size: 13px;
 }
@@ -2528,7 +2536,7 @@ body {
   width: 96px;
   height: 96px;
   border: 0;
-  border-radius: 24px;
+  border-radius: var(--radius-xl);
   color: var(--acid);
   background: rgba(10, 132, 255, 0.12);
 }
@@ -2547,7 +2555,7 @@ body {
 .image-preview-panel,
 .image-settings-panel {
   border-color: var(--line);
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   background: var(--panel);
 }
 
@@ -2599,7 +2607,7 @@ body {
 .seo-detail-grid article {
   padding: 26px;
   border: 0;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   background: var(--panel);
 }
 
@@ -2722,7 +2730,7 @@ body {
   .tool-directory-card:last-child {
     min-height: 270px;
     padding: 26px;
-    border-radius: 22px;
+    border-radius: var(--radius-xl);
   }
 
   .welcome {
