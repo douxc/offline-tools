@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Moon, Sun } from "lucide-react";
+import { LogoMark } from "@/components/logo-mark";
 import { navigateToTool, TOOL_PATHS } from "@/lib/tool-navigation";
 import { useTheme } from "@/lib/theme";
 
@@ -20,11 +21,7 @@ export function ToolHeader({ active, trailing }: ToolHeaderProps) {
         onClick={(event) => navigateToTool(event, "home")}
         aria-label="离线工具首页"
       >
-        <span className="brand-mark" aria-hidden="true">
-          <i />
-          <i />
-          <i />
-        </span>
+        <LogoMark className="brand-mark" />
         <span>离线工具</span>
       </a>
 

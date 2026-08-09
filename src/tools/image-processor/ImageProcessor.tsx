@@ -480,9 +480,9 @@ export function ImageProcessor({ initialMode }: ImageProcessorProps) {
       <section className="image-editor">
         <div className="image-heading">
           <div>
-            <p className="eyebrow">LOCAL IMAGE STUDIO</p>
+            <p className="eyebrow">浏览器本地图片处理</p>
             <h1>
-              {mode === "compress" ? "智能图片压缩" : "图片添加水印"}
+              {mode === "compress" ? "图片压缩" : "图片添加水印"}
             </h1>
             <p>
               {mode === "compress"
@@ -496,7 +496,7 @@ export function ImageProcessor({ initialMode }: ImageProcessorProps) {
               className={mode === "compress" ? "active" : ""}
               onClick={(event) => navigateToTool(event, "image-compress")}
             >
-              智能压缩
+              图片压缩
             </a>
             <a
               href={TOOL_PATHS["image-watermark"]}
@@ -630,7 +630,7 @@ export function ImageProcessor({ initialMode }: ImageProcessorProps) {
 
             <Card className="image-settings-panel">
               <p className="panel-number">01</p>
-              <h2>{mode === "compress" ? "智能压缩" : "文字水印"}</h2>
+              <h2>{mode === "compress" ? "压缩设置" : "文字水印"}</h2>
 
               {mode === "watermark" && (
                 <label className="text-control">

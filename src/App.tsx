@@ -266,7 +266,7 @@ export function FrameExtractor() {
       {!videoUrl ? (
         <section className="welcome">
           <div className="welcome-copy">
-            <p className="eyebrow">VIDEO FRAME EXTRACTOR</p>
+            <p className="eyebrow">在线视频取帧工具</p>
             <h1>
               视频取帧，
               <br />
@@ -329,7 +329,7 @@ export function FrameExtractor() {
         <section className="editor" aria-label="视频取帧工作台">
           <div className="editor-heading">
             <div>
-              <p className="eyebrow">FRAME WORKSPACE</p>
+              <p className="eyebrow">视频画面</p>
               <h1>选取画面</h1>
             </div>
             <div className="file-meta" title={fileName}>

@@ -15,21 +15,21 @@ const tools: Array<{
 }> = [
   {
     route: "video-frame",
-    eyebrow: "VIDEO",
+    eyebrow: "视频工具",
     title: "视频取帧",
     description: "逐帧定位画面，按视频原始分辨率导出 PNG、JPG 或 WebP。",
     icon: Video,
   },
   {
     route: "image-compress",
-    eyebrow: "IMAGE",
-    title: "智能图片压缩",
+    eyebrow: "图片工具",
+    title: "图片压缩",
     description: "使用 libimagequant、OxiPNG 与浏览器编码器减小图片体积。",
     icon: Image,
   },
   {
     route: "image-watermark",
-    eyebrow: "WATERMARK",
+    eyebrow: "水印工具",
     title: "图片添加水印",
     description: "批量添加文字水印，保持原始尺寸、格式与 PNG 透明通道。",
     icon: ShieldCheck,
@@ -41,7 +41,7 @@ export function ToolHome() {
     <main className="app-shell tool-home">
       <ToolHeader active="home" />
       <section className="tool-home-hero">
-        <p className="eyebrow">BROWSER-ONLY TOOLKIT</p>
+        <p className="eyebrow">隐私优先 · 本地处理</p>
         <h1>
           文件留在本机，
           <br />
@@ -81,7 +81,7 @@ export function ToolHome() {
 
       <section className="seo-content home-seo-content" aria-labelledby="toolbox-guide">
         <div className="seo-content-heading">
-          <p className="eyebrow">LOCAL-FIRST TOOLBOX</p>
+          <p className="eyebrow">关于这套工具</p>
           <h2 id="toolbox-guide">无需上传文件的浏览器离线工具箱</h2>
           <p>
             离线工具提供在线视频取帧、批量图片压缩和图片加水印功能。

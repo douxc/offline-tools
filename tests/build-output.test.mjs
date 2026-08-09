@@ -26,6 +26,7 @@ test("build emits a static offline multi-page app", async () => {
     access(new URL("dist/sw.js", root)),
     access(new URL("dist/pwa-192.png", root)),
     access(new URL("dist/pwa-512.png", root)),
+    access(new URL("dist/pwa-maskable-512.png", root)),
     access(new URL("dist/assets/image-compress-worker.js", root)),
     access(new URL("dist/legal/LICENSE.txt", root)),
     access(new URL("dist/legal/THIRD_PARTY_NOTICES.md", root)),
@@ -75,7 +76,7 @@ test("build emits a static offline multi-page app", async () => {
   const parsedManifest = JSON.parse(manifest);
   assert.equal(parsedManifest.name, "离线工具 · 视频取帧与图片处理");
   assert.equal(parsedManifest.display, "standalone");
-  assert.equal(parsedManifest.theme_color, "#111110");
+  assert.equal(parsedManifest.theme_color, "#000000");
 
   assert.doesNotMatch(
     packageJson,

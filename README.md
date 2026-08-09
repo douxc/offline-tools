@@ -4,7 +4,7 @@
 不会上传到服务器。
 
 - 视频取帧：逐帧选择并按原始分辨率导出 PNG、JPG 或 WebP。
-- 智能图片压缩：PNG 使用 libimagequant 与 OxiPNG，JPG/WebP 使用浏览器编码器。
+- 图片压缩：PNG 使用 libimagequant 与 OxiPNG，JPG/WebP 使用浏览器编码器。
 - 图片水印：批量添加文字水印，保持原始尺寸与图片格式。
 
 ## 静态页面
@@ -14,7 +14,7 @@
 
 - `/`：工具索引
 - `/video-frame/`：视频取帧
-- `/image-compress/`：智能图片压缩
+- `/image-compress/`：图片压缩
 - `/image-watermark/`：图片添加水印
 
 每个页面包含独立标题、描述、canonical、Open Graph 和 JSON-LD。图片压缩与

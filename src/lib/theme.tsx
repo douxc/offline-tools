@@ -40,7 +40,7 @@ export function applyTheme(theme: Theme) {
 
   document
     .querySelector('meta[name="theme-color"]')
-    ?.setAttribute("content", theme === "dark" ? "#111110" : "#f5f5ef");
+    ?.setAttribute("content", theme === "dark" ? "#000000" : "#f5f5f7");
 }
 
 type ThemeProviderProps = {

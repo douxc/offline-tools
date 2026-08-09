@@ -6,7 +6,7 @@ type ToolSeoContentProps = {
 
 const content = {
   video: {
-    eyebrow: "VIDEO FRAME GUIDE",
+    eyebrow: "使用说明",
     title: "在线视频取帧：逐帧截图并导出原始画质图片",
     introduction:
       "这个视频取帧工具适合从 MP4、WebM、MOV 等视频中提取单帧画面。选择视频后，可通过时间轴、方向键或逐帧按钮精确定位，再把当前视频帧导出为 PNG、JPG 或 WebP 图片。",
@@ -26,13 +26,13 @@ const content = {
     ],
   },
   compress: {
-    eyebrow: "IMAGE COMPRESSION GUIDE",
+    eyebrow: "使用说明",
     title: "在线图片压缩：批量减小 PNG、JPG 与 WebP 体积",
     introduction:
       "这个在线图片压缩工具可一次处理多张 PNG、JPG、JPEG 或 WebP 图片。所有压缩都在浏览器本地完成，适合网站图片优化、邮件附件、社交媒体素材和日常存储。",
     details: [
       {
-        title: "PNG 智能压缩",
+        title: "PNG 自适应压缩",
         text: "工具会分析 PNG 内容：图标、截图和透明插画可使用颜色量化减小体积，连续色调图片则优先采用 OxiPNG 无损优化，兼顾文件大小与画面质量。",
       },
       {
@@ -46,7 +46,7 @@ const content = {
     ],
   },
   watermark: {
-    eyebrow: "WATERMARK GUIDE",
+    eyebrow: "使用说明",
     title: "在线图片加水印：批量添加可调节的文字水印",
     introduction:
       "这个图片加水印工具支持批量处理 PNG、JPG、JPEG 与 WebP。输入水印文字后，可实时调整文字大小、透明度和倾斜角度，再一次下载全部图片。",

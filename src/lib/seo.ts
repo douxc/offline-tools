@@ -142,7 +142,7 @@ export const SEO_PAGES: Record<ToolRoute, SeoPage> = {
   "image-compress": {
     title: "在线图片压缩工具｜批量压缩 PNG、JPG、WebP - 离线工具",
     description:
-      "免费在线图片压缩工具，批量压缩 PNG、JPG 和 WebP。PNG 自动选择智能量化或无损优化，图片不上传，直接在浏览器本地减小文件体积。",
+      "免费在线图片压缩工具，批量压缩 PNG、JPG 和 WebP。PNG 自动选择颜色量化或无损优化，图片不上传，直接在浏览器本地减小文件体积。",
     keywords:
       "图片压缩,在线图片压缩,批量图片压缩,PNG压缩,JPG压缩,JPEG压缩,WebP压缩,无损图片压缩,减小图片体积",
     path: "/image-compress/",
@@ -154,7 +154,7 @@ export const SEO_PAGES: Record<ToolRoute, SeoPage> = {
       category: "MultimediaApplication",
       features: [
         "批量压缩 PNG、JPG 与 WebP",
-        "PNG 智能量化或无损优化",
+        "PNG 自适应量化或无损优化",
         "避免生成比原图更大的文件",
         "图片仅在浏览器本地处理",
       ],
