@@ -19,7 +19,7 @@
     "build:image-codecs": "node scripts/build-image-codecs.mjs",
     "build": "pnpm build:image-codecs && tsc -b && vite build",
     "preview": "vite preview",
-    "test": "pnpm build && node --import tsx --test src/lib/png-strategy.test.ts src/workers/image-compress-worker.integration.test.ts tests/build-output.test.mjs",
+    "test": "pnpm build && TSX_TSCONFIG_PATH=tsconfig.app.json node --import tsx --test src/lib/png-strategy.test.ts src/workers/image-compress-worker.integration.test.ts src/components/icp-footer.test.ts tests/icp-footer-embed.test.mjs tests/build-output.test.mjs",
     "lint": "eslint . --ignore-pattern dist"
   },
   "dependencies": {

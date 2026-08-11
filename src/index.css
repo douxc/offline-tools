@@ -808,7 +808,7 @@ kbd {
   position: fixed;
   z-index: 20;
   left: 50%;
-  bottom: 28px;
+  bottom: 44px;
   width: min(420px, calc(100vw - 32px));
   display: flex;
   align-items: center;
@@ -2635,6 +2635,31 @@ body {
   padding-top: 28px;
   color: var(--muted);
   font-size: 10px;
+}
+
+.icp-footer {
+  position: fixed;
+  z-index: 15;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid var(--line);
+  background: var(--page);
+}
+
+.icp-footer a {
+  color: var(--muted);
+  font-size: 10px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.icp-footer a:hover {
+  color: var(--acid);
 }
 
 [data-theme="light"] .feature-row span,
