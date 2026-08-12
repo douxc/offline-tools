@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { TextOverlayPanel } from "@/components/text-overlay-panel";
+import { BatchSamplingControls } from "@/components/batch-sampling-controls";
 import {
   computeTextOverlay,
   drawTextOverlay,
@@ -28,10 +29,24 @@ import {
   shouldBurnOverlay,
   type OverlayPosition,
 } from "@/lib/text-overlay";
+import {
+  sampleFramesByInterval,
+  sampleFramesByStep,
+  sampleFramesEvenly,
+  type SamplingMode,
+} from "@/lib/frame-sampling";
+import {
+  BATCH_DECODE_CONCURRENCY,
+  createFrameZipArchive,
+  frameFileName,
+} from "@/lib/zip-packer";
 
 type ImageFormat = "png" | "jpeg" | "webp";
 
 const FPS_OPTIONS = [24, 25, 30, 50, 60];
+const DEFAULT_BATCH_INTERVAL = 1;
+const DEFAULT_BATCH_STEP = 10;
+const DEFAULT_BATCH_COUNT = 10;
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
@@ -93,6 +108,13 @@ export function FrameExtractor() {
   const [overlaySizeRatio, setOverlaySizeRatio] = useState(
     OVERLAY_DEFAULT_SIZE_RATIO,
   );
+  const [batchMode, setBatchMode] = useState(false);
+  const [samplingMode, setSamplingMode] = useState<SamplingMode>("interval");
+  const [batchInterval, setBatchInterval] = useState(DEFAULT_BATCH_INTERVAL);
+  const [batchStep, setBatchStep] = useState(DEFAULT_BATCH_STEP);
+  const [batchCount, setBatchCount] = useState(DEFAULT_BATCH_COUNT);
+  const [batchExporting, setBatchExporting] = useState(false);
+  const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0 });
 
   const timecode = useMemo(
     () => formatTimecode(currentTime, fps),
@@ -233,6 +255,103 @@ export function FrameExtractor() {
       setError("当前帧导出失败，请尝试其他图片格式。");
     } finally {
       setExporting(false);
+    }
+  };
+
+  /** Seek the video to `seconds`, wait for the frame to be ready, draw it onto a canvas and return the blob. */
+  const captureFrameAt = async (
+    video: HTMLVideoElement,
+    seconds: number,
+  ): Promise<Blob | null> => {
+    await new Promise<void>((resolve) => {
+      const onSeeked = () => {
+        video.removeEventListener("seeked", onSeeked);
+        resolve();
+      };
+      video.addEventListener("seeked", onSeeked);
+      video.currentTime = seconds;
+    });
+
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("无法创建画布");
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    if (shouldBurnOverlay(textEnabled, overlayText)) {
+      drawTextOverlay(
+        context,
+        computeTextOverlay({
+          width: canvas.width,
+          height: canvas.height,
+          text: overlayText,
+          position: overlayPosition,
+          sizeRatio: overlaySizeRatio,
+        }),
+      );
+    }
+
+    const mime = `image/${format}`;
+    return new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, mime, format === "png" ? undefined : quality),
+    );
+  };
+
+  const sampleTimes = (): number[] => {
+    if (!Number.isFinite(duration) || duration <= 0) return [];
+    if (samplingMode === "interval") {
+      return sampleFramesByInterval(duration, batchInterval);
+    }
+    if (samplingMode === "step") {
+      return sampleFramesByStep(duration, fps, batchStep);
+    }
+    return sampleFramesEvenly(duration, batchCount);
+  };
+
+  const exportBatch = async () => {
+    const video = videoRef.current;
+    if (!video || !video.videoWidth || batchExporting) return;
+    const times = sampleTimes();
+    if (times.length === 0) return;
+
+    video.pause();
+    setIsPlaying(false);
+    setBatchExporting(true);
+    setBatchProgress({ current: 0, total: times.length });
+    const extension = format === "jpeg" ? "jpg" : format;
+    const base = cleanBaseName(fileName);
+    const captureVideo: HTMLVideoElement = video;
+
+    async function* frameEntries(): AsyncGenerator<{
+      name: string;
+      data: Uint8Array;
+    }> {
+      for (let i = 0; i < times.length; i += BATCH_DECODE_CONCURRENCY) {
+        // Serial decode (BATCH_DECODE_CONCURRENCY === 1): capture, encode, then
+        // yield before moving on so peak memory stays near a single frame.
+        const blob = await captureFrameAt(captureVideo, times[i]);
+        setBatchProgress({ current: i + 1, total: times.length });
+        if (!blob) throw new Error("图片编码失败");
+        const buffer = await blob.arrayBuffer();
+        yield { name: frameFileName(base, i, extension), data: new Uint8Array(buffer) };
+      }
+    }
+
+    try {
+      const zipBlob = await createFrameZipArchive(frameEntries());
+      const zipUrl = URL.createObjectURL(zipBlob);
+      const link = document.createElement("a");
+      link.href = zipUrl;
+      link.download = `${base}_frames.zip`;
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(zipUrl), 1000);
+      setExported(true);
+      window.setTimeout(() => setExported(false), 2400);
+    } catch {
+      setError("批量抽帧失败，请缩短范围或减少帧数后重试。");
+    } finally {
+      setBatchExporting(false);
     }
   };
 
@@ -574,22 +693,124 @@ export function FrameExtractor() {
                 />
               </div>
 
-              <Button
-                className={`export-button ${exported ? "success" : ""}`}
-                type="button"
-                size="lg"
-                onClick={() => void exportFrame()}
-                disabled={exporting || !dimensions.width}
-              >
-                <span aria-hidden="true">{exported ? "✓" : "↓"}</span>
-                {exporting
-                  ? "正在生成…"
-                  : exported
-                    ? "已保存到下载"
-                    : "导出当前帧"}
-              </Button>
+              <div className="control-group batch-group">
+                <p className="panel-number">04</p>
+                <div className="quality-label">
+                  <label htmlFor="batch-mode">批量抽帧</label>
+                  <Button
+                    id="batch-mode"
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className={batchMode ? "active" : ""}
+                    aria-pressed={batchMode}
+                    onClick={() => setBatchMode((value) => !value)}
+                  >
+                    {batchMode ? "已开启" : "关闭"}
+                  </Button>
+                </div>
+
+                {batchMode && (
+                  <>
+                    <div className="batch-mode-control">
+                      <BatchSamplingControls
+                        mode={samplingMode}
+                        onModeChange={setSamplingMode}
+                      />
+                    </div>
+
+                    {samplingMode === "interval" && (
+                      <div className="quality-group">
+                        <div className="quality-label">
+                          <label htmlFor="batch-interval">间隔（秒）</label>
+                          <span>{batchInterval}s</span>
+                        </div>
+                        <Slider
+                          id="batch-interval"
+                          min={0.1}
+                          max={Math.max(0.1, duration || 1)}
+                          step={0.1}
+                          value={[Math.min(batchInterval, duration || 1)]}
+                          onValueChange={([value]) => setBatchInterval(value)}
+                          aria-label="抽帧间隔秒数"
+                        />
+                      </div>
+                    )}
+
+                    {samplingMode === "step" && (
+                      <div className="quality-group">
+                        <div className="quality-label">
+                          <label htmlFor="batch-step">每 N 帧</label>
+                          <span>{batchStep}</span>
+                        </div>
+                        <Slider
+                          id="batch-step"
+                          min={1}
+                          max={Math.max(1, fps * 5)}
+                          step={1}
+                          value={[batchStep]}
+                          onValueChange={([value]) => setBatchStep(Math.round(value))}
+                          aria-label="抽帧帧数步长"
+                        />
+                      </div>
+                    )}
+
+                    {samplingMode === "evenly" && (
+                      <div className="quality-group">
+                        <div className="quality-label">
+                          <label htmlFor="batch-count">张数</label>
+                          <span>{batchCount}</span>
+                        </div>
+                        <Slider
+                          id="batch-count"
+                          min={1}
+                          max={Math.max(1, Math.min(500, Math.floor((duration || 1) * fps)))}
+                          step={1}
+                          value={[Math.min(batchCount, 500)]}
+                          onValueChange={([value]) => setBatchCount(Math.round(value))}
+                          aria-label="均匀抽帧张数"
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {batchMode ? (
+                <Button
+                  className={`export-button ${exported ? "success" : ""}`}
+                  type="button"
+                  size="lg"
+                  onClick={() => void exportBatch()}
+                  disabled={batchExporting || !dimensions.width || !duration}
+                >
+                  <span aria-hidden="true">{exported ? "✓" : "↓"}</span>
+                  {batchExporting
+                    ? `正在生成… ${batchProgress.current}/${batchProgress.total}`
+                    : exported
+                      ? "已保存到下载"
+                      : "导出批量帧 (ZIP)"}
+                </Button>
+              ) : (
+                <Button
+                  className={`export-button ${exported ? "success" : ""}`}
+                  type="button"
+                  size="lg"
+                  onClick={() => void exportFrame()}
+                  disabled={exporting || !dimensions.width}
+                >
+                  <span aria-hidden="true">{exported ? "✓" : "↓"}</span>
+                  {exporting
+                    ? "正在生成…"
+                    : exported
+                      ? "已保存到下载"
+                      : "导出当前帧"}
+                </Button>
+              )}
               <p className="export-note">
-                按视频原始分辨率导出，不做缩放或裁剪。
+                {batchMode
+                  ? "按所选规则逐帧抽取并打包为 ZIP，每帧按原始分辨率导出。"
+                  : "按视频原始分辨率导出，不做缩放或裁剪。"}
               </p>
             </Card>
           </div>

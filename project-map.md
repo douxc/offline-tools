@@ -2,7 +2,7 @@
 
 ## 架构
 
-完全在浏览器本地运行的视频/图片离线工具，无后端、无上传，文件经 Blob URL 解码与处理。多入口 SPA：4 个静态 HTML 入口（`/`、`/video-frame/`、`/image-compress/`、`/image-watermark/`）各自携带唯一的 SEO meta 与 JSON-LD，但都加载同一个 `src/main.tsx`。`src/OfflineToolsApp.tsx` 按 `window.location.pathname` 选择渲染 `ToolHome`（`src/ToolHome.tsx`）、`FrameExtractor`（`src/App.tsx`）或 `ImageProcessor`（`src/tools/image-processor/ImageProcessor.tsx`）。站点部署地址 `https://framecut-offline.douxc512.chatgpt.site`（`src/lib/seo.ts` 的 `SITE_URL`）。PWA 由 `vite-plugin-pwa` 预缓存，`registerType: "prompt"`，`navigateFallback: "/index.html"`（`/legal/` 在 denylist）。测试文件与源码同目录（`*.test.ts(x)`）加顶层 `tests/`（`.test.mjs` 构建产物校验）。
+完全在浏览器本地运行的视频/图片离线工具，无后端、无上传，文件经 Blob URL 解码与处理。多入口 SPA：4 个静态 HTML 入口（`/`、`/video-frame/`、`/image-compress/`、`/image-watermark/`）各自携带唯一的 SEO meta 与 JSON-LD，但都加载同一个 `src/main.tsx`。`src/OfflineToolsApp.tsx` 按 `window.location.pathname` 选择渲染 `ToolHome`（`src/ToolHome.tsx`）、`FrameExtractor`（`src/App.tsx`）或 `ImageProcessor`（`src/tools/image-processor/ImageProcessor.tsx`）。`FrameExtractor` 支持单帧导出与批量抽帧：批量模式由 `src/lib/frame-sampling.ts` 的 `sampleFramesByInterval`/`sampleFramesByStep`/`sampleFramesEvenly` 按时间间隔、帧数步长或均匀取张算时间点，逐帧 seek + canvas 编码后由 `src/lib/zip-packer.ts` 的 `createFrameZipArchive`（jszip）流式打包为 ZIP（串行解码，`BATCH_DECODE_CONCURRENCY = 1`）。站点部署地址 `https://framecut-offline.douxc512.chatgpt.site`（`src/lib/seo.ts` 的 `SITE_URL`）。PWA 由 `vite-plugin-pwa` 预缓存，`registerType: "prompt"`，`navigateFallback: "/index.html"`（`/legal/` 在 denylist）。测试文件与源码同目录（`*.test.ts(x)`）加顶层 `tests/`（`.test.mjs` 构建产物校验）。
 
 ## 选型
 
@@ -14,7 +14,7 @@ Vite 8 + React 19 + TypeScript（`tsconfig.json`/`tsconfig.app.json`/`tsconfig.n
 
 ## 公共组件
 
-`src/components/`：`tool-header`（顶部导航）、`tool-seo-content`（各工具页 SEO 文案）、`icp-footer`（固定底部 ICP 备案链接）、`pwa-status`（新版本提示）、`logo-mark`、`text-overlay-panel`（视频取帧文字叠加控制）。`src/components/ui/`（shadcn 生成）：`button`、`card`、`select`、`slider`、`sonner`。`src/lib/theme.tsx` 提供明暗主题 `ThemeProvider`。
+`src/components/`：`tool-header`（顶部导航）、`tool-seo-content`（各工具页 SEO 文案）、`icp-footer`（固定底部 ICP 备案链接）、`pwa-status`（新版本提示）、`logo-mark`、`text-overlay-panel`（视频取帧文字叠加控制）、`batch-sampling-controls`（批量抽帧模式选择）。`src/components/ui/`（shadcn 生成）：`button`、`card`、`select`、`slider`、`sonner`。`src/lib/theme.tsx` 提供明暗主题 `ThemeProvider`。
 
 ## 图片压缩管线
 

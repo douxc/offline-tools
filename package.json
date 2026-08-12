@@ -19,7 +19,7 @@
     "build:image-codecs": "node scripts/build-image-codecs.mjs",
     "build": "pnpm build:image-codecs && tsc -b && vite build",
     "preview": "vite preview",
-    "test": "pnpm build && TSX_TSCONFIG_PATH=tsconfig.app.json node --import tsx --test src/lib/png-strategy.test.ts src/lib/text-overlay.test.ts src/workers/image-compress-worker.integration.test.ts src/components/icp-footer.test.ts src/components/text-overlay-panel.test.tsx tests/icp-footer-embed.test.mjs tests/text-overlay-embed.test.mjs tests/build-output.test.mjs",
+    "test": "pnpm build && TSX_TSCONFIG_PATH=tsconfig.app.json node --import tsx --test src/lib/png-strategy.test.ts src/lib/text-overlay.test.ts src/lib/frame-sampling.test.ts src/lib/zip-packer.test.ts src/workers/image-compress-worker.integration.test.ts src/components/icp-footer.test.ts src/components/text-overlay-panel.test.tsx src/components/batch-sampling-controls.test.tsx src/App.test.tsx tests/icp-footer-embed.test.mjs tests/text-overlay-embed.test.mjs tests/build-output.test.mjs",
     "lint": "eslint . --ignore-pattern dist"
   },
   "dependencies": {
@@ -29,8 +29,9 @@
     "@radix-ui/react-slot": "1.3.3",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
-    "lucide-react": "1.28.0",
+    "jszip": "^3.10.1",
     "libimagequant-wasm": "0.3.0",
+    "lucide-react": "1.28.0",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "sonner": "2.0.7",
@@ -50,10 +51,10 @@
     "eslint-plugin-react-hooks": "7.1.1",
     "globals": "16.4.0",
     "tailwindcss": "4.3.3",
+    "tsx": "4.21.0",
     "tw-animate-css": "1.4.0",
     "typescript": "5.9.3",
     "typescript-eslint": "8.59.3",
-    "tsx": "4.21.0",
     "vite": "8.0.13",
     "vite-plugin-pwa": "1.3.0",
     "workbox-window": "7.4.1"
