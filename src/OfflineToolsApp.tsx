@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FrameExtractor } from "@/App";
 import { ToolHome } from "@/ToolHome";
+import { VideoCompressor } from "@/components/video-compressor";
 import {
   readToolRoute,
   type ToolRoute,
@@ -26,5 +27,6 @@ export function OfflineToolsApp() {
     );
   }
   if (route === "video-frame") return <FrameExtractor />;
+  if (route === "video-compress") return <VideoCompressor />;
   return <ToolHome />;
 }

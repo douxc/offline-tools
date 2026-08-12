@@ -13,6 +13,10 @@ export default defineConfig({
           import.meta.dirname,
           "video-frame/index.html",
         ),
+        videoCompress: path.resolve(
+          import.meta.dirname,
+          "video-compress/index.html",
+        ),
         imageCompress: path.resolve(
           import.meta.dirname,
           "image-compress/index.html",

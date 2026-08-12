@@ -139,6 +139,27 @@ export const SEO_PAGES: Record<ToolRoute, SeoPage> = {
       ],
     }),
   },
+  "video-compress": {
+    title: "在线视频压缩工具｜浏览器本地压缩导出 WebM - 离线工具",
+    description:
+      "免费在线视频压缩工具，在浏览器中重新编码视频为 WebM，可控码率与等比缩放尺寸，保留原音轨。视频不上传，本地完成压缩导出。",
+    keywords:
+      "视频压缩,在线视频压缩,视频压缩导出,WebM压缩,视频减小体积,浏览器压缩视频,本地视频处理",
+    path: "/video-compress/",
+    jsonLd: toolJsonLd({
+      name: "在线视频压缩工具",
+      description:
+        "在浏览器本地通过 MediaRecorder 重新编码视频为 WebM，可控码率与等比缩放，保留原音轨。",
+      path: "/video-compress/",
+      category: "MultimediaApplication",
+      features: [
+        "可控码率压缩导出",
+        "等比缩放视频尺寸",
+        "保留原音轨",
+        "视频仅在浏览器本地处理",
+      ],
+    }),
+  },
   "image-compress": {
     title: "在线图片压缩工具｜批量压缩 PNG、JPG、WebP - 离线工具",
     description:

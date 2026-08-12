@@ -8,6 +8,7 @@ test("build emits a static offline multi-page app", async () => {
   const [
     homeHtml,
     videoHtml,
+    videoCompressHtml,
     compressHtml,
     watermarkHtml,
     manifest,
@@ -17,6 +18,7 @@ test("build emits a static offline multi-page app", async () => {
   ] = await Promise.all([
     readFile(new URL("dist/index.html", root), "utf8"),
     readFile(new URL("dist/video-frame/index.html", root), "utf8"),
+    readFile(new URL("dist/video-compress/index.html", root), "utf8"),
     readFile(new URL("dist/image-compress/index.html", root), "utf8"),
     readFile(new URL("dist/image-watermark/index.html", root), "utf8"),
     readFile(new URL("dist/manifest.webmanifest", root), "utf8"),
@@ -33,7 +35,7 @@ test("build emits a static offline multi-page app", async () => {
     access(new URL("dist/legal/CORRESPONDING_SOURCE.md", root)),
   ]);
 
-  const pages = [homeHtml, videoHtml, compressHtml, watermarkHtml];
+  const pages = [homeHtml, videoHtml, videoCompressHtml, compressHtml, watermarkHtml];
   for (const html of pages) {
     assert.match(html, /<html lang="zh-CN"/i);
     assert.match(html, /manifest\.webmanifest/);
@@ -56,6 +58,10 @@ test("build emits a static offline multi-page app", async () => {
     /<title>视频取帧工具｜在线逐帧截图、视频转图片 - 离线工具<\/title>/,
   );
   assert.match(
+    videoCompressHtml,
+    /<title>[^<]*视频压缩[^<]*<\/title>/,
+  );
+  assert.match(
     compressHtml,
     /<title>在线图片压缩工具｜批量压缩 PNG、JPG、WebP - 离线工具<\/title>/,
   );
@@ -67,6 +73,7 @@ test("build emits a static offline multi-page app", async () => {
   assert.match(robots, /Sitemap: .*\/sitemap\.xml/);
   for (const path of [
     "/video-frame/",
+    "/video-compress/",
     "/image-compress/",
     "/image-watermark/",
   ]) {

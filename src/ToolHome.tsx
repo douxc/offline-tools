@@ -1,4 +1,4 @@
-import { ArrowRight, Image, ShieldCheck, Video } from "lucide-react";
+import { ArrowRight, Film, Image, ShieldCheck, Video } from "lucide-react";
 import { ToolHeader } from "@/components/tool-header";
 import {
   navigateToTool,
@@ -19,6 +19,13 @@ const tools: Array<{
     title: "视频取帧",
     description: "逐帧定位画面，按视频原始分辨率导出 PNG、JPG 或 WebP。",
     icon: Video,
+  },
+  {
+    route: "video-compress",
+    eyebrow: "视频工具",
+    title: "视频压缩",
+    description: "在浏览器中重新编码视频为 WebM，可控码率与等比缩放，保留原音轨。",
+    icon: Film,
   },
   {
     route: "image-compress",
