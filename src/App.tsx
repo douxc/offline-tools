@@ -20,6 +20,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import { TextOverlayPanel } from "@/components/text-overlay-panel";
+import {
+  computeTextOverlay,
+  drawTextOverlay,
+  OVERLAY_DEFAULT_SIZE_RATIO,
+  shouldBurnOverlay,
+  type OverlayPosition,
+} from "@/lib/text-overlay";
 
 type ImageFormat = "png" | "jpeg" | "webp";
 
@@ -78,6 +86,13 @@ export function FrameExtractor() {
   const [error, setError] = useState("");
   const [exporting, setExporting] = useState(false);
   const [exported, setExported] = useState(false);
+  const [textEnabled, setTextEnabled] = useState(false);
+  const [overlayText, setOverlayText] = useState("");
+  const [overlayPosition, setOverlayPosition] =
+    useState<OverlayPosition>("bottom");
+  const [overlaySizeRatio, setOverlaySizeRatio] = useState(
+    OVERLAY_DEFAULT_SIZE_RATIO,
+  );
 
   const timecode = useMemo(
     () => formatTimecode(currentTime, fps),
@@ -184,6 +199,19 @@ export function FrameExtractor() {
       const context = canvas.getContext("2d");
       if (!context) throw new Error("无法创建画布");
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      if (shouldBurnOverlay(textEnabled, overlayText)) {
+        drawTextOverlay(
+          context,
+          computeTextOverlay({
+            width: canvas.width,
+            height: canvas.height,
+            text: overlayText,
+            position: overlayPosition,
+            sizeRatio: overlaySizeRatio,
+          }),
+        );
+      }
 
       const mime = `image/${format}`;
       const blob = await new Promise<Blob | null>((resolve) =>
@@ -390,6 +418,16 @@ export function FrameExtractor() {
                     }
                     aria-label="视频画面预览"
                   />
+                  {shouldBurnOverlay(textEnabled, overlayText) && (
+                    <div
+                      className={`text-overlay ${
+                        overlayPosition === "top" ? "is-top" : "is-bottom"
+                      }`}
+                      aria-hidden="true"
+                    >
+                      {overlayText}
+                    </div>
+                  )}
                   <span className="resolution-badge">
                     {dimensions.width > 0
                       ? `${dimensions.width} × ${dimensions.height}`
@@ -521,6 +559,20 @@ export function FrameExtractor() {
                   />
                 </div>
               )}
+
+              <div className="control-group overlay-group">
+                <p className="panel-number">03</p>
+                <TextOverlayPanel
+                  enabled={textEnabled}
+                  onEnabledChange={setTextEnabled}
+                  text={overlayText}
+                  onTextChange={setOverlayText}
+                  position={overlayPosition}
+                  onPositionChange={setOverlayPosition}
+                  sizeRatio={overlaySizeRatio}
+                  onSizeRatioChange={setOverlaySizeRatio}
+                />
+              </div>
 
               <Button
                 className={`export-button ${exported ? "success" : ""}`}
