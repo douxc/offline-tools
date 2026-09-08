@@ -5,7 +5,8 @@ export type ToolRoute =
   | "video-frame"
   | "video-compress"
   | "image-compress"
-  | "image-watermark";
+  | "image-watermark"
+  | "image-a4-layout";
 
 export const TOOL_PATHS: Record<ToolRoute, string> = {
   home: "/",
@@ -13,6 +14,7 @@ export const TOOL_PATHS: Record<ToolRoute, string> = {
   "video-compress": "/video-compress/",
   "image-compress": "/image-compress/",
   "image-watermark": "/image-watermark/",
+  "image-a4-layout": "/image-a4-layout/",
 };
 
 export const readToolRoute = (): ToolRoute => {
@@ -21,6 +23,7 @@ export const readToolRoute = (): ToolRoute => {
   if (path.endsWith("/video-compress")) return "video-compress";
   if (path.endsWith("/image-compress")) return "image-compress";
   if (path.endsWith("/image-watermark")) return "image-watermark";
+  if (path.endsWith("/image-a4-layout")) return "image-a4-layout";
   return "home";
 };
 

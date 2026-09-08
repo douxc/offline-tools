@@ -2868,3 +2868,324 @@ body {
     margin-top: 30px;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* 图片 A4 排版打印工具                                                 */
+/* ------------------------------------------------------------------ */
+
+.a4-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: -6px 0 18px;
+}
+
+.a4-actions .primary-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.a4-list-item {
+  width: 100%;
+  min-height: 60px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px 28px 28px;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+}
+
+.a4-list-item:hover {
+  background: var(--surface-hover);
+}
+
+.a4-item-select {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+}
+
+.a4-item-select > img {
+  width: 42px;
+  height: 42px;
+  display: block;
+  border-radius: var(--radius-xs);
+  object-fit: cover;
+  background: #0d0d0c;
+}
+
+.a4-icon-button {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: var(--soft-text);
+  background: transparent;
+  cursor: pointer;
+}
+
+.a4-icon-button:hover:not(:disabled) {
+  border-color: var(--control-border);
+  color: var(--ink);
+  background: var(--surface-hover);
+}
+
+.a4-icon-button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.a4-pager {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.a4-pager span {
+  color: var(--soft-text);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.a4-preview-scale {
+  position: absolute;
+  transform-origin: top left;
+}
+
+.a4-sheet {
+  width: 210mm;
+  height: 297mm;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+}
+
+.a4-sheet-hidden {
+  display: none;
+}
+
+/* 行流动布局：行高由布局计算注入（--a4-row-h），行内图片按比例完整显示 */
+.a4-flow-row {
+  flex: none;
+  display: flex;
+  align-items: center;
+  height: var(--a4-row-h);
+  min-height: 0;
+}
+
+.a4-flow-cell {
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: 1px dashed rgba(140, 140, 132, 0.38);
+  outline-offset: -1px;
+}
+
+.a4-flow-cell img {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  object-fit: contain;
+  image-rendering: auto;
+}
+
+.a4-setting {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 26px;
+}
+
+.a4-setting > label,
+.a4-setting-label label {
+  color: #d8d8d0;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.a4-setting-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.a4-setting-label span {
+  color: var(--acid);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 11px;
+}
+
+.a4-cols-picker {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-sm);
+  background: var(--control-bg);
+}
+
+.a4-cols-picker button {
+  min-width: 0;
+  min-height: 34px;
+  flex: 1;
+  border: 0;
+  border-radius: 8px;
+  color: var(--soft-text);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 650;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.a4-cols-picker button.active {
+  color: var(--ink);
+  background: var(--panel-raised);
+}
+
+[data-theme="light"] .a4-cols-picker button.active {
+  color: #1d1d1f;
+}
+
+.a4-hint {
+  margin: 0;
+  color: #71716a;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+/* ------------------------- 预览缩放容器 ------------------------- */
+
+.a4-preview-stage {
+  contain: layout paint;
+}
+
+/* ----------------------------- 打印 ----------------------------- */
+
+/* @page 必须在顶层声明（嵌套在 @media 内时部分打印后端不采纳） */
+@page {
+  size: A4;
+  margin: 0;
+}
+
+@media print {
+  /* 只有浏览器打印对话框可见的部分输出；页面元素全部隐藏 */
+  .topbar,
+  .image-heading,
+  .a4-editor .a4-mode-tabs,
+  .image-panel-title,
+  .a4-actions,
+  .image-list-panel,
+  .a4-settings-panel,
+  .icp-footer,
+  .pwa-status {
+    display: none !important;
+  }
+
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  .a4-tool {
+    width: auto;
+    max-width: none;
+    min-height: 0;
+    margin: 0;
+    padding: 0 !important;
+  }
+
+  .a4-tool .image-editor {
+    padding: 0;
+  }
+
+  .a4-tool .image-workspace {
+    display: block;
+    min-height: 0;
+  }
+
+  .a4-tool .a4-preview-panel {
+    display: block;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .a4-tool .a4-preview-stage {
+    display: block;
+    padding: 0;
+    overflow: visible;
+    background: none;
+  }
+
+  .a4-tool .a4-preview-scale {
+    position: static;
+    margin: 0;
+    transform: none !important;
+    width: auto !important;
+    height: auto !important;
+  }
+
+  .a4-tool .a4-sheet {
+    width: 210mm !important;
+    height: 297mm !important;
+    margin: 0;
+    background: #fff;
+    box-shadow: none;
+    break-after: page;
+    page-break-after: always;
+  }
+
+  .a4-tool .a4-sheet:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+
+  /* 屏幕端隐藏的非当前页在打印时全部输出 */
+  .a4-tool .a4-sheet-hidden {
+    display: flex;
+  }
+
+  /* 打印纸张上没有网格辅助线 */
+  .a4-tool .a4-flow-cell {
+    outline: none;
+  }
+}
+
+.a4-file-input {
+  position: fixed;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* A4 排版页：无大标题区，模式 tab 独立成行，内容直接开始 */
+.a4-editor .a4-mode-tabs {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 22px;
+}
+
+@media (max-width: 760px) {
+  .a4-editor .a4-mode-tabs {
+    justify-content: flex-start;
+  }
+}

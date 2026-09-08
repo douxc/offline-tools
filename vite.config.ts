@@ -25,6 +25,10 @@ export default defineConfig({
           import.meta.dirname,
           "image-watermark/index.html",
         ),
+        imageA4Layout: path.resolve(
+          import.meta.dirname,
+          "image-a4-layout/index.html",
+        ),
       },
     },
   },

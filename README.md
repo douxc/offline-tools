@@ -6,6 +6,7 @@
 - 视频取帧：逐帧选择并按原始分辨率导出 PNG、JPG 或 WebP。
 - 图片压缩：PNG 使用 libimagequant 与 OxiPNG，JPG/WebP 使用浏览器编码器。
 - 图片水印：批量添加文字水印，保持原始尺寸与图片格式。
+- 图片 A4 排版：只设每行张数，图片按各自宽高比流动排到 A4 纸上，直接调用浏览器打印。
 
 ## 静态页面
 
@@ -16,9 +17,10 @@
 - `/video-frame/`：视频取帧
 - `/image-compress/`：图片压缩
 - `/image-watermark/`：图片添加水印
+- `/image-a4-layout/`：图片 A4 排版打印
 
-每个页面包含独立标题、描述、canonical、Open Graph 和 JSON-LD。图片压缩与
-水印页面之间使用 History API 无刷新切换，因此不会清空已导入的图片。
+每个页面包含独立标题、描述、canonical、Open Graph 和 JSON-LD。图片压缩、
+水印与 A4 排版页面之间使用 History API 无刷新切换，因此不会清空已导入的图片。
 
 ## 技术栈
 

@@ -505,6 +505,12 @@ export function ImageProcessor({ initialMode }: ImageProcessorProps) {
             >
               添加水印
             </a>
+            <a
+              href={TOOL_PATHS["image-a4-layout"]}
+              onClick={(event) => navigateToTool(event, "image-a4-layout")}
+            >
+              A4 排版
+            </a>
           </div>
         </div>
 

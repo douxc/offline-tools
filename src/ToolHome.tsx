@@ -1,4 +1,4 @@
-import { ArrowRight, Film, Image, ShieldCheck, Video } from "lucide-react";
+import { ArrowRight, Film, Image, LayoutGrid, ShieldCheck, Video } from "lucide-react";
 import { ToolHeader } from "@/components/tool-header";
 import {
   navigateToTool,
@@ -40,6 +40,13 @@ const tools: Array<{
     title: "图片添加水印",
     description: "批量添加文字水印，保持原始尺寸、格式与 PNG 透明通道。",
     icon: ShieldCheck,
+  },
+  {
+    route: "image-a4-layout",
+    eyebrow: "打印工具",
+    title: "图片 A4 排版打印",
+    description: "只设每行张数，图片按实际宽高比流动排到 A4 纸上，直接浏览器打印。",
+    icon: LayoutGrid,
   },
 ];
 
@@ -91,7 +98,8 @@ export function ToolHome() {
           <p className="eyebrow">关于这套工具</p>
           <h2 id="toolbox-guide">无需上传文件的浏览器离线工具箱</h2>
           <p>
-            离线工具提供在线视频取帧、批量图片压缩和图片加水印功能。
+            离线工具提供在线视频取帧、批量图片压缩、图片加水印和图片
+            A4 排版打印功能。
             工具直接调用浏览器的视频解码、图片编码与画布能力，文件始终留在当前设备。
           </p>
         </div>

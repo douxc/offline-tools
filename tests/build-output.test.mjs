@@ -11,6 +11,7 @@ test("build emits a static offline multi-page app", async () => {
     videoCompressHtml,
     compressHtml,
     watermarkHtml,
+    a4LayoutHtml,
     manifest,
     packageJson,
     robots,
@@ -21,6 +22,7 @@ test("build emits a static offline multi-page app", async () => {
     readFile(new URL("dist/video-compress/index.html", root), "utf8"),
     readFile(new URL("dist/image-compress/index.html", root), "utf8"),
     readFile(new URL("dist/image-watermark/index.html", root), "utf8"),
+    readFile(new URL("dist/image-a4-layout/index.html", root), "utf8"),
     readFile(new URL("dist/manifest.webmanifest", root), "utf8"),
     readFile(new URL("package.json", root), "utf8"),
     readFile(new URL("dist/robots.txt", root), "utf8"),
@@ -35,7 +37,7 @@ test("build emits a static offline multi-page app", async () => {
     access(new URL("dist/legal/CORRESPONDING_SOURCE.md", root)),
   ]);
 
-  const pages = [homeHtml, videoHtml, videoCompressHtml, compressHtml, watermarkHtml];
+  const pages = [homeHtml, videoHtml, videoCompressHtml, compressHtml, watermarkHtml, a4LayoutHtml];
   for (const html of pages) {
     assert.match(html, /<html lang="zh-CN"/i);
     assert.match(html, /manifest\.webmanifest/);
@@ -69,6 +71,22 @@ test("build emits a static offline multi-page app", async () => {
     watermarkHtml,
     /<title>图片加水印工具｜在线批量添加文字水印 - 离线工具<\/title>/,
   );
+  assert.match(
+    a4LayoutHtml,
+    /<title>图片 A4 排版打印工具｜批量排版照片打印 - 离线工具<\/title>/,
+  );
+  const a4CanonicalTag =
+    a4LayoutHtml.match(/<link[^>]*rel="canonical"[^>]*\/?>/)?.[0] ?? "";
+  assert.match(
+    a4CanonicalTag,
+    /href="https:\/\/framecut-offline\.douxc512\.chatgpt\.site\/image-a4-layout\/"/,
+  );
+  const a4OgUrlTag =
+    a4LayoutHtml.match(/<meta[^>]*property="og:url"[^>]*\/?>/)?.[0] ?? "";
+  assert.match(
+    a4OgUrlTag,
+    /content="https:\/\/framecut-offline\.douxc512\.chatgpt\.site\/image-a4-layout\/"/,
+  );
   assert.match(robots, /^User-agent: \*/m);
   assert.match(robots, /Sitemap: .*\/sitemap\.xml/);
   for (const path of [
@@ -76,6 +94,7 @@ test("build emits a static offline multi-page app", async () => {
     "/video-compress/",
     "/image-compress/",
     "/image-watermark/",
+    "/image-a4-layout/",
   ]) {
     assert.match(sitemap, new RegExp(`<loc>[^<]+${path}</loc>`));
   }

@@ -8,6 +8,7 @@ import {
 } from "@/lib/tool-navigation";
 import { useRouteSeo } from "@/lib/seo";
 import { ImageProcessor } from "@/tools/image-processor/ImageProcessor";
+import { A4ImageLayout } from "@/tools/image-a4-layout/A4ImageLayout";
 
 export function OfflineToolsApp() {
   const [route, setRoute] = useState<ToolRoute>(readToolRoute);
@@ -19,11 +20,28 @@ export function OfflineToolsApp() {
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
 
-  if (route === "image-compress" || route === "image-watermark") {
+  if (
+    route === "image-compress" ||
+    route === "image-watermark" ||
+    route === "image-a4-layout"
+  ) {
+    // 图片工具保持常挂载并按路由切换可见性，互切时不丢已导入图片，
+    // 与压缩↔水印之间的既有行为一致（见 design.md 决策 4）。
+    const showCompress =
+      route === "image-compress" || route === "image-watermark";
     return (
-      <ImageProcessor
-        initialMode={route === "image-watermark" ? "watermark" : "compress"}
-      />
+      <>
+        <div hidden={!showCompress}>
+          <ImageProcessor
+            initialMode={
+              route === "image-watermark" ? "watermark" : "compress"
+            }
+          />
+        </div>
+        <div hidden={route !== "image-a4-layout"}>
+          <A4ImageLayout />
+        </div>
+      </>
     );
   }
   if (route === "video-frame") return <FrameExtractor />;

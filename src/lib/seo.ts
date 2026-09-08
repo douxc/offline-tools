@@ -202,6 +202,29 @@ export const SEO_PAGES: Record<ToolRoute, SeoPage> = {
       ],
     }),
   },
+  "image-a4-layout": {
+    title: "图片 A4 排版打印工具｜批量排版照片打印 - 离线工具",
+    description:
+      "免费图片 A4 排版打印工具，本地图片按每行 1–6 张流动排列到 A4 纸，只设横向张数，行高按图片实际宽高比自动适配，直接调用浏览器打印。图片不上传。",
+    keywords:
+      "图片排版,打印排版,A4排版,照片排版打印,批量图片打印,按行排版,图片打印,证件照排版",
+    path: "/image-a4-layout/",
+    jsonLd: toolJsonLd({
+      name: "图片 A4 排版打印工具",
+      description:
+        "在浏览器本地把图片按每行张数流动排列到 A4 页面，行高按图片实际宽高比自适应，可调页边距、自动分页并调用浏览器打印。",
+      path: "/image-a4-layout/",
+      category: "DesignApplication",
+      features: [
+        "每行 1–6 张自由设置",
+        "按图片实际宽高比流动排版",
+        "可调 A4 页边距与自动分页",
+        "保持图片比例、不裁切",
+        "打印对话框输出 A4 版面",
+        "图片仅在浏览器本地处理",
+      ],
+    }),
+  },
 };
 
 function setMeta(selector: string, content: string) {
