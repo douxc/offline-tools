@@ -8,6 +8,7 @@ function Toaster(props: ToasterProps) {
     <Sonner
       theme={theme}
       position="bottom-center"
+      offset={44}
       toastOptions={{
         classNames: {
           toast: "app-toast !shadow-2xl",

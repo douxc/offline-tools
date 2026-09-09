@@ -63,6 +63,7 @@ export function TextOverlayPanel(props: TextOverlayPanelProps) {
                   variant="ghost"
                   size="sm"
                   className={position === item.value ? "active" : ""}
+                  aria-pressed={position === item.value}
                   onClick={() => onPositionChange(item.value)}
                   key={item.value}
                 >

@@ -42,16 +42,20 @@ describe("A4ImageLayout（空状态）", () => {
     assert.match(html, /A4 排版/);
   });
 
-  it("AC-2: 无大标题区（无 h1/描述），模式 tab 保留且 A4 排版为激活态", () => {
+  it("AC-2: 无页级大标题（无 h1），模式 tab 保留且 A4 排版为激活态，使用说明区块存在", () => {
     const html = render(createElement(A4ImageLayout));
-    // 顶部大标题区已移除：页面从模式 tab 与工具内容直接开始
+    // 顶部大标题区移除：页面从模式 tab 与工具内容直接开始；
+    // 底部的使用说明区块（seo-content）为公共版式，含 h2 但不含 h1
     assert.doesNotMatch(html, /<h1/);
     assert.doesNotMatch(html, /浏览器本地 A4 排版/);
-    assert.doesNotMatch(html, /不会上传/);
     assert.match(html, /图片压缩/);
     assert.match(html, /添加水印/);
-    assert.match(html, /class="active" href="\/image-a4-layout\/">A4 排版</);
+    assert.match(
+      html,
+      /href="\/image-a4-layout\/"[^>]*aria-selected="true"[^>]*>A4 排版/,
+    );
     assert.match(html, /title="先导入图片"/);
+    assert.match(html, /class="seo-content"/);
   });
 });
 

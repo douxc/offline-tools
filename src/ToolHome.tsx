@@ -1,5 +1,6 @@
 import { ArrowRight, Film, Image, LayoutGrid, ShieldCheck, Video } from "lucide-react";
 import { ToolHeader } from "@/components/tool-header";
+import { LicenseFooter } from "@/components/license-footer";
 import {
   navigateToTool,
   TOOL_PATHS,
@@ -53,7 +54,7 @@ const tools: Array<{
 export function ToolHome() {
   return (
     <main className="app-shell tool-home">
-      <ToolHeader active="home" />
+      <ToolHeader route="home" />
       <section className="tool-home-hero">
         <p className="eyebrow">隐私优先 · 本地处理</p>
         <h1>
@@ -128,11 +129,7 @@ export function ToolHome() {
         </div>
       </section>
 
-      <footer className="license-footer">
-        <span>GPL-3.0-or-later · 本地处理 · 不上传文件</span>
-        <a href="/legal/THIRD_PARTY_NOTICES.md">第三方许可</a>
-        <a href="/legal/CORRESPONDING_SOURCE.md">对应源代码</a>
-      </footer>
+      <LicenseFooter />
     </main>
   );
 }

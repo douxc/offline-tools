@@ -7,10 +7,14 @@ import {
   useRef,
   useState,
 } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ToolHeader } from "@/components/tool-header";
 import { ToolSeoContent } from "@/components/tool-seo-content";
+import { ToolTabs } from "@/components/tool-tabs";
+import { LicenseFooter } from "@/components/license-footer";
+import { Popconfirm } from "@/components/ui/popconfirm";
 import {
   Select,
   SelectContent,
@@ -62,10 +66,11 @@ export function VideoCompressor() {
   const [targetWidthInput, setTargetWidthInput] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [compressing, setCompressing] = useState(false);
-  const [error, setError] = useState("");
   const [result, setResult] = useState<{ url: string; size: number } | null>(
     null,
   );
+  /** 停止/取消标记：onstop 时丢弃分片，不产出半成品下载。 */
+  const discardRef = useRef(false);
 
   const releaseVideo = useCallback(() => {
     const video = videoRef.current;
@@ -81,6 +86,14 @@ export function VideoCompressor() {
   }, []);
 
   useEffect(() => () => {
+    // 离开页面（路由切换/卸载）时停止录制并丢弃结果，避免残留 MediaRecorder。
+    discardRef.current = true;
+    if (
+      recorderRef.current &&
+      recorderRef.current.state !== "inactive"
+    ) {
+      recorderRef.current.stop();
+    }
     releaseVideo();
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     if (result) URL.revokeObjectURL(result.url);
@@ -90,7 +103,7 @@ export function VideoCompressor() {
     (file?: File) => {
       if (!file) return;
       if (!file.type.startsWith("video/")) {
-        setError("请选择浏览器支持的视频文件。");
+        toast.error("请选择浏览器支持的视频文件。");
         return;
       }
       releaseVideo();
@@ -106,7 +119,6 @@ export function VideoCompressor() {
       setDuration(0);
       setCurrentTime(0);
       setDimensions({ width: 0, height: 0 });
-      setError("");
     },
     [releaseVideo, result],
   );
@@ -140,7 +152,6 @@ export function VideoCompressor() {
     setDuration(0);
     setCurrentTime(0);
     setDimensions({ width: 0, height: 0 });
-    setError("");
     setCompressing(false);
   };
 
@@ -152,12 +163,16 @@ export function VideoCompressor() {
   };
 
   const cancelCompress = () => {
+    if (recorderRef.current) {
+      // 先标记丢弃，onstop 不产出文件也不下载。
+      discardRef.current = true;
+      if (recorderRef.current.state !== "inactive") {
+        recorderRef.current.stop();
+      }
+    }
     const video = videoRef.current;
     if (video) video.pause();
     stopDraw();
-    if (recorderRef.current && recorderRef.current.state !== "inactive") {
-      recorderRef.current.stop();
-    }
     setCompressing(false);
   };
 
@@ -165,7 +180,7 @@ export function VideoCompressor() {
     const video = videoRef.current;
     if (!video || !video.videoWidth || compressing) return;
     if (typeof MediaRecorder === "undefined") {
-      setError("当前浏览器不支持 MediaRecorder，无法压缩导出。");
+      toast.error("当前浏览器不支持 MediaRecorder，无法压缩导出。");
       return;
     }
     const mime = pickRecorderMime(
@@ -173,9 +188,11 @@ export function VideoCompressor() {
       true,
     );
     if (!mime) {
-      setError("当前浏览器不支持可用的 WebM 编码，无法压缩导出。");
+      toast.error("当前浏览器不支持可用的 WebM 编码，无法压缩导出。");
       return;
     }
+
+    discardRef.current = false;
 
     const targetWidth = targetWidthInput
       ? Number(targetWidthInput)
@@ -193,7 +210,7 @@ export function VideoCompressor() {
     canvasRef.current = canvas;
     const context = canvas.getContext("2d");
     if (!context) {
-      setError("无法创建画布。");
+      toast.error("无法创建画布。");
       return;
     }
 
@@ -208,7 +225,7 @@ export function VideoCompressor() {
         captured.getAudioTracks().forEach((track) => combined.addTrack(track));
       }
     } catch {
-      setError("无法采集视频流，请换一种视频格式。");
+      toast.error("无法采集视频流，请换一种视频格式。");
       return;
     }
 
@@ -219,7 +236,7 @@ export function VideoCompressor() {
         videoBitsPerSecond: bitrate,
       });
     } catch {
-      setError("无法创建录制器，请换一种视频格式或浏览器。");
+      toast.error("无法创建录制器，请换一种视频格式或浏览器。");
       return;
     }
     recorderRef.current = recorder;
@@ -230,6 +247,11 @@ export function VideoCompressor() {
     recorder.onstop = () => {
       stopDraw();
       setCompressing(false);
+      if (discardRef.current) {
+        // 用户取消或页面卸载：丢弃分片，不产出半成品文件。
+        chunks.length = 0;
+        return;
+      }
       const blob = new Blob(chunks, { type: mime });
       const url = URL.createObjectURL(blob);
       if (result) URL.revokeObjectURL(result.url);
@@ -238,9 +260,11 @@ export function VideoCompressor() {
       link.href = url;
       link.download = `${fileName.replace(/\.[^.]+$/, "")}_compressed.webm`;
       link.click();
+      toast.success("压缩完成，已保存到下载", {
+        description: `输出 ${formatBytes(blob.size)}。`,
+      });
     };
 
-    setError("");
     setResult(null);
     setCompressing(true);
     recorder.start(1000);
@@ -248,7 +272,7 @@ export function VideoCompressor() {
     try {
       await video.play();
     } catch {
-      setError("无法播放视频进行压缩。");
+      toast.error("无法播放视频进行压缩。");
       cancelCompress();
       return;
     }
@@ -285,20 +309,29 @@ export function VideoCompressor() {
   return (
     <main className="app-shell">
       <ToolHeader
-        active="video"
+        route="video-compress"
         trailing={
           videoUrl ? (
-            <Button
-              className="ghost-button"
-              variant="outline"
-              type="button"
-              onClick={reset}
-            >
-              重新选择
-            </Button>
+            <Popconfirm
+              title="确认重新选择视频？"
+              description="当前导入的视频与压缩进度将被清除。"
+              confirmLabel="重新选择"
+              onConfirm={reset}
+              trigger={
+                <Button
+                  className="ghost-button"
+                  variant="outline"
+                  type="button"
+                >
+                  重新选择
+                </Button>
+              }
+            />
           ) : undefined
         }
       />
+
+      <ToolTabs group="video" active="video-compress" />
 
       {!videoUrl ? (
         <section className="welcome">
@@ -400,7 +433,9 @@ export function VideoCompressor() {
                     setCurrentTime(event.currentTarget.currentTime)
                   }
                   onError={() =>
-                    setError("浏览器无法播放这个视频，请换一种编码或格式。")
+                    toast.error(
+                      "浏览器无法播放这个视频，请换一种编码或格式。",
+                    )
                   }
                   aria-label="视频预览"
                 />
@@ -463,14 +498,13 @@ export function VideoCompressor() {
                 <p className="panel-number">03</p>
                 <span>目标宽度（可选，留空保持原尺寸）</span>
                 <input
-                  className="quality-label"
+                  className="settings-input"
                   type="number"
                   min={1}
                   value={targetWidthInput}
                   onChange={(event) => setTargetWidthInput(event.target.value)}
                   placeholder={String(dimensions.width || 0)}
                   aria-label="目标宽度像素"
-                  style={{ width: "100%" }}
                 />
               </div>
 
@@ -516,20 +550,7 @@ export function VideoCompressor() {
 
       <ToolSeoContent tool="video" />
 
-      {error && (
-        <div className="error-toast" role="alert">
-          <span>{error}</span>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={() => setError("")}
-            aria-label="关闭"
-          >
-            ×
-          </Button>
-        </div>
-      )}
+      <LicenseFooter />
 
       <input
         ref={inputRef}

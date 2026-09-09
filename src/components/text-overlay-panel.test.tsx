@@ -24,5 +24,8 @@ describe("TextOverlayPanel", () => {
     assert.match(html, /底部居中/);
     assert.match(html, /顶部居中/);
     assert.match(html, /aria-label="字幕字号"/);
+    // 位置分段必须暴露按压/选中语义（不依赖颜色）
+    assert.match(html, /aria-pressed="true"[^>]*>底部居中</);
+    assert.match(html, /aria-pressed="false"[^>]*>顶部居中</);
   });
 });

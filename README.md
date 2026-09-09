@@ -15,17 +15,20 @@
 
 - `/`：工具索引
 - `/video-frame/`：视频取帧
+- `/video-compress/`：视频压缩
 - `/image-compress/`：图片压缩
 - `/image-watermark/`：图片添加水印
 - `/image-a4-layout/`：图片 A4 排版打印
 
-每个页面包含独立标题、描述、canonical、Open Graph 和 JSON-LD。图片压缩、
-水印与 A4 排版页面之间使用 History API 无刷新切换，因此不会清空已导入的图片。
+每个页面包含独立标题、描述、canonical、Open Graph 和 JSON-LD。顶部导航为
+一级分组（视频/图片），各工具页提供对应分组的二级工具 tab（shadcn Tabs，
+`src/components/tool-tabs.tsx`）。图片压缩、水印与 A4 排版页面之间使用
+History API 无刷新切换，因此不会清空已导入的图片。
 
 ## 技术栈
 
 - Vite 8 + React 19 + TypeScript
-- Tailwind CSS 4 + shadcn/ui（Radix primitives）
+- Tailwind CSS 4 + shadcn/ui（Radix primitives：button/card/select/slider/tabs/popover）
 - vite-plugin-pwa + Workbox 离线预缓存
 - Web Worker + libimagequant WASM + OxiPNG WASM
 
@@ -38,6 +41,9 @@ pnpm install
 pnpm dev
 pnpm test
 ```
+
+无障碍验收口径：交互控件的状态语义（`aria-pressed`/`aria-current`/tab 语义/弹层触发属性）
+由代码与自动化测试覆盖（`src/**/*.test.*`、`tests/*.mjs`），不做真机 TalkBack 测试。
 
 ## 构建产物
 

@@ -19,14 +19,17 @@ import {
 import { toast } from "sonner";
 import { ToolHeader } from "@/components/tool-header";
 import { ToolSeoContent } from "@/components/tool-seo-content";
+import { LicenseFooter } from "@/components/license-footer";
+import { ToolTabs } from "@/components/tool-tabs";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
+import { Popconfirm } from "@/components/ui/popconfirm";
 import {
   PngCompressor,
   type PngCompressionStrategy,
 } from "@/lib/png-compressor";
-import { navigateToTool, TOOL_PATHS } from "@/lib/tool-navigation";
+import type { ToolRoute } from "@/lib/tool-navigation";
 
 type ImageMode = "compress" | "watermark";
 
@@ -50,6 +53,8 @@ type ProcessedResult = {
 
 type ImageProcessorProps = {
   initialMode: ImageMode;
+  /** 当前路由（compress/watermark），用于分组 tab 选中态与确认文案。 */
+  route: ToolRoute;
 };
 
 const ACCEPTED_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
@@ -165,7 +170,7 @@ const strategyLabel = (strategy: PngCompressionStrategy) => {
   return "原图已最优";
 };
 
-export function ImageProcessor({ initialMode }: ImageProcessorProps) {
+export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
   const compressorRef = useRef<PngCompressor | null>(null);
@@ -461,18 +466,25 @@ export function ImageProcessor({ initialMode }: ImageProcessorProps) {
   return (
     <main className="app-shell image-app">
       <ToolHeader
-        active="image"
+        route={route}
         trailing={
           assets.length > 0 ? (
-            <Button
-              className="ghost-button"
-              variant="outline"
-              type="button"
-              onClick={clearAll}
-              disabled={processing}
-            >
-              清空图片
-            </Button>
+            <Popconfirm
+              title="确认清空全部图片？"
+              description={`将移除全部 ${assets.length} 张图片，处理结果一并清除。`}
+              confirmLabel="确认清空"
+              onConfirm={clearAll}
+              trigger={
+                <Button
+                  className="ghost-button"
+                  variant="outline"
+                  type="button"
+                  disabled={processing}
+                >
+                  清空图片
+                </Button>
+              }
+            />
           ) : undefined
         }
       />
@@ -490,28 +502,7 @@ export function ImageProcessor({ initialMode }: ImageProcessorProps) {
                 : "在当前浏览器批量添加文字水印，图片不会上传。"}
             </p>
           </div>
-          <div className="image-mode-tabs" aria-label="图片处理模式">
-            <a
-              href={TOOL_PATHS["image-compress"]}
-              className={mode === "compress" ? "active" : ""}
-              onClick={(event) => navigateToTool(event, "image-compress")}
-            >
-              图片压缩
-            </a>
-            <a
-              href={TOOL_PATHS["image-watermark"]}
-              className={mode === "watermark" ? "active" : ""}
-              onClick={(event) => navigateToTool(event, "image-watermark")}
-            >
-              添加水印
-            </a>
-            <a
-              href={TOOL_PATHS["image-a4-layout"]}
-              onClick={(event) => navigateToTool(event, "image-a4-layout")}
-            >
-              A4 排版
-            </a>
-          </div>
+          <ToolTabs group="image" active={route} />
         </div>
 
         {assets.length === 0 ? (
@@ -569,6 +560,7 @@ export function ImageProcessor({ initialMode }: ImageProcessorProps) {
                       <button
                         className="image-item-select"
                         type="button"
+                        aria-pressed={selected?.id === asset.id}
                         onClick={() => setSelectedId(asset.id)}
                       >
                         <img src={asset.url} alt="" />
@@ -777,11 +769,7 @@ export function ImageProcessor({ initialMode }: ImageProcessorProps) {
 
       <ToolSeoContent tool={mode} />
 
-      <footer className="license-footer">
-        <span>GPL-3.0-or-later · 图片仅在本机处理</span>
-        <a href="/legal/THIRD_PARTY_NOTICES.md">第三方许可</a>
-        <a href="/legal/CORRESPONDING_SOURCE.md">对应源代码</a>
-      </footer>
+      <LicenseFooter />
 
       <input
         ref={inputRef}

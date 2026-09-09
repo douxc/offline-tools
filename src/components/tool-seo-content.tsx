@@ -1,8 +1,16 @@
-import { navigateToTool, TOOL_PATHS } from "@/lib/tool-navigation";
+import { ToolLinks } from "@/components/tool-links";
+import type { ToolRoute } from "@/lib/tool-navigation";
 
 type ToolSeoContentProps = {
-  tool: "video" | "compress" | "watermark";
+  tool: "video" | "compress" | "watermark" | "a4";
 };
+
+const TOOL_ROUTE: Record<ToolSeoContentProps["tool"], ToolRoute> = {
+  video: "video-frame",
+  compress: "image-compress",
+  watermark: "image-watermark",
+  a4: "image-a4-layout",
+} as const;
 
 const content = {
   video: {
@@ -65,6 +73,26 @@ const content = {
       },
     ],
   },
+  a4: {
+    eyebrow: "使用说明",
+    title: "图片 A4 排版：按每行张数流动排版并打印",
+    introduction:
+      "这个图片 A4 排版工具把本地图片按每行张数流动排入 A4 页面，行高按图片实际宽高比自适应。可调页边距、自动分页，并通过浏览器打印输出 210mm × 297mm 版面。",
+    details: [
+      {
+        title: "只需要设置每行张数",
+        text: "横向每行放 1–6 张，图片按导入顺序依次排入当前行并保持原始比例，行高由该行最高的图片决定，多出的图片自动排到下一页。",
+      },
+      {
+        title: "打印输出精确 A4",
+        text: "调用浏览器打印对话框，专用打印样式隐藏界面元素，版面精准为 210mm × 297mm，页边距由页面内边距控制，不叠加浏览器默认页边距。",
+      },
+      {
+        title: "图片保持在本地",
+        text: "导入的图片仅通过本地 Blob URL 解码与排版，不会上传。适合冲印合影、排版打印证件照与资料截图。",
+      },
+    ],
+  },
 } as const;
 
 export function ToolSeoContent({ tool }: ToolSeoContentProps) {
@@ -87,33 +115,7 @@ export function ToolSeoContent({ tool }: ToolSeoContentProps) {
         ))}
       </div>
 
-      <nav className="seo-related-links" aria-label="相关离线工具">
-        <span>相关工具</span>
-        {tool !== "video" && (
-          <a
-            href={TOOL_PATHS["video-frame"]}
-            onClick={(event) => navigateToTool(event, "video-frame")}
-          >
-            在线视频取帧
-          </a>
-        )}
-        {tool !== "compress" && (
-          <a
-            href={TOOL_PATHS["image-compress"]}
-            onClick={(event) => navigateToTool(event, "image-compress")}
-          >
-            在线图片压缩
-          </a>
-        )}
-        {tool !== "watermark" && (
-          <a
-            href={TOOL_PATHS["image-watermark"]}
-            onClick={(event) => navigateToTool(event, "image-watermark")}
-          >
-            批量图片加水印
-          </a>
-        )}
-      </nav>
+      <ToolLinks exclude={TOOL_ROUTE[tool]} />
     </section>
   );
 }

@@ -103,14 +103,26 @@ export const SEO_PAGES: Record<ToolRoute, SeoPage> = {
               {
                 "@type": "ListItem",
                 position: 2,
+                name: "在线视频压缩工具",
+                url: `${SITE_URL}/video-compress/`,
+              },
+              {
+                "@type": "ListItem",
+                position: 3,
                 name: "在线图片压缩工具",
                 url: `${SITE_URL}/image-compress/`,
               },
               {
                 "@type": "ListItem",
-                position: 3,
+                position: 4,
                 name: "图片加水印工具",
                 url: `${SITE_URL}/image-watermark/`,
+              },
+              {
+                "@type": "ListItem",
+                position: 5,
+                name: "图片 A4 排版打印工具",
+                url: `${SITE_URL}/image-a4-layout/`,
               },
             ],
           },

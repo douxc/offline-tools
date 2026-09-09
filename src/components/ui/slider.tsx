@@ -11,7 +11,7 @@ function Slider({
     <SliderPrimitive.Root
       data-slot="slider"
       className={cn(
-        "relative flex w-full touch-none items-center select-none data-[disabled]:opacity-50",
+        "relative flex min-h-11 w-full touch-none items-center select-none data-[disabled]:opacity-50",
         className,
       )}
       {...props}
@@ -22,7 +22,7 @@ function Slider({
       {Array.from({ length: values.length }, (_, index) => (
         <SliderPrimitive.Thumb
           key={index}
-          className="block size-3.5 shrink-0 rounded-full border-2 border-[var(--page)] bg-[var(--acid)] shadow-[0_0_0_1px_var(--acid)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--acid)]/60"
+          className="block size-5 shrink-0 rounded-full border-2 border-[var(--page)] bg-[var(--acid)] shadow-[0_0_0_1px_var(--acid)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--acid)]/60"
         />
       ))}
     </SliderPrimitive.Root>

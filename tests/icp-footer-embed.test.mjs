@@ -39,16 +39,15 @@ test("index.css defines .icp-footer as a fixed bottom bar up to 36px tall", asyn
   );
 });
 
-test("error-toast bottom clears the fixed ICP bar (>= 40px)", async () => {
-  const css = await readFile(new URL("src/index.css", root), "utf8");
-  const block = css.match(/\.error-toast\s*\{([^}]*)\}/);
-  assert.ok(block, ".error-toast rule block is missing");
-
-  const decl = block[1];
-  const bottom = decl.match(/bottom:\s*(\d+)px/);
-  assert.ok(bottom, ".error-toast must declare a pixel bottom value");
+test("sonner toast offset clears the fixed ICP bar (>= 40px)", async () => {
+  const src = await readFile(
+    new URL("src/components/ui/sonner.tsx", root),
+    "utf8",
+  );
+  const offset = src.match(/offset=\{(\d+)\}/);
+  assert.ok(offset, "Toaster must declare a pixel offset prop");
   assert.ok(
-    Number(bottom[1]) >= 40,
-    `.error-toast bottom ${bottom[1]}px is less than 40px`,
+    Number(offset[1]) >= 40,
+    `Toaster offset ${offset[1]}px is less than 40px`,
   );
 });

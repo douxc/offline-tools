@@ -1,17 +1,26 @@
 import type { ReactNode } from "react";
 import { Moon, Sun } from "lucide-react";
 import { LogoMark } from "@/components/logo-mark";
-import { navigateToTool, TOOL_PATHS } from "@/lib/tool-navigation";
+import {
+  navigateToTool,
+  TOOL_GROUPS,
+  TOOL_PATHS,
+  toolGroupForRoute,
+  type ToolGroup,
+  type ToolRoute,
+} from "@/lib/tool-navigation";
 import { useTheme } from "@/lib/theme";
 
 type ToolHeaderProps = {
-  active: "home" | "video" | "image";
+  /** 当前路由；首页不属于任何分组（无高亮）。 */
+  route: ToolRoute;
   trailing?: ReactNode;
 };
 
-export function ToolHeader({ active, trailing }: ToolHeaderProps) {
+export function ToolHeader({ route, trailing }: ToolHeaderProps) {
   const { theme, toggleTheme } = useTheme();
   const nextThemeLabel = theme === "dark" ? "切换到亮色模式" : "切换到暗色模式";
+  const currentGroup = toolGroupForRoute(route);
 
   return (
     <header className="topbar">
@@ -26,22 +35,21 @@ export function ToolHeader({ active, trailing }: ToolHeaderProps) {
       </a>
 
       <nav className="tool-nav" aria-label="工具导航">
-        <a
-          className={active === "video" ? "active" : ""}
-          href={TOOL_PATHS["video-frame"]}
-          onClick={(event) => navigateToTool(event, "video-frame")}
-          aria-current={active === "video" ? "page" : undefined}
-        >
-          视频取帧
-        </a>
-        <a
-          className={active === "image" ? "active" : ""}
-          href={TOOL_PATHS["image-compress"]}
-          onClick={(event) => navigateToTool(event, "image-compress")}
-          aria-current={active === "image" ? "page" : undefined}
-        >
-          图片处理
-        </a>
+        {(Object.keys(TOOL_GROUPS) as ToolGroup[]).map((group) => {
+          const config = TOOL_GROUPS[group];
+          const isCurrent = currentGroup === group;
+          return (
+            <a
+              key={group}
+              className={isCurrent ? "active" : ""}
+              href={TOOL_PATHS[config.default]}
+              onClick={(event) => navigateToTool(event, config.default)}
+              aria-current={isCurrent ? "page" : undefined}
+            >
+              {config.label}
+            </a>
+          );
+        })}
       </nav>
 
       <div className="header-actions">

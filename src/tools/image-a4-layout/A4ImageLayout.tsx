@@ -24,9 +24,13 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { ToolHeader } from "@/components/tool-header";
+import { ToolSeoContent } from "@/components/tool-seo-content";
+import { ToolTabs } from "@/components/tool-tabs";
+import { LicenseFooter } from "@/components/license-footer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
+import { Popconfirm } from "@/components/ui/popconfirm";
 import {
   A4_PAGE_HEIGHT_PX,
   A4_PAGE_WIDTH_PX,
@@ -37,7 +41,6 @@ import {
   paginateFlow,
   type FlowRow,
 } from "@/lib/a4-layout";
-import { navigateToTool, TOOL_PATHS } from "@/lib/tool-navigation";
 
 type A4Item = {
   id: string;
@@ -274,7 +277,6 @@ export function A4ImageLayout() {
   const [colsPerRow, setColsPerRow] = useState<number>(COLS_PER_ROW.default);
   const [marginMm, setMarginMm] = useState<number>(MARGIN_MM.default);
   const [pageIndex, setPageIndex] = useState(0);
-  const [pendingClear, setPendingClear] = useState(false);
   const [scale, setScale] = useState(0.4);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -349,7 +351,6 @@ export function A4ImageLayout() {
     }
     if (next.length > 0) {
       setItems((current) => [...current, ...next]);
-      setPendingClear(false);
     }
   }, []);
 
@@ -380,7 +381,6 @@ export function A4ImageLayout() {
     for (const item of itemsRef.current) URL.revokeObjectURL(item.url);
     setItems([]);
     setPageIndex(0);
-    setPendingClear(false);
   };
 
   /** 防御性兜底：渲染期解码失败（导入时已校验）时移除并提示 */
@@ -406,7 +406,7 @@ export function A4ImageLayout() {
 
   return (
     <main className="app-shell image-app a4-tool">
-      <ToolHeader active="image" />
+      <ToolHeader route="image-a4-layout" />
 
       <input
         ref={inputRef}
@@ -420,26 +420,8 @@ export function A4ImageLayout() {
       />
 
       <section className="image-editor a4-editor">
-        <div className="image-mode-tabs a4-mode-tabs" aria-label="图片处理模式">
-          <a
-            href={TOOL_PATHS["image-compress"]}
-            onClick={(event) => navigateToTool(event, "image-compress")}
-          >
-            图片压缩
-          </a>
-          <a
-            href={TOOL_PATHS["image-watermark"]}
-            onClick={(event) => navigateToTool(event, "image-watermark")}
-          >
-            添加水印
-          </a>
-          <a
-            className="active"
-            href={TOOL_PATHS["image-a4-layout"]}
-            onClick={(event) => navigateToTool(event, "image-a4-layout")}
-          >
-            A4 排版
-          </a>
+        <div className="a4-mode-tabs">
+          <ToolTabs group="image" active="image-a4-layout" />
         </div>
 
         <div className="a4-actions no-print">
@@ -453,21 +435,22 @@ export function A4ImageLayout() {
             <Printer size={16} />
             打印 A4 版面（{pages.length} 页）
           </Button>
-          <Button
-            className="ghost-button"
-            variant="outline"
-            type="button"
-            onClick={() => {
-              if (pendingClear) {
-                clearAll();
-              } else {
-                setPendingClear(true);
-              }
-            }}
-            disabled={items.length === 0}
-          >
-            {pendingClear ? "确认清空？" : "清空图片"}
-          </Button>
+          <Popconfirm
+            title="确认清空全部图片？"
+            description={`将移除全部 ${items.length} 张图片。`}
+            confirmLabel="确认清空"
+            onConfirm={clearAll}
+            trigger={
+              <Button
+                className="ghost-button"
+                variant="outline"
+                type="button"
+                disabled={items.length === 0}
+              >
+                清空图片
+              </Button>
+            }
+          />
         </div>
 
         {items.length === 0 ? (
@@ -601,6 +584,10 @@ export function A4ImageLayout() {
           </div>
         )}
       </section>
+
+      <ToolSeoContent tool="a4" />
+
+      <LicenseFooter />
     </main>
   );
 }

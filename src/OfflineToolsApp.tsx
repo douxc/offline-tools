@@ -36,6 +36,7 @@ export function OfflineToolsApp() {
             initialMode={
               route === "image-watermark" ? "watermark" : "compress"
             }
+            route={route}
           />
         </div>
         <div hidden={route !== "image-a4-layout"}>

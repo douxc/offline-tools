@@ -12,6 +12,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ToolHeader } from "@/components/tool-header";
 import { ToolSeoContent } from "@/components/tool-seo-content";
+import { ToolTabs } from "@/components/tool-tabs";
+import { LicenseFooter } from "@/components/license-footer";
+import { Popconfirm } from "@/components/ui/popconfirm";
+import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -98,7 +102,6 @@ export function FrameExtractor() {
   const [quality, setQuality] = useState(0.92);
   const [isDragging, setIsDragging] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [error, setError] = useState("");
   const [exporting, setExporting] = useState(false);
   const [exported, setExported] = useState(false);
   const [textEnabled, setTextEnabled] = useState(false);
@@ -140,7 +143,7 @@ export function FrameExtractor() {
     (file?: File) => {
       if (!file) return;
       if (!file.type.startsWith("video/")) {
-        setError("请选择浏览器支持的视频文件。");
+        toast.error("请选择浏览器支持的视频文件。");
         return;
       }
 
@@ -153,7 +156,6 @@ export function FrameExtractor() {
       setDuration(0);
       setCurrentTime(0);
       setDimensions({ width: 0, height: 0 });
-      setError("");
       setExported(false);
     },
     [releaseVideo],
@@ -203,7 +205,6 @@ export function FrameExtractor() {
     setDuration(0);
     setCurrentTime(0);
     setDimensions({ width: 0, height: 0 });
-    setError("");
     setExported(false);
     setIsPlaying(false);
   };
@@ -252,7 +253,7 @@ export function FrameExtractor() {
       setExported(true);
       window.setTimeout(() => setExported(false), 2400);
     } catch {
-      setError("当前帧导出失败，请尝试其他图片格式。");
+      toast.error("当前帧导出失败，请尝试其他图片格式。");
     } finally {
       setExporting(false);
     }
@@ -348,8 +349,11 @@ export function FrameExtractor() {
       window.setTimeout(() => URL.revokeObjectURL(zipUrl), 1000);
       setExported(true);
       window.setTimeout(() => setExported(false), 2400);
+      toast.success(`已导出 ${times.length} 张帧（ZIP）`, {
+        description: "文件已保存到浏览器的下载目录。",
+      });
     } catch {
-      setError("批量抽帧失败，请缩短范围或减少帧数后重试。");
+      toast.error("批量抽帧失败，请缩短范围或减少帧数后重试。");
     } finally {
       setBatchExporting(false);
     }
@@ -395,20 +399,29 @@ export function FrameExtractor() {
   return (
     <main className="app-shell">
       <ToolHeader
-        active="video"
+        route="video-frame"
         trailing={
           videoUrl ? (
-            <Button
-              className="ghost-button"
-              variant="outline"
-              type="button"
-              onClick={reset}
-            >
-              重新选择
-            </Button>
+            <Popconfirm
+              title="确认重新选择视频？"
+              description="当前导入的视频与预览进度将被清除。"
+              confirmLabel="重新选择"
+              onConfirm={reset}
+              trigger={
+                <Button
+                  className="ghost-button"
+                  variant="outline"
+                  type="button"
+                >
+                  重新选择
+                </Button>
+              }
+            />
           ) : undefined
         }
       />
+
+      <ToolTabs group="video" active="video-frame" />
 
       {!videoUrl ? (
         <section className="welcome">
@@ -533,7 +546,9 @@ export function FrameExtractor() {
                     onPause={() => setIsPlaying(false)}
                     onEnded={() => setIsPlaying(false)}
                     onError={() =>
-                      setError("浏览器无法播放这个视频，请换一种编码或格式。")
+                      toast.error(
+                        "浏览器无法播放这个视频，请换一种编码或格式。",
+                      )
                     }
                     aria-label="视频画面预览"
                   />
@@ -652,6 +667,7 @@ export function FrameExtractor() {
                       variant="ghost"
                       size="sm"
                       className={format === item ? "active" : ""}
+                      aria-pressed={format === item}
                       onClick={() => setFormat(item)}
                       key={item}
                     >
@@ -829,20 +845,7 @@ export function FrameExtractor() {
 
       <ToolSeoContent tool="video" />
 
-      {error && (
-        <div className="error-toast" role="alert">
-          <span>{error}</span>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={() => setError("")}
-            aria-label="关闭"
-          >
-            ×
-          </Button>
-        </div>
-      )}
+      <LicenseFooter />
 
       <input
         ref={inputRef}
