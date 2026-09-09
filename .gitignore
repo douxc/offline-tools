@@ -37,5 +37,6 @@ yarn-error.log*
 
 /dist/
 /public/assets/image-compress-worker.js
+/.tmp/
 /outputs/
 /work/
