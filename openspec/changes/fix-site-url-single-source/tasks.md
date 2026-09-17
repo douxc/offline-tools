@@ -31,7 +31,7 @@
 
 - [x] 6.1 本地完整验证：`pnpm test` 通过；人工检查 `dist/` 中六个 HTML、`sitemap.xml`、`robots.txt` 的 host 全部正确 — verify: 测试输出全绿，且 `dist/` 内 host 唯一性可 grep 复核
 - [x] 6.2 确认 EdgeOne 项目设置的构建命令为 `pnpm build`（而非 `vite build` 之类跳过前置步骤的命令），以保证 PNG 压缩 Worker 仍被生成 — verify: 控制台配置确认为 `pnpm build`；本地 `pnpm build` 后 `dist/assets/image-compress-worker.js` 存在且为 663,411 字节
-- [ ] 6.3 push 到 main 触发部署，线上核验六个页面的 canonical、og:url、og:image、`/sitemap.xml`、`/robots.txt` 均为新 host — verify: 用 curl 抓取线上页面与两个静态文件逐一比对
-- [ ] 6.4 线上确认 `/assets/image-compress-worker.js` 仍为 200 且体积为 663,411 字节（域名改动未影响 Worker 生成链路） — verify: curl 状态码与体积
+- [x] 6.3 push 到 main 触发部署并线上核验 — verify: `768ae75..da7c4ae main -> main` 推送后 EdgeOne 部署完成（线上 `main-B0GJnFyS.css` / `main-BYyMUJyj.js` 与本地构建逐名一致，`Last-Modified: 2026-09-17 14:24:48 GMT`）。线上实测:六个页面 canonical 全部为 `https://offline-tools.colors-cc.top/<path>/`；A4 页 og:url 与 og:image 正确；`/sitemap.xml` 六条 `<loc>` 全部新 host；`/robots.txt` 的 Sitemap 声明正确；**六个页面 + sitemap + robots 的旧域名残留数为 0**
+- [x] 6.4 线上确认 Worker — verify: `/assets/image-compress-worker.js` 返回 200、体积 663411 字节，与本地 `build:image-codecs` 产物一致，域名改动未影响 Worker 生成链路
 - [ ] 6.5 发布后人工跟进：向搜索引擎提交新域名的 sitemap 并请求重新抓取（代码改动不解决存量索引信号） — verify: 搜索平台后台显示 sitemap 提交成功
-- [ ] 6.6 确认仓库根未跟踪的 `.agents/` 目录是否需要纳入版本管理或忽略（push 到 main 会触发部署） — verify: `git status --short` 不再出现未预期的未跟踪项，或已明确决定保持现状
+- [x] 6.6 `.agents/` 目录处置 — verify: 已在 `c03b552` 纳入版本管理（7 个文件，确认无本机路径/凭据耦合）。附带发现:`.claude/settings.local.json` 由全局 gitignore（`~/.config/git/ignore` 的 `**/.claude/settings.local.json`）排除，从来不需要项目级处理
