@@ -1,37 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://framecut-offline.douxc512.chatgpt.site/</loc>
+    <loc>__SITE_URL__/</loc>
     <lastmod>2026-08-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://framecut-offline.douxc512.chatgpt.site/video-frame/</loc>
+    <loc>__SITE_URL__/video-frame/</loc>
     <lastmod>2026-08-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://framecut-offline.douxc512.chatgpt.site/video-compress/</loc>
+    <loc>__SITE_URL__/video-compress/</loc>
     <lastmod>2026-08-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://framecut-offline.douxc512.chatgpt.site/image-compress/</loc>
+    <loc>__SITE_URL__/image-compress/</loc>
     <lastmod>2026-08-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://framecut-offline.douxc512.chatgpt.site/image-watermark/</loc>
+    <loc>__SITE_URL__/image-watermark/</loc>
     <lastmod>2026-08-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://framecut-offline.douxc512.chatgpt.site/image-a4-layout/</loc>
+    <loc>__SITE_URL__/image-a4-layout/</loc>
     <lastmod>2026-08-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>

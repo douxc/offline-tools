@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
 import test from "node:test";
+import { SITE_URL } from "../src/lib/site.ts";
 
 const root = new URL("../", import.meta.url);
 
@@ -75,17 +76,19 @@ test("build emits a static offline multi-page app", async () => {
     a4LayoutHtml,
     /<title>图片 A4 排版打印工具｜批量排版照片打印 - 离线工具<\/title>/,
   );
+  // 断言与单一来源（src/lib/site.ts）比较而非写死域名：换域名只需改单一来源，
+  // 这里不会因域名变更而需要同步修改（见 openspec/changes/fix-site-url-single-source）。
   const a4CanonicalTag =
     a4LayoutHtml.match(/<link[^>]*rel="canonical"[^>]*\/?>/)?.[0] ?? "";
-  assert.match(
-    a4CanonicalTag,
-    /href="https:\/\/framecut-offline\.douxc512\.chatgpt\.site\/image-a4-layout\/"/,
+  assert.equal(
+    a4CanonicalTag.match(/href="([^"]+)"/)?.[1],
+    `${SITE_URL}/image-a4-layout/`,
   );
   const a4OgUrlTag =
     a4LayoutHtml.match(/<meta[^>]*property="og:url"[^>]*\/?>/)?.[0] ?? "";
-  assert.match(
-    a4OgUrlTag,
-    /content="https:\/\/framecut-offline\.douxc512\.chatgpt\.site\/image-a4-layout\/"/,
+  assert.equal(
+    a4OgUrlTag.match(/content="([^"]+)"/)?.[1],
+    `${SITE_URL}/image-a4-layout/`,
   );
   assert.match(robots, /^User-agent: \*/m);
   assert.match(robots, /Sitemap: .*\/sitemap\.xml/);

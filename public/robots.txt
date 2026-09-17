@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://framecut-offline.douxc512.chatgpt.site/sitemap.xml
+Sitemap: __SITE_URL__/sitemap.xml

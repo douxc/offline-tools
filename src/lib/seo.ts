@@ -1,8 +1,6 @@
 import { useEffect } from "react";
+import { OG_IMAGE_URL, SITE_URL } from "@/lib/site";
 import type { ToolRoute } from "@/lib/tool-navigation";
-
-const SITE_URL = "https://framecut-offline.douxc512.chatgpt.site";
-const OG_IMAGE_URL = `${SITE_URL}/og.png`;
 
 type SeoPage = {
   title: string;
