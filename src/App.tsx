@@ -1,7 +1,6 @@
 import {
   ChangeEvent,
   DragEvent,
-  KeyboardEvent,
   useCallback,
   useEffect,
   useMemo,
@@ -9,6 +8,8 @@ import {
   useState,
 } from "react";
 import { Button } from "@/components/ui/button";
+import { Toggle } from "@/components/ui/toggle";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Card } from "@/components/ui/card";
 import { ToolHeader } from "@/components/tool-header";
 import { ToolSeoContent } from "@/components/tool-seo-content";
@@ -117,6 +118,8 @@ export function FrameExtractor() {
   const [batchStep, setBatchStep] = useState(DEFAULT_BATCH_STEP);
   const [batchCount, setBatchCount] = useState(DEFAULT_BATCH_COUNT);
   const [batchExporting, setBatchExporting] = useState(false);
+  /** 批量导出取消标志:在帧之间同步读取,取消时不产出部分 ZIP。 */
+  const cancelBatchRef = useRef(false);
   const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0 });
 
   const timecode = useMemo(
@@ -143,7 +146,9 @@ export function FrameExtractor() {
     (file?: File) => {
       if (!file) return;
       if (!file.type.startsWith("video/")) {
-        toast.error("请选择浏览器支持的视频文件。");
+        toast.error("请选择浏览器支持的视频文件", {
+        description: "当前视频未改变，可重新选择 MP4、WebM 或 MOV 文件。",
+      });
         return;
       }
 
@@ -253,7 +258,10 @@ export function FrameExtractor() {
       setExported(true);
       window.setTimeout(() => setExported(false), 2400);
     } catch {
-      toast.error("当前帧导出失败，请尝试其他图片格式。");
+      toast.error("当前帧导出失败", {
+        description:
+          "未产生文件，视频与播放位置保持原样。可尝试其他图片格式后重试。",
+      });
     } finally {
       setExporting(false);
     }
@@ -316,6 +324,7 @@ export function FrameExtractor() {
     const times = sampleTimes();
     if (times.length === 0) return;
 
+    cancelBatchRef.current = false;
     video.pause();
     setIsPlaying(false);
     setBatchExporting(true);
@@ -329,6 +338,8 @@ export function FrameExtractor() {
       data: Uint8Array;
     }> {
       for (let i = 0; i < times.length; i += BATCH_DECODE_CONCURRENCY) {
+        // 取消发生在帧之间:直接中断生成器,createFrameZipArchive 不会产出文件
+        if (cancelBatchRef.current) return;
         // Serial decode (BATCH_DECODE_CONCURRENCY === 1): capture, encode, then
         // yield before moving on so peak memory stays near a single frame.
         const blob = await captureFrameAt(captureVideo, times[i]);
@@ -341,6 +352,13 @@ export function FrameExtractor() {
 
     try {
       const zipBlob = await createFrameZipArchive(frameEntries());
+      if (cancelBatchRef.current) {
+        toast.info("已取消导出", {
+          description:
+            "未产生 ZIP 文件，视频与已选参数保持原样，可随时重新导出。",
+        });
+        return;
+      }
       const zipUrl = URL.createObjectURL(zipBlob);
       const link = document.createElement("a");
       link.href = zipUrl;
@@ -353,9 +371,13 @@ export function FrameExtractor() {
         description: "文件已保存到浏览器的下载目录。",
       });
     } catch {
-      toast.error("批量抽帧失败，请缩短范围或减少帧数后重试。");
+      toast.error("批量抽帧失败", {
+        description:
+          "未产生 ZIP 文件，已抽出的帧不保留，视频与已选参数保持原样。可缩短范围或减少帧数后重试。",
+      });
     } finally {
       setBatchExporting(false);
+      cancelBatchRef.current = false;
     }
   };
 
@@ -363,13 +385,6 @@ export function FrameExtractor() {
     event.preventDefault();
     setIsDragging(false);
     loadFile(event.dataTransfer.files?.[0]);
-  };
-
-  const handleDropKey = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      inputRef.current?.click();
-    }
   };
 
   useEffect(() => {
@@ -409,7 +424,6 @@ export function FrameExtractor() {
               onConfirm={reset}
               trigger={
                 <Button
-                  className="ghost-button"
                   variant="outline"
                   type="button"
                 >
@@ -453,11 +467,6 @@ export function FrameExtractor() {
             onDragOver={(event) => event.preventDefault()}
             onDragLeave={() => setIsDragging(false)}
             onDrop={handleDrop}
-            onKeyDown={handleDropKey}
-            onClick={() => inputRef.current?.click()}
-            role="button"
-            tabIndex={0}
-            aria-label="选择或拖入视频文件"
           >
             <div className="drop-visual" aria-hidden="true">
               <span className="corner corner-tl" />
@@ -471,7 +480,13 @@ export function FrameExtractor() {
               <strong>{isDragging ? "松开即可导入" : "把视频放到这里"}</strong>
               <span>或点击选择本地文件</span>
             </div>
-            <span className="primary-button">选择视频</span>
+            <Button
+              type="button"
+              size="lg"
+              onClick={() => inputRef.current?.click()}
+            >
+              选择视频
+            </Button>
             <small>支持 MP4、WebM、MOV 等浏览器可播放格式</small>
           </div>
 
@@ -660,21 +675,25 @@ export function FrameExtractor() {
               <div className="control-group">
                 <p className="panel-number">02</p>
                 <span>图片格式</span>
-                <div className="segmented">
+                <ToggleGroup
+                  type="single"
+                  value={format}
+                  onValueChange={(next) => {
+                    if (next) setFormat(next as ImageFormat);
+                  }}
+                  aria-label="图片格式"
+                  className="w-full"
+                >
                   {(["png", "jpeg", "webp"] as ImageFormat[]).map((item) => (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className={format === item ? "active" : ""}
-                      aria-pressed={format === item}
-                      onClick={() => setFormat(item)}
+                    <ToggleGroupItem
                       key={item}
+                      value={item}
+                      className="flex-1 text-xs"
                     >
                       {item === "jpeg" ? "JPG" : item.toUpperCase()}
-                    </Button>
+                    </ToggleGroupItem>
                   ))}
-                </div>
+                </ToggleGroup>
               </div>
 
               {format !== "png" && (
@@ -713,17 +732,16 @@ export function FrameExtractor() {
                 <p className="panel-number">04</p>
                 <div className="quality-label">
                   <label htmlFor="batch-mode">批量抽帧</label>
-                  <Button
+                  <Toggle
                     id="batch-mode"
-                    type="button"
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
-                    className={batchMode ? "active" : ""}
-                    aria-pressed={batchMode}
-                    onClick={() => setBatchMode((value) => !value)}
+                    pressed={batchMode}
+                    onPressedChange={setBatchMode}
+                    className="font-mono text-xs"
                   >
                     {batchMode ? "已开启" : "关闭"}
-                  </Button>
+                  </Toggle>
                 </div>
 
                 {batchMode && (
@@ -793,23 +811,32 @@ export function FrameExtractor() {
               </div>
 
               {batchMode ? (
-                <Button
-                  className={`export-button ${exported ? "success" : ""}`}
-                  type="button"
-                  size="lg"
-                  onClick={() => void exportBatch()}
-                  disabled={batchExporting || !dimensions.width || !duration}
-                >
-                  <span aria-hidden="true">{exported ? "✓" : "↓"}</span>
-                  {batchExporting
-                    ? `正在生成… ${batchProgress.current}/${batchProgress.total}`
-                    : exported
-                      ? "已保存到下载"
-                      : "导出批量帧 (ZIP)"}
-                </Button>
+                /* 单槽:导出中在同一位置提供取消,不新增进度行(interaction-modes) */
+                batchExporting ? (
+                  <Button
+                    type="button"
+                    size="lg"
+                    variant="outline"
+                    onClick={() => {
+                      cancelBatchRef.current = true;
+                    }}
+                  >
+                    <span aria-hidden="true">×</span>
+                    停止导出（{batchProgress.current}/{batchProgress.total}）
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    size="lg"
+                    onClick={() => void exportBatch()}
+                    disabled={!dimensions.width || !duration}
+                  >
+                    <span aria-hidden="true">{exported ? "✓" : "↓"}</span>
+                    {exported ? "已保存到下载" : "导出批量帧 (ZIP)"}
+                  </Button>
+                )
               ) : (
                 <Button
-                  className={`export-button ${exported ? "success" : ""}`}
                   type="button"
                   size="lg"
                   onClick={() => void exportFrame()}

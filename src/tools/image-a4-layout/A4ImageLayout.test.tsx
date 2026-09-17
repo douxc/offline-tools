@@ -186,8 +186,8 @@ describe("A4ColsPicker（每行张数）", () => {
     for (const cols of [1, 2, 3, 4, 5, 6]) {
       assert.match(html, new RegExp(`每行 ${cols} 张`));
     }
-    assert.match(html, /aria-pressed="true"/);
-    assert.match(html, /class="[^"]*active[^"]*"[^>]*>3 张</);
+    assert.match(html, /role="radiogroup"/);
+    assert.match(html, /aria-checked="true"[^>]*>3 张</);
   });
 
   it("AC-9: 当前值 1 时只有 1 张激活", () => {
@@ -197,7 +197,7 @@ describe("A4ColsPicker（每行张数）", () => {
         onChange: () => {},
       }),
     );
-    assert.match(html, /class="[^"]*active[^"]*"[^>]*>1 张</);
+    assert.match(html, /aria-checked="true"[^>]*>1 张</);
   });
 });
 

@@ -1,7 +1,6 @@
 import {
   ChangeEvent,
   DragEvent,
-  KeyboardEvent,
   useCallback,
   useEffect,
   useRef,
@@ -103,7 +102,9 @@ export function VideoCompressor() {
     (file?: File) => {
       if (!file) return;
       if (!file.type.startsWith("video/")) {
-        toast.error("请选择浏览器支持的视频文件。");
+        toast.error("请选择浏览器支持的视频文件", {
+          description: "当前视频未改变，可重新选择 MP4、WebM 或 MOV 文件。",
+        });
         return;
       }
       releaseVideo();
@@ -132,13 +133,6 @@ export function VideoCompressor() {
     event.preventDefault();
     setIsDragging(false);
     loadFile(event.dataTransfer.files?.[0]);
-  };
-
-  const handleDropKey = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      inputRef.current?.click();
-    }
   };
 
   const reset = () => {
@@ -174,13 +168,19 @@ export function VideoCompressor() {
     if (video) video.pause();
     stopDraw();
     setCompressing(false);
+    // 与图片处理/批量导出保持一致:取消需说明未产生文件、内容保持原样
+    toast.info("已取消压缩", {
+      description: "未产生 WebM 文件，已选视频与码率设置保持原样，可重新开始压缩。",
+    });
   };
 
   const startCompress = async () => {
     const video = videoRef.current;
     if (!video || !video.videoWidth || compressing) return;
     if (typeof MediaRecorder === "undefined") {
-      toast.error("当前浏览器不支持 MediaRecorder，无法压缩导出。");
+      toast.error("当前浏览器不支持 MediaRecorder，无法压缩导出", {
+        description: "未产生文件，所选视频与参数保持原样。可改用其他浏览器重试。",
+      });
       return;
     }
     const mime = pickRecorderMime(
@@ -188,7 +188,9 @@ export function VideoCompressor() {
       true,
     );
     if (!mime) {
-      toast.error("当前浏览器不支持可用的 WebM 编码，无法压缩导出。");
+      toast.error("当前浏览器不支持可用的 WebM 编码，无法压缩导出", {
+        description: "未产生文件，所选视频与参数保持原样。可改用其他浏览器重试。",
+      });
       return;
     }
 
@@ -319,7 +321,6 @@ export function VideoCompressor() {
               onConfirm={reset}
               trigger={
                 <Button
-                  className="ghost-button"
                   variant="outline"
                   type="button"
                 >
@@ -363,11 +364,6 @@ export function VideoCompressor() {
             onDragOver={(event) => event.preventDefault()}
             onDragLeave={() => setIsDragging(false)}
             onDrop={handleDrop}
-            onKeyDown={handleDropKey}
-            onClick={() => inputRef.current?.click()}
-            role="button"
-            tabIndex={0}
-            aria-label="选择或拖入视频文件"
           >
             <div className="drop-visual" aria-hidden="true">
               <span className="corner corner-tl" />
@@ -381,7 +377,13 @@ export function VideoCompressor() {
               <strong>{isDragging ? "松开即可导入" : "把视频放到这里"}</strong>
               <span>或点击选择本地文件</span>
             </div>
-            <span className="primary-button">选择视频</span>
+            <Button
+              type="button"
+              size="lg"
+              onClick={() => inputRef.current?.click()}
+            >
+              选择视频
+            </Button>
             <small>压缩过程会播放视频并保留原音轨（实验性功能）</small>
           </div>
 
@@ -458,7 +460,7 @@ export function VideoCompressor() {
                         width: `${progress}%`,
                         height: "6px",
                         borderRadius: "3px",
-                        background: "var(--acid)",
+                        background: "var(--primary)",
                       }}
                     />
                   </div>
@@ -510,7 +512,6 @@ export function VideoCompressor() {
 
               {compressing ? (
                 <Button
-                  className="export-button"
                   type="button"
                   size="lg"
                   variant="outline"
@@ -520,7 +521,6 @@ export function VideoCompressor() {
                 </Button>
               ) : (
                 <Button
-                  className="export-button"
                   type="button"
                   size="lg"
                   onClick={() => void startCompress()}

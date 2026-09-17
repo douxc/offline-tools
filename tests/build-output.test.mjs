@@ -107,9 +107,21 @@ test("build emits a static offline multi-page app", async () => {
   assert.equal(parsedManifest.display, "standalone");
   assert.equal(parsedManifest.theme_color, "#000000");
 
-  assert.doesNotMatch(
-    packageJson,
-    /next|vinext|react-server-dom-webpack|cloudflare|wrangler|workerd/i,
+  // 防护「Next.js / vinext / 边缘运行时」回流。用依赖名精确匹配而非子串:
+  // `next-themes` 是 shadcn 主题方案的正规依赖,不应被 /next/ 误伤。
+  const parsedPackage = JSON.parse(packageJson);
+  const declared = Object.keys({
+    ...parsedPackage.dependencies,
+    ...parsedPackage.devDependencies,
+  });
+  const forbidden = declared.filter((name) =>
+    /^(next|vinext|react-server-dom-webpack|wrangler|workerd)$/i.test(name) ||
+    name.startsWith("@cloudflare/"),
+  );
+  assert.deepEqual(
+    forbidden,
+    [],
+    `以下依赖属于已迁出的框架/运行时,不应回流: ${forbidden.join(", ")}`,
   );
 
   await Promise.all([

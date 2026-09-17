@@ -16,7 +16,7 @@ function PopoverContent({
         sideOffset={sideOffset}
         data-slot="popconfirm-content"
         className={cn(
-          "z-50 w-[264px] rounded-lg border border-[var(--line)] bg-[var(--panel-raised)] p-4 text-[var(--ink)] shadow-xl outline-none",
+          "z-50 w-[264px] rounded-lg border border-border bg-popover p-4 text-popover-foreground shadow-xl outline-none",
           className,
         )}
         {...props}
@@ -78,7 +78,7 @@ export function Popconfirm({
       >
         <p className="text-sm font-medium">{title}</p>
         {description && (
-          <p className="mt-1.5 text-xs leading-relaxed text-[var(--muted)]">
+          <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
             {description}
           </p>
         )}

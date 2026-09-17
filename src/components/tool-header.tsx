@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Moon, Sun } from "lucide-react";
 import { LogoMark } from "@/components/logo-mark";
+import { Button } from "@/components/ui/button";
 import {
   navigateToTool,
   TOOL_GROUPS,
@@ -57,16 +58,19 @@ export function ToolHeader({ route, trailing }: ToolHeaderProps) {
           <span className="status-dot" aria-hidden="true" />
           本地处理 · 不上传文件
         </div>
-        <button
-          className="theme-toggle"
-          type="button"
+        <Button
+          variant="outline"
+          size="icon"
           onClick={toggleTheme}
           aria-label={nextThemeLabel}
           title={nextThemeLabel}
         >
-          <Sun className="theme-icon theme-icon-sun" aria-hidden="true" />
-          <Moon className="theme-icon theme-icon-moon" aria-hidden="true" />
-        </button>
+          {theme === "dark" ? (
+            <Sun aria-hidden="true" />
+          ) : (
+            <Moon aria-hidden="true" />
+          )}
+        </Button>
         {trailing}
       </div>
     </header>
