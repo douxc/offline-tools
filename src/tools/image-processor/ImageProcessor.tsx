@@ -30,6 +30,7 @@ import {
 } from "@/lib/png-compressor";
 import type { ToolRoute } from "@/lib/tool-navigation";
 import { deriveModeState } from "@/lib/tool-mode";
+import { trackImageProcessingFinished } from "@/lib/tool-analytics";
 
 type ImageMode = "compress" | "watermark";
 
@@ -435,6 +436,14 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
           });
         }
       }
+      // 一次批量处理只上报一次：结局由助手按 failed/total 判定
+      // （全部成功 success / 部分失败 partial / 全部失败 failed），取消单列。
+      trackImageProcessingFinished({
+        mode,
+        total: assets.length,
+        failed,
+        cancelled,
+      });
       if (cancelled) {
         // 失败恢复契约:说明已保留的内容与可继续的路径,不丢失已导入对象
         toast.info("已取消处理", {

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
 import test from "node:test";
+import { ANALYTICS_META_NAME } from "../src/lib/analytics.ts";
 import { SITE_URL } from "../src/lib/site.ts";
 
 const root = new URL("../", import.meta.url);
@@ -49,6 +50,11 @@ test("build emits a static offline multi-page app", async () => {
     assert.match(html, /property="og:url"/);
     assert.match(html, /name="twitter:title"/);
     assert.match(html, /id="structured-data" type="application\/ld\+json"/);
+    // 统计站点标识由构建期注入（加载门在客户端；详见 tests/analytics-embed.test.mjs）
+    assert.match(
+      html,
+      new RegExp(`<meta name="${ANALYTICS_META_NAME}" content="[0-9a-f]{16,64}"`),
+    );
     assert.doesNotMatch(html, /__next|_rsc|vinext|#\/(video|image)/i);
   }
 

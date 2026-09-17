@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { FrameExtractor } from "@/App";
 import { ToolHome } from "@/ToolHome";
 import { VideoCompressor } from "@/components/video-compressor";
+import { useRouteAnalytics } from "@/lib/route-analytics";
 import {
   readToolRoute,
   type ToolRoute,
@@ -13,6 +14,9 @@ import { A4ImageLayout } from "@/tools/image-a4-layout/A4ImageLayout";
 export function OfflineToolsApp() {
   const [route, setRoute] = useState<ToolRoute>(readToolRoute);
   useRouteSeo(route);
+  // 生产且在线时加载统计脚本；路由变化时补发一次 PV（首次不补发，避免与
+  // 入口 HTML 的自动 PV 重复）。
+  useRouteAnalytics(route, { isProduction: import.meta.env.PROD });
 
   useEffect(() => {
     const onPopState = () => setRoute(readToolRoute());

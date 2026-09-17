@@ -27,6 +27,10 @@ import {
   type BitrateLevel,
 } from "@/lib/video-export-config";
 import { computeScaledDimensions } from "@/lib/video-export-scale";
+import {
+  trackVideoCompressFailed,
+  trackVideoCompressSucceeded,
+} from "@/lib/tool-analytics";
 
 type VideoWithCapture = HTMLVideoElement & {
   captureStream?: () => MediaStream;
@@ -178,6 +182,7 @@ export function VideoCompressor() {
     const video = videoRef.current;
     if (!video || !video.videoWidth || compressing) return;
     if (typeof MediaRecorder === "undefined") {
+      trackVideoCompressFailed();
       toast.error("当前浏览器不支持 MediaRecorder，无法压缩导出", {
         description: "未产生文件，所选视频与参数保持原样。可改用其他浏览器重试。",
       });
@@ -188,6 +193,7 @@ export function VideoCompressor() {
       true,
     );
     if (!mime) {
+      trackVideoCompressFailed();
       toast.error("当前浏览器不支持可用的 WebM 编码，无法压缩导出", {
         description: "未产生文件，所选视频与参数保持原样。可改用其他浏览器重试。",
       });
@@ -212,6 +218,7 @@ export function VideoCompressor() {
     canvasRef.current = canvas;
     const context = canvas.getContext("2d");
     if (!context) {
+      trackVideoCompressFailed();
       toast.error("无法创建画布。");
       return;
     }
@@ -227,6 +234,7 @@ export function VideoCompressor() {
         captured.getAudioTracks().forEach((track) => combined.addTrack(track));
       }
     } catch {
+      trackVideoCompressFailed();
       toast.error("无法采集视频流，请换一种视频格式。");
       return;
     }
@@ -238,6 +246,7 @@ export function VideoCompressor() {
         videoBitsPerSecond: bitrate,
       });
     } catch {
+      trackVideoCompressFailed();
       toast.error("无法创建录制器，请换一种视频格式或浏览器。");
       return;
     }
@@ -262,6 +271,7 @@ export function VideoCompressor() {
       link.href = url;
       link.download = `${fileName.replace(/\.[^.]+$/, "")}_compressed.webm`;
       link.click();
+      trackVideoCompressSucceeded({ bytes: blob.size, bitrateLevel });
       toast.success("压缩完成，已保存到下载", {
         description: `输出 ${formatBytes(blob.size)}。`,
       });
@@ -274,6 +284,7 @@ export function VideoCompressor() {
     try {
       await video.play();
     } catch {
+      trackVideoCompressFailed();
       toast.error("无法播放视频进行压缩。");
       cancelCompress();
       return;

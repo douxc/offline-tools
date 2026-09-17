@@ -20,6 +20,18 @@ import { SITE_URL, SITE_URL_TOKEN } from "../src/lib/site.ts";
 /** 曾经用于生产、现已废弃的 host，不允许再出现在产物中。 */
 const DEPRECATED_HOSTS = ["framecut-offline.douxc512.chatgpt.site"];
 
+/**
+ * 允许出现在这些产物里的第三方 host：格式要求的命名空间与词汇表标识，不是站点地址。
+ *
+ * 百度统计的端点**不在**此列：它由客户端在加载门之后动态插入，不应出现在承载
+ * 站点地址的产物里；一旦出现，下面的白名单断言会失败（见 `analytics` 能力的
+ * 「统计脚本不进入离线缓存」与产物契约测试 tests/analytics-embed.test.mjs）。
+ */
+const ALLOWED_THIRD_PARTY_HOSTS = new Set([
+  "www.sitemaps.org", // sitemap.xml 的 XML 命名空间
+  "schema.org", // JSON-LD 的 @context
+]);
+
 const distRoot = new URL("../dist/", import.meta.url);
 const expectedHost = new URL(SITE_URL).host;
 
@@ -70,13 +82,28 @@ test("承载站点地址的产物中，绝对 URL 的 host 唯一且等于单一
     for (const host of hostsIn(text)) found.add(host);
   }
   // 格式要求的命名空间与词汇表标识，不是站点地址
-  found.delete("www.sitemaps.org"); // sitemap.xml 的 XML 命名空间
-  found.delete("schema.org"); // JSON-LD 的 @context
+  for (const host of ALLOWED_THIRD_PARTY_HOSTS) found.delete(host);
   assert.deepEqual(
     [...found],
     [expectedHost],
     `非预期的绝对 URL host：${[...found].join(", ")}`,
   );
+});
+
+test("统计端点不出现在承载站点地址的产物中", async () => {
+  // 反向守卫：新增第三方 host 时不会被上面的白名单悄悄放行，而必须先在这里
+  // 说明理由。统计脚本只在浏览器里按加载门动态插入，因此不该出现在这些文件里。
+  for (const file of SEO_ARTIFACTS) {
+    const text = await readFile(new URL(file, distRoot), "utf8");
+    const hosts = [...hostsIn(text)].filter(
+      (host) => !ALLOWED_THIRD_PARTY_HOSTS.has(host) && host !== expectedHost,
+    );
+    assert.deepEqual(
+      hosts,
+      [],
+      `产物 ${file} 出现未登记的第三方 host：${hosts.join(", ")}`,
+    );
+  }
 });
 
 test("产物中不出现历史废弃 host", async () => {

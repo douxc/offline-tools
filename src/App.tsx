@@ -45,6 +45,13 @@ import {
   createFrameZipArchive,
   frameFileName,
 } from "@/lib/zip-packer";
+import {
+  trackBatchFrameExportCancelled,
+  trackBatchFrameExportFailed,
+  trackBatchFrameExported,
+  trackFrameExportFailed,
+  trackFrameExported,
+} from "@/lib/tool-analytics";
 
 type ImageFormat = "png" | "jpeg" | "webp";
 
@@ -257,7 +264,9 @@ export function FrameExtractor() {
       window.setTimeout(() => URL.revokeObjectURL(imageUrl), 1000);
       setExported(true);
       window.setTimeout(() => setExported(false), 2400);
+      trackFrameExported({ format });
     } catch {
+      trackFrameExportFailed();
       toast.error("当前帧导出失败", {
         description:
           "未产生文件，视频与播放位置保持原样。可尝试其他图片格式后重试。",
@@ -353,6 +362,7 @@ export function FrameExtractor() {
     try {
       const zipBlob = await createFrameZipArchive(frameEntries());
       if (cancelBatchRef.current) {
+        trackBatchFrameExportCancelled();
         toast.info("已取消导出", {
           description:
             "未产生 ZIP 文件，视频与已选参数保持原样，可随时重新导出。",
@@ -367,10 +377,16 @@ export function FrameExtractor() {
       window.setTimeout(() => URL.revokeObjectURL(zipUrl), 1000);
       setExported(true);
       window.setTimeout(() => setExported(false), 2400);
+      trackBatchFrameExported({
+        frames: times.length,
+        format,
+        samplingMode,
+      });
       toast.success(`已导出 ${times.length} 张帧（ZIP）`, {
         description: "文件已保存到浏览器的下载目录。",
       });
     } catch {
+      trackBatchFrameExportFailed();
       toast.error("批量抽帧失败", {
         description:
           "未产生 ZIP 文件，已抽出的帧不保留，视频与已选参数保持原样。可缩短范围或减少帧数后重试。",

@@ -2642,6 +2642,7 @@ body {
   .image-list-panel,
   .a4-settings-panel,
   .icp-footer,
+  .license-footer,
   .pwa-status {
     display: none !important;
   }

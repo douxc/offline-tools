@@ -4,6 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
+import { ANALYTICS_ID_TOKEN, resolveAnalyticsId } from "./src/lib/analytics";
 import { SITE_URL, SITE_URL_TOKEN } from "./src/lib/site";
 
 /**
@@ -24,27 +25,58 @@ export const resolveSiteUrl = (): string => {
 
 export const siteUrl = resolveSiteUrl();
 
+/**
+ * 解析本次构建使用的统计站点标识：环境变量 `VITE_ANALYTICS_ID` 优先（空值显式
+ * 关闭统计），否则回退到 `src/lib/analytics.ts` 的内置默认值。校验只允许十六进制
+ * 标识，避免把非标识内容注入 HTML。
+ */
+export const buildAnalyticsId = (): string => {
+  const value = resolveAnalyticsId(process.env.VITE_ANALYTICS_ID);
+  if (value !== "" && !/^[0-9a-f]{16,64}$/i.test(value)) {
+    throw new Error(
+      `统计站点标识必须为空（关闭统计）或 16–64 位十六进制字符串，当前为 "${value}"`,
+    );
+  }
+  return value;
+};
+
+export const analyticsId = buildAnalyticsId();
+
+/** 构建期占位符 -> 最终值。数组顺序即替换顺序。 */
+const INJECTIONS: ReadonlyArray<readonly [string, string]> = [
+  [SITE_URL_TOKEN, siteUrl],
+  [ANALYTICS_ID_TOKEN, analyticsId],
+];
+
+const applyInjections = (text: string): string =>
+  INJECTIONS.reduce(
+    (result, [token, value]) => result.replaceAll(token, value),
+    text,
+  );
+
 /** 由 transformIndexHtml 负责的产物：closeBundle 对它们只剩兜底作用。 */
 const PRIMARY_INJECTION_TARGETS = /(^|\/)index\.html$/;
 
 /** 逐字节判断文件是否含占位符，缺失时不改写，保证重复构建幂等。 */
 const replaceTokenInFile = async (file: string): Promise<boolean> => {
   const content = await readFile(file, "utf8").catch(() => null);
-  if (content === null || !content.includes(SITE_URL_TOKEN)) return false;
-  await writeFile(file, content.replaceAll(SITE_URL_TOKEN, siteUrl));
+  if (content === null || !INJECTIONS.some(([token]) => content.includes(token))) {
+    return false;
+  }
+  await writeFile(file, applyInjections(content));
   return true;
 };
 
 /**
- * 站点 URL 注入插件。
+ * 站点元信息注入插件（站点 URL 与统计站点标识）。
  *
  * 分两层，且位于 `plugins` 数组中 `VitePWA(...)` 之前 —— `closeBundle` 是顺序
  * 钩子，按插件数组顺序执行；只有先替换 `public/` 复制而来的 robots.txt 与
  * sitemap 相关的产物，`vite-plugin-pwa` 之后计算出的预缓存内容修订号才与产物
  * 一致（由 tests/site-url-embed.test.mjs 的修订号一致性断言守住）。
  *
- * 1. transformIndexHtml：在构建管线内为 HTML 入口注入站点 URL，使生成的 HTML
- *    直接携带最终值 —— 这是 HTML 的主机制。
+ * 1. transformIndexHtml：在构建管线内为 HTML 入口注入站点 URL 与统计标识，使
+ *    生成的 HTML 直接携带最终值 —— 这是 HTML 的主机制。
  * 2. closeBundle：遍历产物目录替换残留占位符。它负责 `public/` 复制而来的
  *    sitemap.xml 与 robots.txt（它们不经过 HTML 管线），同时兜住第 1 层未覆盖
  *    的入口。
@@ -52,12 +84,12 @@ const replaceTokenInFile = async (file: string): Promise<boolean> => {
  * 若第 1 层因故未生效，兜底层会掩盖症状，因此这里对「本应由第 1 层处理的产物
  * 仍带占位符」给出显式告警，使机制退化可观测。
  */
-const siteUrlPlugin = (): Plugin => ({
-  name: "offline-tools:site-url",
+const siteMetaPlugin = (): Plugin => ({
+  name: "offline-tools:site-meta",
   enforce: "pre",
   transformIndexHtml: {
     order: "post",
-    handler: (html) => html.replaceAll(SITE_URL_TOKEN, siteUrl),
+    handler: (html) => applyInjections(html),
   },
   async closeBundle() {
     const walk = async (dir: string): Promise<string[]> => {
@@ -85,7 +117,7 @@ const siteUrlPlugin = (): Plugin => ({
     if (missedPrimary.length > 0) {
       this.warn(
         `以下入口未由 transformIndexHtml 注入，已由 closeBundle 兜底：` +
-          `${missedPrimary.join(", ")}。请检查站点 URL 插件在 plugins 中的位置与钩子名。`,
+          `${missedPrimary.join(", ")}。请检查站点元信息插件在 plugins 中的位置与钩子名。`,
       );
     }
   },
@@ -125,7 +157,7 @@ export default defineConfig({
     },
   },
   plugins: [
-    siteUrlPlugin(),
+    siteMetaPlugin(),
     react(),
     tailwindcss(),
     VitePWA({

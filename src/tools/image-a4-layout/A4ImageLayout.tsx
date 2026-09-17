@@ -41,6 +41,7 @@ import {
   paginateFlow,
   type FlowRow,
 } from "@/lib/a4-layout";
+import { trackA4Printed } from "@/lib/tool-analytics";
 
 type A4Item = {
   id: string;
@@ -392,6 +393,7 @@ export function A4ImageLayout() {
 
   const handlePrint = () => {
     if (items.length === 0) return;
+    trackA4Printed({ pages: pages.length, colsPerRow });
     window.print();
   };
 
