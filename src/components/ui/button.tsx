@@ -3,27 +3,32 @@ import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
+/**
+ * shadcn Button。
+ *
+ * 档位与 shadcn 注册表一致:size 为 default 36px / sm 32px / lg 40px /
+ * icon 36×36px;variant 为 default / destructive / outline / secondary /
+ * ghost / link。图标尺寸由基类统一约束,调用点不再逐处传 size。
+ */
 const buttonVariants = cva(
-  "inline-flex shrink-0 items-center justify-center gap-2 rounded-[var(--radius-sm)] text-sm font-medium whitespace-nowrap transition-[color,background-color,border-color,transform,opacity] outline-none focus-visible:ring-2 focus-visible:ring-[var(--acid)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--page)] disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-[color,background-color,border-color,box-shadow,transform] outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:size-4",
   {
     variants: {
       variant: {
-        default:
-          "bg-[var(--acid)] text-[var(--acid-ink)] hover:brightness-105 active:translate-y-px",
-        outline:
-          "border border-[var(--control-border)] bg-transparent text-[var(--ink)] hover:border-[var(--control-border-hover)] hover:bg-[var(--surface-hover)]",
-        secondary:
-          "border border-[var(--control-border)] bg-[var(--control-bg)] text-[var(--control-text)] hover:border-[var(--control-border-hover)]",
-        ghost:
-          "bg-transparent text-[var(--soft-text)] hover:bg-[var(--surface-hover)] hover:text-[var(--ink)]",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
         destructive:
-          "bg-[var(--danger)] text-white hover:brightness-105 active:translate-y-px",
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        outline: "border border-input hover:bg-accent hover:text-accent-foreground",
+        secondary:
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-[var(--radius-sm)] px-3",
-        lg: "h-[52px] rounded-[var(--radius-sm)] px-6",
-        icon: "size-10",
+        default: "h-9 px-4 py-2",
+        sm: "h-8 gap-1.5 px-3 text-xs",
+        lg: "h-10 px-6",
+        icon: "size-9",
       },
     },
     defaultVariants: {

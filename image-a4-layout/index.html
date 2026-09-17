@@ -110,6 +110,19 @@
       }
     </script>
     <title>图片 A4 排版打印工具｜批量排版照片打印 - 离线工具</title>
+    <script>
+      // 首帧前应用已保存的主题,避免 next-themes 挂载前出现主题闪烁。
+      // 存储键与取值必须与 src/lib/theme.tsx 一致(由 tests/theme-script-embed.test.mjs 守卫)。
+      (function () {
+        try {
+          var stored = localStorage.getItem("offline-tools-theme");
+          if (stored === "light") document.documentElement.classList.add("light");
+          else document.documentElement.classList.add("dark");
+        } catch (error) {
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

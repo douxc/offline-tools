@@ -2,7 +2,6 @@ import type {
   ChangeEvent,
   CSSProperties,
   DragEvent,
-  KeyboardEvent,
 } from "react";
 import {
   useCallback,
@@ -28,6 +27,7 @@ import { ToolSeoContent } from "@/components/tool-seo-content";
 import { ToolTabs } from "@/components/tool-tabs";
 import { LicenseFooter } from "@/components/license-footer";
 import { Button } from "@/components/ui/button";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Popconfirm } from "@/components/ui/popconfirm";
@@ -164,32 +164,33 @@ export function A4ImageList({
               </small>
             </span>
           </span>
-          <button
-            className="a4-icon-button"
-            type="button"
+          <Button
+            variant="ghost"
+            size="icon"
             aria-label={`上移 ${item.name}`}
             disabled={index === 0}
             onClick={() => onMove(index, -1)}
           >
-            <ChevronUp size={14} />
-          </button>
-          <button
-            className="a4-icon-button"
-            type="button"
+            <ChevronUp />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
             aria-label={`下移 ${item.name}`}
             disabled={index === items.length - 1}
             onClick={() => onMove(index, 1)}
           >
-            <ChevronDown size={14} />
-          </button>
-          <button
-            className="remove-image"
-            type="button"
+            <ChevronDown />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-muted-foreground hover:text-destructive"
             aria-label={`移除 ${item.name}`}
             onClick={() => onRemove(item)}
           >
-            <Trash2 size={15} />
-          </button>
+            <Trash2 />
+          </Button>
         </div>
       ))}
     </div>
@@ -212,27 +213,27 @@ export function A4PaginationBar({
 }: A4PaginationBarProps) {
   return (
     <div className="a4-pager">
-      <button
-        className="a4-icon-button"
-        type="button"
+      <Button
+        variant="ghost"
+        size="icon"
         aria-label="上一页"
         disabled={pageIndex <= 0}
         onClick={onPrev}
       >
-        <ChevronLeft size={15} />
-      </button>
+        <ChevronLeft />
+      </Button>
       <span aria-live="polite">
         第 {pageIndex + 1} / {pageCount} 页
       </span>
-      <button
-        className="a4-icon-button"
-        type="button"
+      <Button
+        variant="ghost"
+        size="icon"
         aria-label="下一页"
         disabled={pageIndex >= pageCount - 1}
         onClick={onNext}
       >
-        <ChevronRight size={15} />
-      </button>
+        <ChevronRight />
+      </Button>
     </div>
   );
 }
@@ -245,23 +246,29 @@ type A4ColsPickerProps = {
 /** 每行张数选择：1–6（横向列数）。 */
 export function A4ColsPicker({ value, onChange }: A4ColsPickerProps) {
   return (
-    <div className="a4-cols-picker" role="group" aria-label="每行张数">
+    <ToggleGroup
+      type="single"
+      value={String(value)}
+      onValueChange={(next) => {
+        // 单选 ToggleGroup 再次点击已选项时给出空值,保持原选择
+        if (next) onChange(Number(next));
+      }}
+      aria-label="每行张数"
+    >
       {Array.from(
         { length: COLS_PER_ROW.max - COLS_PER_ROW.min + 1 },
         (_, index) => COLS_PER_ROW.min + index,
       ).map((cols) => (
-        <button
-          className={cols === value ? "active" : ""}
-          type="button"
+        <ToggleGroupItem
           key={cols}
-          aria-pressed={cols === value}
+          value={String(cols)}
           aria-label={`每行 ${cols} 张`}
-          onClick={() => onChange(cols)}
+          className="flex-1 text-xs"
         >
           {cols} 张
-        </button>
+        </ToggleGroupItem>
       ))}
-    </div>
+    </ToggleGroup>
   );
 }
 
@@ -365,13 +372,6 @@ export function A4ImageLayout() {
     void addFiles(event.dataTransfer.files);
   };
 
-  const handleDropKey = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      inputRef.current?.click();
-    }
-  };
-
   const removeItem = (item: A4Item) => {
     URL.revokeObjectURL(item.url);
     setItems((current) => current.filter((entry) => entry.id !== item.id));
@@ -426,13 +426,12 @@ export function A4ImageLayout() {
 
         <div className="a4-actions no-print">
           <Button
-            className="primary-button"
             type="button"
             onClick={handlePrint}
             disabled={items.length === 0}
             title={items.length === 0 ? "先导入图片" : undefined}
           >
-            <Printer size={16} />
+            <Printer />
             打印 A4 版面（{pages.length} 页）
           </Button>
           <Popconfirm
@@ -442,7 +441,6 @@ export function A4ImageLayout() {
             onConfirm={clearAll}
             trigger={
               <Button
-                className="ghost-button"
                 variant="outline"
                 type="button"
                 disabled={items.length === 0}
@@ -463,10 +461,6 @@ export function A4ImageLayout() {
             onDragOver={(event) => event.preventDefault()}
             onDragLeave={() => setIsDragging(false)}
             onDrop={handleDrop}
-            onClick={() => inputRef.current?.click()}
-            onKeyDown={handleDropKey}
-            role="button"
-            tabIndex={0}
           >
             <div className="image-drop-icon" aria-hidden="true">
               <ImageIcon />
@@ -474,7 +468,13 @@ export function A4ImageLayout() {
             </div>
             <strong>先导入图片</strong>
             <span>拖放图片到这里，或点击选择，可一次导入多张</span>
-            <span className="primary-button">选择图片</span>
+            <Button
+              type="button"
+              size="lg"
+              onClick={() => inputRef.current?.click()}
+            >
+              选择图片
+            </Button>
             <small>浏览器可解码的图片格式 · 图片保持在本地</small>
           </div>
         ) : (
@@ -491,7 +491,7 @@ export function A4ImageLayout() {
                   size="sm"
                   onClick={() => inputRef.current?.click()}
                 >
-                  <Plus size={14} /> 添加
+                  <Plus /> 添加
                 </Button>
               </div>
               <A4ImageList

@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Slider } from "@/components/ui/slider";
 import { type OverlayPosition } from "@/lib/text-overlay";
 
@@ -56,21 +56,25 @@ export function TextOverlayPanel(props: TextOverlayPanelProps) {
 
           <div className="overlay-position-group">
             <span>位置</span>
-            <div className="segmented">
+            <ToggleGroup
+              type="single"
+              value={position}
+              onValueChange={(next) => {
+                if (next) onPositionChange(next as typeof position);
+              }}
+              aria-label="字幕位置"
+              className="w-full"
+            >
               {POSITIONS.map((item) => (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className={position === item.value ? "active" : ""}
-                  aria-pressed={position === item.value}
-                  onClick={() => onPositionChange(item.value)}
+                <ToggleGroupItem
                   key={item.value}
+                  value={item.value}
+                  className="flex-1 text-xs"
                 >
                   {item.label}
-                </Button>
+                </ToggleGroupItem>
               ))}
-            </div>
+            </ToggleGroup>
           </div>
 
           <div className="quality-group">

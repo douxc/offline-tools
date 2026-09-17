@@ -1,7 +1,6 @@
 import {
   ChangeEvent,
   DragEvent,
-  KeyboardEvent,
   useCallback,
   useEffect,
   useMemo,
@@ -30,6 +29,7 @@ import {
   type PngCompressionStrategy,
 } from "@/lib/png-compressor";
 import type { ToolRoute } from "@/lib/tool-navigation";
+import { deriveModeState } from "@/lib/tool-mode";
 
 type ImageMode = "compress" | "watermark";
 
@@ -186,12 +186,27 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
   const [results, setResults] = useState<Record<string, ProcessedResult>>({});
   const [isDragging, setIsDragging] = useState(false);
   const [processing, setProcessing] = useState(false);
+  /** 处理取消标志:在逐张循环之间同步读取,停止后续处理并保留已完成结果。 */
+  const cancelProcessingRef = useRef(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
 
   const selected = useMemo(
     () => assets.find((asset) => asset.id === selectedId) ?? assets[0],
     [assets, selectedId],
   );
+  // 页面模式由单一状态模型推导(interaction-modes):界面据此决定主操作,
+  // 而不是从散布的布尔量组合出互相矛盾的可见性。
+  const processedCount = useMemo(
+    () => assets.filter((asset) => results[`${asset.id}:${mode}:${quality}`])
+      .length,
+    [assets, results, mode, quality],
+  );
+  const modeState = deriveModeState({
+    assetCount: assets.length,
+    processedCount,
+    processing,
+    progress,
+  });
   const contextKey =
     mode === "compress"
       ? `compress:${quality}`
@@ -390,13 +405,20 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
 
   const processAll = async () => {
     if (assets.length === 0 || processing) return;
+    cancelProcessingRef.current = false;
     setProcessing(true);
     setProgress({ current: 0, total: assets.length });
     const nextResults: Record<string, ProcessedResult> = {};
     let failed = 0;
+    let cancelled = false;
 
     try {
       for (let index = 0; index < assets.length; index += 1) {
+        // 取消发生在逐张之间:已完成的图片保留结果,未处理的保持原状
+        if (cancelProcessingRef.current) {
+          cancelled = true;
+          break;
+        }
         const asset = assets[index];
         setProgress({ current: index + 1, total: assets.length });
         try {
@@ -413,16 +435,30 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
           });
         }
       }
-      if (failed === 0) {
+      if (cancelled) {
+        // 失败恢复契约:说明已保留的内容与可继续的路径,不丢失已导入对象
+        toast.info("已取消处理", {
+          description: `已完成的图片保留在列表中，其余 ${assets.length - Object.keys(nextResults).length} 张未处理，可随时重新开始。`,
+        });
+      } else if (failed === 0) {
         toast.success(`${assets.length} 张图片处理完成`);
       } else {
         toast.warning(
           `${assets.length - failed} 张完成，${failed} 张处理失败`,
+          {
+            description:
+              "失败的图片保留在列表中，可调整参数后重新处理；已导入的图片不会丢失。",
+          },
         );
       }
     } finally {
       setProcessing(false);
+      cancelProcessingRef.current = false;
     }
+  };
+
+  const cancelProcessing = () => {
+    cancelProcessingRef.current = true;
   };
 
   const downloadResult = (result: ProcessedResult) => {
@@ -447,13 +483,6 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
     void addFiles(event.dataTransfer.files);
   };
 
-  const handleDropKey = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      inputRef.current?.click();
-    }
-  };
-
   const totalOriginal = Object.values(activeResults).reduce(
     (sum, result) => sum + result.originalSize,
     0,
@@ -476,7 +505,6 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
               onConfirm={clearAll}
               trigger={
                 <Button
-                  className="ghost-button"
                   variant="outline"
                   type="button"
                   disabled={processing}
@@ -515,10 +543,6 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
             onDragOver={(event) => event.preventDefault()}
             onDragLeave={() => setIsDragging(false)}
             onDrop={handleDrop}
-            onClick={() => inputRef.current?.click()}
-            onKeyDown={handleDropKey}
-            role="button"
-            tabIndex={0}
           >
             <div className="image-drop-icon" aria-hidden="true">
               <ImageIcon />
@@ -526,7 +550,13 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
             </div>
             <strong>拖放图片到这里</strong>
             <span>或点击选择，可一次导入多张</span>
-            <span className="primary-button">选择图片</span>
+            <Button
+              type="button"
+              size="lg"
+              onClick={() => inputRef.current?.click()}
+            >
+              选择图片
+            </Button>
             <small>支持 PNG、JPG、WebP · 单张不超过 6000 万像素</small>
           </div>
         ) : (
@@ -577,17 +607,15 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
                           )}
                         </span>
                       </button>
-                      <button
-                        className="remove-image"
-                        type="button"
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-muted-foreground hover:text-destructive"
                         aria-label={`移除 ${asset.file.name}`}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          removeAsset(asset.id);
-                        }}
+                        onClick={() => removeAsset(asset.id)}
                       >
-                        <Trash2 size={15} />
-                      </button>
+                        <Trash2 />
+                      </Button>
                     </div>
                   );
                 })}
@@ -717,27 +745,36 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
                   : "保持原始尺寸与格式，PNG 透明通道不会被填白。"}
               </div>
 
-              <Button
-                className="export-button image-process-button"
-                type="button"
-                size="lg"
-                onClick={() => void processAll()}
-                disabled={processing}
-              >
-                {processing ? (
-                  <LoaderCircle className="spin" size={18} />
-                ) : (
-                  <Sparkles size={18} />
-                )}
-                {processing
-                  ? `正在处理 ${progress.current}/${progress.total}`
-                  : `处理全部 ${assets.length} 张`}
-              </Button>
+              {/* 单槽:处理中在同一位置提供取消,不新增进度行(interaction-modes) */}
+              {modeState.mode === "processing" ? (
+                <Button
+                  type="button"
+                  size="lg"
+                  variant="outline"
+                  onClick={cancelProcessing}
+                >
+                  <LoaderCircle className="spin" />
+                  停止处理（{modeState.progress?.current ?? 0}/
+                  {modeState.progress?.total ?? assets.length}）
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  size="lg"
+                  onClick={() => void processAll()}
+                >
+                  <Sparkles />
+                  处理全部 {assets.length} 张
+                </Button>
+              )}
 
-              {Object.keys(activeResults).length > 0 && (
+              {modeState.actions.canDownload && (
                 <div className="image-results-summary">
                   <div>
-                    <span>{Object.keys(activeResults).length} 张已完成</span>
+                    <span>
+                      {Object.keys(activeResults).length} 张已完成
+                      {modeState.mode === "partial" && ` · ${assets.length - Object.keys(activeResults).length} 张待重试`}
+                    </span>
                     <small>
                       {mode === "compress"
                         ? `共节省 ${formatBytes(Math.max(0, totalOriginal - totalOutput))}`
@@ -745,7 +782,7 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
                     </small>
                   </div>
                   <Button type="button" size="sm" onClick={downloadAll}>
-                    <Download size={15} />
+                    <Download />
                     下载全部
                   </Button>
                 </div>
@@ -758,7 +795,7 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
                   variant="outline"
                   onClick={() => downloadResult(activeResults[selected.id])}
                 >
-                  <Download size={16} />
+                  <Download />
                   下载当前图片
                 </Button>
               )}

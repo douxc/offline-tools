@@ -24,8 +24,9 @@ describe("TextOverlayPanel", () => {
     assert.match(html, /底部居中/);
     assert.match(html, /顶部居中/);
     assert.match(html, /aria-label="字幕字号"/);
-    // 位置分段必须暴露按压/选中语义（不依赖颜色）
-    assert.match(html, /aria-pressed="true"[^>]*>底部居中</);
-    assert.match(html, /aria-pressed="false"[^>]*>顶部居中</);
+    // 位置分段由 shadcn ToggleGroup 承载,暴露 role=radio + aria-checked 语义
+    assert.match(html, /role="radiogroup"/);
+    assert.match(html, /aria-checked="true"[^>]*>底部居中</);
+    assert.match(html, /aria-checked="false"[^>]*>顶部居中</);
   });
 });

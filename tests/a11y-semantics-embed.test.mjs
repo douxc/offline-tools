@@ -4,15 +4,36 @@ import test from "node:test";
 
 const root = new URL("../", import.meta.url);
 
-test("分段控件暴露 aria-pressed 选中语义（不依赖颜色）", async () => {
+test("分段控件由 shadcn ToggleGroup 承载并暴露选中语义", async () => {
+  // 分段控件统一使用 ToggleGroup,选中态由 Radix 单选组的 role=radio +
+  // aria-checked 表达(Radix 对 single 型会以 aria-checked 取代 aria-pressed)
   const app = await readFile(new URL("src/App.tsx", root), "utf8");
   const overlay = await readFile(
     new URL("src/components/text-overlay-panel.tsx", root),
     "utf8",
   );
+  const a4 = await readFile(
+    new URL("src/tools/image-a4-layout/A4ImageLayout.tsx", root),
+    "utf8",
+  );
+  const batch = await readFile(
+    new URL("src/components/batch-sampling-controls.tsx", root),
+    "utf8",
+  );
 
-  assert.match(app, /aria-pressed=\{format === item\}/);
-  assert.match(overlay, /aria-pressed=\{position === item\.value\}/);
+  for (const [name, source] of [
+    ["App.tsx", app],
+    ["text-overlay-panel.tsx", overlay],
+    ["A4ImageLayout.tsx", a4],
+    ["batch-sampling-controls.tsx", batch],
+  ]) {
+    assert.match(source, /ToggleGroup/, `${name} 应使用 shadcn ToggleGroup`);
+    assert.doesNotMatch(
+      source,
+      /className=\{[^}]*"active"/,
+      `${name} 不应使用自建 active 类表达分段选中态`,
+    );
+  }
 });
 
 test("图片列表选中项暴露选中语义", async () => {
