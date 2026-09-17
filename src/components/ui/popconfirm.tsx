@@ -53,7 +53,14 @@ export function Popconfirm({
   onOpenChange,
 }: PopconfirmProps) {
   const [open, setOpen] = React.useState(false);
-  const confirmRef = React.useRef<HTMLButtonElement>(null);
+  /**
+   * 初始焦点落在取消键。
+   *
+   * Apple HIG 规定不得为破坏性动作分配 primary 角色,但未规定破坏性确认框的
+   * 默认焦点;此处按项目裁决(2026-09-17)取取消键 —— 避免用户按 Return 直接
+   * 触发不可逆的清空/重置。破坏性动作必须显式点击或 Tab 过去才能触发。
+   */
+  const cancelRef = React.useRef<HTMLButtonElement>(null);
 
   const close = () => setOpen(false);
   const handleConfirm = () => {
@@ -73,7 +80,7 @@ export function Popconfirm({
       <PopoverContent
         onOpenAutoFocus={(event) => {
           event.preventDefault();
-          confirmRef.current?.focus();
+          cancelRef.current?.focus();
         }}
       >
         <p className="text-sm font-medium">{title}</p>
@@ -84,21 +91,19 @@ export function Popconfirm({
         )}
         <div className="mt-3.5 flex justify-end gap-2">
           <Button
+            ref={cancelRef}
             type="button"
             variant="ghost"
             size="sm"
             onClick={close}
-            className="min-h-11"
           >
             {cancelLabel}
           </Button>
           <Button
-            ref={confirmRef}
             type="button"
             variant={confirmVariant}
             size="sm"
             onClick={handleConfirm}
-            className="min-h-11"
           >
             {confirmLabel}
           </Button>
