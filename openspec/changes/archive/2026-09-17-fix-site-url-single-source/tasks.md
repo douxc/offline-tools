@@ -33,5 +33,5 @@
 - [x] 6.2 确认 EdgeOne 项目设置的构建命令为 `pnpm build`（而非 `vite build` 之类跳过前置步骤的命令），以保证 PNG 压缩 Worker 仍被生成 — verify: 控制台配置确认为 `pnpm build`；本地 `pnpm build` 后 `dist/assets/image-compress-worker.js` 存在且为 663,411 字节
 - [x] 6.3 push 到 main 触发部署并线上核验 — verify: `768ae75..da7c4ae main -> main` 推送后 EdgeOne 部署完成（线上 `main-B0GJnFyS.css` / `main-BYyMUJyj.js` 与本地构建逐名一致，`Last-Modified: 2026-09-17 14:24:48 GMT`）。线上实测:六个页面 canonical 全部为 `https://offline-tools.colors-cc.top/<path>/`；A4 页 og:url 与 og:image 正确；`/sitemap.xml` 六条 `<loc>` 全部新 host；`/robots.txt` 的 Sitemap 声明正确；**六个页面 + sitemap + robots 的旧域名残留数为 0**
 - [x] 6.4 线上确认 Worker — verify: `/assets/image-compress-worker.js` 返回 200、体积 663411 字节，与本地 `build:image-codecs` 产物一致，域名改动未影响 Worker 生成链路
-- [ ] 6.5 发布后人工跟进：向搜索引擎提交新域名的 sitemap 并请求重新抓取（代码改动不解决存量索引信号） — verify: 搜索平台后台显示 sitemap 提交成功
+- [x] 6.5 向搜索引擎提交新域名 sitemap — verify: 用户于 2026-09-17 在 Google 完成提交；远程可核验的印证为 DNS TXT 记录 `google-site-verification=VVY1VUGPJOwe7HpXz3b-JhQdyrie3Mes-L5-6lxi2HQ`（Google 颁发的站点所有权令牌，表明验证步骤已完成）。**提交动作本身在 Search Console 内，无法远程确认**，以用户确认为准。存量索引信号的消解需等待搜索引擎重新抓取，不在本 change 范围内
 - [x] 6.6 `.agents/` 目录处置 — verify: 已在 `c03b552` 纳入版本管理（7 个文件，确认无本机路径/凭据耦合）。附带发现:`.claude/settings.local.json` 由全局 gitignore（`~/.config/git/ignore` 的 `**/.claude/settings.local.json`）排除，从来不需要项目级处理
