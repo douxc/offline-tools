@@ -107,3 +107,19 @@ test("亮暗两态下文字与背景对比度均满足 WCAG AA 4.5:1", async () 
     `以下组合低于 ${AA_NORMAL_TEXT}:1:\n${failures.join("\n")}`,
   );
 });
+
+/**
+ * 叠在恒定深色表面上的文字(媒体舞台上的时间码徽标、处理浮层白字)使用
+ * `--primary-foreground`。这些表面不随主题翻转,因此该 token 也必须在两个主题
+ * 中取同一值 —— 一旦它被改成随主题翻转,亮色态会得到深色文字压在深色底上。
+ */
+test("固定深色表面所用的文字 token 在两个主题中取值相同", async () => {
+  const themes = await readThemeTokens();
+  for (const token of ["--primary-foreground", "--destructive-foreground"]) {
+    assert.deepEqual(
+      themes.dark[token],
+      themes.light[token],
+      `${token} 用于恒定深色表面上的文字,不应在两个主题间变化`,
+    );
+  }
+});

@@ -517,6 +517,7 @@ a:focus-visible {
   display: grid;
   place-items: center;
   overflow: hidden;
+  /* 媒体舞台底色恒定深色,不随主题翻转(与 --background 的语义不同) */
   background: #080808;
   transition: width 180ms ease, height 180ms ease;
 }
@@ -546,7 +547,8 @@ a:focus-visible {
   padding: 6px 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-xs);
-  color: #c5c5bd;
+  /* 徽标叠在恒定深色的媒体舞台上,文字必须恒定浅色,不能随主题翻转 */
+  color: var(--primary-foreground);
   background: rgba(12, 12, 11, 0.74);
   backdrop-filter: blur(10px);
   font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
@@ -623,6 +625,7 @@ a:focus-visible {
     transparent 1px,
     transparent 12px
   );
+  /* mask 中的 #000 只表达"完全不透明",不是配色,故不走 token */
   mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent);
 }
 
@@ -1250,7 +1253,7 @@ kbd {
   display: block;
   border-radius: var(--radius-xs);
   object-fit: cover;
-  background: #0d0d0c;
+  background: var(--muted);
 }
 
 .image-list-meta {
@@ -1324,7 +1327,8 @@ kbd {
   justify-content: center;
   gap: 12px;
   color: var(--foreground);
-  background: rgba(10, 10, 9, 0.78);
+  /* 不透明度按最坏情况(浮层压在纯白图片上)取到白字 ≥4.5:1 */
+  background: rgba(10, 10, 9, 0.92);
   backdrop-filter: blur(8px);
   font-size: 12px;
 }
@@ -1780,8 +1784,12 @@ kbd {
 
 
 
+/*
+ * 处理浮层的底色是恒定深色叠加(rgba(10,10,9,.78)),与主题无关;
+ * 因此亮色态下文字必须保持浅色,不能使用随主题翻转的 --foreground。
+ */
 .light .processing-overlay {
-  color: #fff;
+  color: var(--primary-foreground);
 }
 
 
@@ -1964,7 +1972,7 @@ body {
 }
 
 .status-dot {
-  background: #34c759;
+  background: var(--success);
   box-shadow: 0 0 0 4px rgba(52, 199, 89, 0.12);
 }
 
@@ -2510,7 +2518,7 @@ body {
   display: block;
   border-radius: var(--radius-xs);
   object-fit: cover;
-  background: #0d0d0c;
+  background: var(--muted);
 }
 
 .a4-pager {
@@ -2537,6 +2545,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  /* 打印纸面恒为白纸,必须与主题解耦 */
   background: #fff;
   box-shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
 }

@@ -159,3 +159,53 @@ test("checker 变量不得自引用(防止机械替换把值替换成自身)", a
   assert.doesNotMatch(css, /--checker-a:\s*var\(--checker-a\)/);
   assert.doesNotMatch(css, /--checker-b:\s*var\(--checker-b\)/);
 });
+
+/**
+ * 硬编码色值约束。
+ *
+ * visual-system 要求颜色通过语义 token 表达。少数**固定表面**必须有恒定色值,
+ * 与主题无关,因此按选择器精确豁免,而不是放宽整条规则:
+ *   - 视频舞台 / 分享卡:媒体底衬恒定深色
+ *   - 打印纸面与 @media print 区块:必须是白纸
+ *   - mask-image 的 #000:只表达"完全不透明",不是配色
+ */
+const FIXED_SURFACE_SELECTORS = [
+  ".video-stage",
+  ".share-card",
+  ".a4-sheet",
+  "@media print",
+];
+
+/** @media print 内的规则在选择器上不带该前缀,按属性单独豁免。 */
+const PRINT_OVERRIDE = /background:\s*#fff\s*!important/;
+
+test("非固定表面的规则不硬编码色值", async () => {
+  const css = await readCss();
+
+  // 逐条规则检查:选择器 + 声明体
+  const offenders = [];
+  for (const [, selector, body] of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    const sel = selector.trim();
+    if (sel.startsWith("--") || sel.startsWith("@theme")) continue;
+    // 变量声明块由其他断言负责
+    if (/^\s*--/.test(body.trim())) continue;
+
+    const exempt =
+      FIXED_SURFACE_SELECTORS.some((s) => sel.includes(s)) ||
+      PRINT_OVERRIDE.test(body) ||
+      /mask-image/.test(body);
+
+    for (const [, prop, value] of body.matchAll(/([a-z-]+)\s*:\s*([^;]+);/g)) {
+      if (prop.startsWith("--")) continue;
+      if (!/#[0-9a-fA-F]{3,8}\b/.test(value)) continue;
+      if (exempt) continue;
+      offenders.push(`${sel} { ${prop}: ${value.trim()} }`);
+    }
+  }
+
+  assert.deepEqual(
+    offenders,
+    [],
+    `以下规则应改用语义 token(或按选择器加入固定表面豁免):\n${offenders.join("\n")}`,
+  );
+});
