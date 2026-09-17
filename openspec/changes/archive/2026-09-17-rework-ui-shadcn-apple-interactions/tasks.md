@@ -35,10 +35,11 @@
 
 - [x] 4.1 删除已无引用的自建类 — verify: 严格扫描（源码文本比对）找出 4 个零使用者类（`.primary-button`/`.ghost-button`/`.export-button`/`.image-mode-tabs`），删除 17 条规则；顺带简化 `.image-dropzone > span:not(.primary-button)` 为 `.image-dropzone > span`（排除项已失效但主体仍在使用）。`index.css` 2961 → 2731 行，自建类 124 → 115；lint 与 124 项测试通过
 - [x] 4.2 文档同步 — verify: `project-map.md` 的选型段改为「设计系统以 shadcn 为唯一来源」（token 结构、`@theme inline`、oklch、`--radius` 派生链、next-themes、官方组件来源、尺寸档位、图标统一、对比度契约），架构段补入 `deriveModeState` 与三处取消
-- [x] 4.3 全量验收 — verify: `pnpm lint` 0 错误、`pnpm test` 124/124。**断点与明暗两态的人工视觉核验未执行**（需浏览器），已在 4.5 记为未验证项
+- [x] 4.3 全量验收 — verify: `pnpm lint` 0 错误、`pnpm test` 131/131；断点与明暗两态的人工视觉核验**已由用户于 2026-09-17 在浏览器中完成并确认通过**
 - [x] 4.4 确认未越界 — verify: 入口 HTML 与站点 URL/SEO 相关文件 `git diff` 为空；打印段落未出现在 diff 中，`@page`(2)/`break-after`(4)/`210mm`/`297mm` 均在位，A4 预览缩放为行内 `transform: scale()`（未触及）
 - [x] 4.5 汇总验收结论 — 分类如下（无未解决的 FIX）：
   - **PASS**：token 结构与 shadcn 一致（语义命名 / oklch / `@theme inline` / `--radius` 派生链 / `.dark`·`.light` 类键）；主题由 next-themes 管理且首帧由内联脚本保证；组件全部来自官方注册表并改用语义工具类；尺寸为 shadcn 基准且同组一致；旧按钮类、原生按钮、冒充按钮、自建分段控件清零；图标尺寸由基类统一；模式状态机可枚举且单一主操作；三处耗时操作可取消且不产出半成品；失败提示说明未改变内容；亮暗两态对比度 16/16 达 4.5:1；`pnpm lint` 0、`pnpm test` 126/126。
   - **HUMAN DECISION（未解决）**：破坏性 Popconfirm 的初始焦点落点（3.7）—— Apple 未规定，需人工裁决；裁决前保持现状未实现。
-  - **未验证（非 FIX）**：锚点矩形的 ≤1px 像素级测量与 320/600/760/900px 断点下的人工视觉核验需浏览器，当前环境不安装无头浏览器，未执行。
+  - **已人工核验（2026-09-17）**：320/600/760/900px 断点与明暗两态下的视觉结果由用户在浏览器中确认通过。
+  - **仍未测量（非 FIX）**：锚点矩形的 ≤1px **像素级**位移未做数值测量（需无头浏览器，本环境未安装）；结构层面的守卫已到位，见 `tests/stable-anchors-embed.test.mjs`。
   - **OUT OF SCOPE（未改动）**：打印与 A4 版式、6 入口架构、站点 URL 与 SEO。
