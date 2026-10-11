@@ -33,11 +33,24 @@ const TOOL_ROUTES: ToolRoute[] = [
 
 const PRODUCTION = { isProduction: true, siteId: DEFAULT_ANALYTICS_ID };
 
+type TestScriptElement = ReturnType<
+  AnalyticsEnvironment["document"]["createElement"]
+> & {
+  src: string;
+  async: boolean;
+  readonly dataset: Record<string, string>;
+};
+
 /** 可注入的浏览器替身：document/navigator/host 全部可控，且记录插入了哪些脚本。 */
-const createEnvironment = ({ online = true }: { online?: boolean } = {}) => {
-  const inserted: Array<{ src: string; dataset: Record<string, string> }> = [];
+const createEnvironment = ({
+  online = true,
+  scheduling = "idle",
+}: { online?: boolean; scheduling?: "idle" | "timeout" } = {}) => {
+  const inserted: TestScriptElement[] = [];
   const listeners = new Map<string, Array<() => void>>();
   const pendingIdle: Array<() => void> = [];
+  const pendingTimers: Array<() => void> = [];
+  const timerDelays: number[] = [];
 
   const matches = (
     element: { dataset: Record<string, string> },
@@ -50,26 +63,28 @@ const createEnvironment = ({ online = true }: { online?: boolean } = {}) => {
   const environment: AnalyticsEnvironment = {
     document: {
       createElement: () => {
-        const element = {
-          dataset: {} as Record<string, string>,
+        const dataset: Record<string, string> = {};
+        return {
+          // 真实 DOM 只允许修改字段，不能整体替换 dataset。
+          get dataset() {
+            return dataset;
+          },
           src: "",
+          async: false,
+          appendChild: (element) => element,
+          getAttribute: (name) =>
+            name === "data-analytics" ? dataset.analytics ?? null : null,
         };
-        return element as unknown as HTMLScriptElement;
       },
       head: {
-        appendChild: (element: HTMLScriptElement) => {
-          const record = element as unknown as {
-            src: string;
-            dataset: Record<string, string>;
-          };
-          inserted.push({ src: record.src, dataset: record.dataset });
+        appendChild: (element) => {
+          inserted.push(element as TestScriptElement);
+          return element;
         },
-      } as unknown as HTMLHeadElement,
-      querySelector: ((selector: string) =>
-        inserted.find((element) => matches(element, selector)) ?? null) as Pick<
-        Document,
-        "querySelector"
-      >["querySelector"],
+        getAttribute: () => null,
+      },
+      querySelector: (selector) =>
+        inserted.find((element) => matches(element, selector)) ?? null,
     },
     navigator: { onLine: online },
     host: {
@@ -77,8 +92,15 @@ const createEnvironment = ({ online = true }: { online?: boolean } = {}) => {
         listeners.set(type, [...(listeners.get(type) ?? []), listener]);
       },
     },
-    requestIdleCallback: (callback) => {
-      pendingIdle.push(callback);
+    requestIdleCallback:
+      scheduling === "idle"
+        ? (callback) => {
+            pendingIdle.push(callback);
+          }
+        : undefined,
+    setTimeout: (callback, delay) => {
+      pendingTimers.push(callback);
+      timerDelays.push(delay);
     },
   };
 
@@ -89,6 +111,10 @@ const createEnvironment = ({ online = true }: { online?: boolean } = {}) => {
     flushIdle: () => {
       for (const callback of pendingIdle.splice(0)) callback();
     },
+    flushTimers: () => {
+      for (const callback of pendingTimers.splice(0)) callback();
+    },
+    timerDelays,
     /** 模拟恢复在线。 */
     goOnline: () => {
       environment.navigator.onLine = true;
@@ -136,7 +162,7 @@ describe("loadAnalytics 加载门", () => {
     const env = createEnvironment();
     loadAnalytics(env.environment, PRODUCTION);
     loadAnalytics(env.environment, PRODUCTION);
-    env.flushIdle();
+    assert.doesNotThrow(() => env.flushIdle());
 
     assert.equal(env.inserted.length, 1);
     assert.equal(
@@ -144,6 +170,7 @@ describe("loadAnalytics 加载门", () => {
       `${ANALYTICS_SCRIPT_URL}?${DEFAULT_ANALYTICS_ID}`,
     );
     assert.equal(env.inserted[0].dataset.analytics, ANALYTICS_SCRIPT_HOST);
+    assert.equal(env.inserted[0].async, true);
   });
 
   it("离线时不插标签，恢复在线后只插一次", () => {
@@ -159,6 +186,51 @@ describe("loadAnalytics 加载门", () => {
     env.goOnline();
     env.flushIdle();
     assert.equal(env.inserted.length, 1, "恢复在线只应补插一次");
+  });
+
+  it("缺少空闲回调时通过计时器加载，且重复调用只插入一次", () => {
+    const env = createEnvironment({ scheduling: "timeout" });
+    loadAnalytics(env.environment, PRODUCTION);
+    loadAnalytics(env.environment, PRODUCTION);
+    assert.deepEqual(env.inserted, [], "计时器执行前不插入脚本");
+    assert.deepEqual(env.timerDelays, [0, 0]);
+    assert.doesNotThrow(() => env.flushTimers());
+
+    assert.equal(env.inserted.length, 1);
+    assert.equal(env.inserted[0].async, true);
+    assert.equal(env.inserted[0].dataset.analytics, ANALYTICS_SCRIPT_HOST);
+    assert.equal(
+      env.inserted[0].src,
+      `${ANALYTICS_SCRIPT_URL}?${DEFAULT_ANALYTICS_ID}`,
+    );
+  });
+
+  it("计时器回退同样遵守开发、关闭统计和离线恢复的加载条件", () => {
+    for (const options of [
+      { ...PRODUCTION, isProduction: false },
+      { ...PRODUCTION, siteId: "" },
+    ]) {
+      const env = createEnvironment({ scheduling: "timeout" });
+      loadAnalytics(env.environment, options);
+      env.flushTimers();
+      assert.deepEqual(env.timerDelays, []);
+      assert.deepEqual(env.inserted, []);
+    }
+
+    const offline = createEnvironment({ online: false, scheduling: "timeout" });
+    loadAnalytics(offline.environment, PRODUCTION);
+    offline.flushTimers();
+    assert.deepEqual(offline.timerDelays, []);
+    assert.deepEqual(offline.inserted, []);
+
+    offline.goOnline();
+    assert.deepEqual(offline.inserted, []);
+    assert.doesNotThrow(() => offline.flushTimers());
+    assert.equal(offline.inserted.length, 1);
+    offline.goOnline();
+    offline.flushTimers();
+    assert.equal(offline.inserted.length, 1);
+    assert.deepEqual(offline.timerDelays, [0]);
   });
 
   it("统计放行时机：只有加载门通过后才放行（离线期间保持关闭）", () => {

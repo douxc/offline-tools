@@ -90,7 +90,7 @@ type ElementLike = {
 type ScriptElementLike = ElementLike & {
   src?: string;
   async?: boolean;
-  dataset?: Record<string, string | undefined>;
+  readonly dataset: Record<string, string | undefined>;
 };
 
 export type DocumentLike = {
@@ -146,7 +146,7 @@ const insertScript = (environment: AnalyticsEnvironment, siteId: string) => {
   if (environment.document.querySelector(selector)) return;
   const script = environment.document.createElement("script");
   script.async = true;
-  script.dataset = { analytics: ANALYTICS_SCRIPT_HOST };
+  script.dataset.analytics = ANALYTICS_SCRIPT_HOST;
   script.src = `${ANALYTICS_SCRIPT_URL}?${siteId}`;
   environment.document.head.appendChild(script);
 };
