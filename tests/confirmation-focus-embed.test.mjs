@@ -28,11 +28,13 @@ test("Popconfirm 初始焦点落在取消键而非确认键", async () => {
     /confirmRef\.current\?\.focus\(\)/,
     "确认键不得成为初始焦点目标",
   );
-  // 取消键是第一个可聚焦控件(先于确认键出现)
+  // 取消键是第一个可聚焦控件(先于确认键出现)。
+  // 确认键文案经词条解析(confirmLabel 可显式覆盖,否则取 common.confirm),
+  // 因此按**解析后**的变量定位；契约本身(取消在前)不变。
   const cancelAt = source.indexOf("ref={cancelRef}");
-  const confirmLabelAt = source.indexOf("{confirmLabel}");
+  const confirmAt = source.indexOf("{resolvedConfirmLabel}");
   assert.ok(
-    cancelAt > 0 && cancelAt < confirmLabelAt,
+    cancelAt > 0 && confirmAt > 0 && cancelAt < confirmAt,
     "取消键应在确认键之前,与焦点落点一致",
   );
 });

@@ -1,9 +1,7 @@
-import {
-  navigateToTool,
-  TOOL_LABELS,
-  TOOL_PATHS,
-  type ToolRoute,
-} from "@/lib/tool-navigation";
+import { toolLabelKey } from "@/lib/i18n/label-keys";
+import { useLocale } from "@/lib/i18n/locale-context";
+import { toolHref } from "@/lib/i18n/routes";
+import { navigateToTool, type ToolRoute } from "@/lib/tool-navigation";
 
 /** 可被列为「相关工具」的全部工具路由（不含首页）。 */
 const LINKABLE_TOOLS: readonly ToolRoute[] = [
@@ -11,6 +9,7 @@ const LINKABLE_TOOLS: readonly ToolRoute[] = [
   "video-compress",
   "image-compress",
   "image-watermark",
+  "id-photo",
   "image-a4-layout",
 ];
 
@@ -20,20 +19,24 @@ export type ToolLinksProps = {
 };
 
 /**
- * 相关工具链接（全量 5 工具、排除当前页）。
+ * 相关工具链接（全量 6 工具、排除当前页）。
  * 真实 `<a href>` + 客户端无刷新导航，支持修饰键/中键。
  */
 export function ToolLinks({ exclude }: ToolLinksProps) {
+  const { locale, t } = useLocale();
   return (
-    <nav className="seo-related-links" aria-label="相关离线工具">
-      <span>相关工具</span>
+    <nav
+      className="seo-related-links"
+      aria-label={t("links.relatedNavLabel")}
+    >
+      <span>{t("links.related")}</span>
       {LINKABLE_TOOLS.filter((route) => route !== exclude).map((route) => (
         <a
           key={route}
-          href={TOOL_PATHS[route]}
+          href={toolHref(locale, route)}
           onClick={(event) => navigateToTool(event, route)}
         >
-          {TOOL_LABELS[route]}
+          {t(toolLabelKey(route))}
         </a>
       ))}
     </nav>

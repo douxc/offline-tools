@@ -1,11 +1,14 @@
 import type { ReactNode } from "react";
 import { Moon, Sun } from "lucide-react";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { LogoMark } from "@/components/logo-mark";
 import { Button } from "@/components/ui/button";
+import { groupLabelKey } from "@/lib/i18n/label-keys";
+import { useLocale } from "@/lib/i18n/locale-context";
+import { toolHref } from "@/lib/i18n/routes";
 import {
   navigateToTool,
   TOOL_GROUPS,
-  TOOL_PATHS,
   toolGroupForRoute,
   type ToolGroup,
   type ToolRoute,
@@ -20,22 +23,24 @@ type ToolHeaderProps = {
 
 export function ToolHeader({ route, trailing }: ToolHeaderProps) {
   const { theme, toggleTheme } = useTheme();
-  const nextThemeLabel = theme === "dark" ? "切换到亮色模式" : "切换到暗色模式";
+  const { locale, t } = useLocale();
+  const nextThemeLabel =
+    theme === "dark" ? t("header.themeToLight") : t("header.themeToDark");
   const currentGroup = toolGroupForRoute(route);
 
   return (
     <header className="topbar">
       <a
         className="brand"
-        href={TOOL_PATHS.home}
+        href={toolHref(locale, "home")}
         onClick={(event) => navigateToTool(event, "home")}
-        aria-label="离线工具首页"
+        aria-label={t("brand.homeLabel")}
       >
         <LogoMark className="brand-mark" />
-        <span>离线工具</span>
+        <span>{t("brand.name")}</span>
       </a>
 
-      <nav className="tool-nav" aria-label="工具导航">
+      <nav className="tool-nav" aria-label={t("header.navLabel")}>
         {(Object.keys(TOOL_GROUPS) as ToolGroup[]).map((group) => {
           const config = TOOL_GROUPS[group];
           const isCurrent = currentGroup === group;
@@ -43,11 +48,11 @@ export function ToolHeader({ route, trailing }: ToolHeaderProps) {
             <a
               key={group}
               className={isCurrent ? "active" : ""}
-              href={TOOL_PATHS[config.default]}
+              href={toolHref(locale, config.default)}
               onClick={(event) => navigateToTool(event, config.default)}
               aria-current={isCurrent ? "page" : undefined}
             >
-              {config.label}
+              {t(groupLabelKey(group))}
             </a>
           );
         })}
@@ -56,8 +61,9 @@ export function ToolHeader({ route, trailing }: ToolHeaderProps) {
       <div className="header-actions">
         <div className="privacy-note">
           <span className="status-dot" aria-hidden="true" />
-          本地处理 · 不上传文件
+          {t("header.privacyNote")}
         </div>
+        <LanguageSwitcher />
         <Button
           variant="outline"
           size="icon"

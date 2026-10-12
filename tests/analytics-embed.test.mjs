@@ -20,20 +20,21 @@ import { siteUrl } from "../vite.config.ts";
 
 const distRoot = new URL("../dist/", import.meta.url);
 
-/** 六个 HTML 入口：文件 -> 自身路由。 */
-const PAGES = [
-  "index.html",
-  "video-frame/index.html",
-  "video-compress/index.html",
-  "image-compress/index.html",
-  "image-watermark/index.html",
-  "image-a4-layout/index.html",
-];
+import { allEntryCombinations } from "../src/lib/i18n/entry-html.ts";
+
+/** dist 中的入口 HTML 路径：URL 路径 -> `<路径>/index.html`。 */
+const distEntry = (urlPath) =>
+  `${[...urlPath.split("/").filter(Boolean), "index.html"].join("/")}`;
+
+/** 全部 21 个「语言 × 工具」入口，由语言数据源驱动。 */
+const ENTRY_FILES = allEntryCombinations().map(({ path }) => distEntry(path));
+
+const PAGES = ENTRY_FILES;
 
 /** 预期注入的标识：与构建期解析规则一致（环境变量优先，否则内置默认值）。 */
 const expectedSiteId = (process.env.VITE_ANALYTICS_ID ?? "").trim();
 
-test("六个 HTML 入口都携带注入后的统计站点标识", async () => {
+test("21 个语言入口都携带注入后的统计站点标识", async () => {
   for (const file of PAGES) {
     const html = await readFile(new URL(file, distRoot), "utf8");
     const content = html.match(
@@ -49,7 +50,7 @@ test("六个 HTML 入口都携带注入后的统计站点标识", async () => {
   }
 });
 
-test("六个 HTML 入口不残留未替换的统计标识占位符", async () => {
+test("21 个语言入口不残留未替换的统计标识占位符", async () => {
   for (const file of PAGES) {
     const html = await readFile(new URL(file, distRoot), "latin1");
     assert.ok(

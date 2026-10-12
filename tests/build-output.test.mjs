@@ -3,32 +3,35 @@ import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 import { ANALYTICS_META_NAME } from "../src/lib/analytics.ts";
 import { SITE_URL } from "../src/lib/site.ts";
+import { allEntryCombinations } from "../src/lib/i18n/entry-html.ts";
+import { LOCALES } from "../src/lib/i18n/locales.ts";
+import { seoContentFor, seoPathFor } from "../src/lib/i18n/seo-content.ts";
 
 const root = new URL("../", import.meta.url);
 
+/** 该入口在 dist 中的 HTML 路径：URL 路径 -> `<路径>/index.html`。 */
+const distFileFor = (urlPath) =>
+  `dist/${[...urlPath.split("/").filter(Boolean), "index.html"].join("/")}`;
+
+const ENTRIES = allEntryCombinations();
+
+const readDist = (path) => readFile(new URL(path, root), "utf8");
+
 test("build emits a static offline multi-page app", async () => {
-  const [
-    homeHtml,
-    videoHtml,
-    videoCompressHtml,
-    compressHtml,
-    watermarkHtml,
-    a4LayoutHtml,
-    manifest,
-    packageJson,
-    robots,
-    sitemap,
-  ] = await Promise.all([
-    readFile(new URL("dist/index.html", root), "utf8"),
-    readFile(new URL("dist/video-frame/index.html", root), "utf8"),
-    readFile(new URL("dist/video-compress/index.html", root), "utf8"),
-    readFile(new URL("dist/image-compress/index.html", root), "utf8"),
-    readFile(new URL("dist/image-watermark/index.html", root), "utf8"),
-    readFile(new URL("dist/image-a4-layout/index.html", root), "utf8"),
-    readFile(new URL("dist/manifest.webmanifest", root), "utf8"),
-    readFile(new URL("package.json", root), "utf8"),
-    readFile(new URL("dist/robots.txt", root), "utf8"),
-    readFile(new URL("dist/sitemap.xml", root), "utf8"),
+  const [manifest, packageJson, robots, sitemap] = await Promise.all([
+    readDist("dist/manifest.webmanifest"),
+    readDist("package.json"),
+    readDist("dist/robots.txt"),
+    readDist("dist/sitemap.xml"),
+  ]);
+
+  // 全部 21 个「语言 × 工具」入口都必须存在
+  assert.equal(ENTRIES.length, 21, "应有 21 个语言化入口");
+  for (const entry of ENTRIES) {
+    await access(new URL(distFileFor(entry.path), root));
+  }
+
+  await Promise.all([
     access(new URL("dist/sw.js", root)),
     access(new URL("dist/pwa-192.png", root)),
     access(new URL("dist/pwa-512.png", root)),
@@ -39,9 +42,27 @@ test("build emits a static offline multi-page app", async () => {
     access(new URL("dist/legal/CORRESPONDING_SOURCE.md", root)),
   ]);
 
-  const pages = [homeHtml, videoHtml, videoCompressHtml, compressHtml, watermarkHtml, a4LayoutHtml];
-  for (const html of pages) {
-    assert.match(html, /<html lang="zh-CN"/i);
+  // 每个入口的语言、标题与必需 head 元素由语言数据源驱动 ——
+  // 新增语言时本测试无需改写任何字面量，只跟随数据源。
+  for (const entry of ENTRIES) {
+    const html = await readDist(distFileFor(entry.path));
+    const locale = LOCALES[entry.locale];
+    const content = seoContentFor(entry.locale, entry.route);
+    const where = `${entry.locale} × ${entry.route}`;
+
+    assert.match(
+      html,
+      new RegExp(`<html lang="${locale.htmlLang}"`, "i"),
+      `${where} 的 lang 应为 ${locale.htmlLang}`,
+    );
+    assert.ok(
+      html.includes(`<title>${content.title}</title>`),
+      `${where} 的标题应取自该语言数据源`,
+    );
+    assert.ok(
+      html.includes(`property="og:locale" content="${locale.ogLocale}"`),
+      `${where} 的 og:locale 应为 ${locale.ogLocale}`,
+    );
     assert.match(html, /manifest\.webmanifest/);
     assert.match(html, /id="root"/);
     assert.match(html, /rel="canonical"/);
@@ -56,62 +77,62 @@ test("build emits a static offline multi-page app", async () => {
       new RegExp(`<meta name="${ANALYTICS_META_NAME}" content="[0-9a-f]{16,64}"`),
     );
     assert.doesNotMatch(html, /__next|_rsc|vinext|#\/(video|image)/i);
+    // 生成器不得把未替换的占位符留下
+    assert.doesNotMatch(html, /__SITE_URL__|__ANALYTICS_ID__|__ENTRY_MODULE__/);
+
+    // canonical 与 og:url 指向自身语言的规范路径
+    const canonicalUrl = `${SITE_URL}${seoPathFor(entry.locale, entry.route)}`;
+    const canonicalTag =
+      html.match(/<link[^>]*rel="canonical"[^>]*\/?>/)?.[0] ?? "";
+    assert.equal(
+      canonicalTag.match(/href="([^"]+)"/)?.[1],
+      canonicalUrl,
+      `${where} 的 canonical`,
+    );
+    const ogUrlTag =
+      html.match(/<meta[^>]*property="og:url"[^>]*\/?>/)?.[0] ?? "";
+    assert.equal(
+      ogUrlTag.match(/content="([^"]+)"/)?.[1],
+      canonicalUrl,
+      `${where} 的 og:url`,
+    );
   }
 
-  assert.match(
-    homeHtml,
-    /<title>离线工具箱｜在线视频取帧、图片压缩与图片加水印<\/title>/,
-  );
-  assert.match(
-    videoHtml,
-    /<title>视频取帧工具｜在线逐帧截图、视频转图片 - 离线工具<\/title>/,
-  );
-  assert.match(
-    videoCompressHtml,
-    /<title>[^<]*视频压缩[^<]*<\/title>/,
-  );
-  assert.match(
-    compressHtml,
-    /<title>在线图片压缩工具｜批量压缩 PNG、JPG、WebP - 离线工具<\/title>/,
-  );
-  assert.match(
-    watermarkHtml,
-    /<title>图片加水印工具｜在线批量添加文字水印 - 离线工具<\/title>/,
-  );
-  assert.match(
-    a4LayoutHtml,
-    /<title>图片 A4 排版打印工具｜批量排版照片打印 - 离线工具<\/title>/,
-  );
-  // 断言与单一来源（src/lib/site.ts）比较而非写死域名：换域名只需改单一来源，
-  // 这里不会因域名变更而需要同步修改（见 openspec/changes/fix-site-url-single-source）。
-  const a4CanonicalTag =
-    a4LayoutHtml.match(/<link[^>]*rel="canonical"[^>]*\/?>/)?.[0] ?? "";
-  assert.equal(
-    a4CanonicalTag.match(/href="([^"]+)"/)?.[1],
-    `${SITE_URL}/image-a4-layout/`,
-  );
-  const a4OgUrlTag =
-    a4LayoutHtml.match(/<meta[^>]*property="og:url"[^>]*\/?>/)?.[0] ?? "";
-  assert.equal(
-    a4OgUrlTag.match(/content="([^"]+)"/)?.[1],
-    `${SITE_URL}/image-a4-layout/`,
-  );
   assert.match(robots, /^User-agent: \*/m);
   assert.match(robots, /Sitemap: .*\/sitemap\.xml/);
-  for (const path of [
-    "/video-frame/",
-    "/video-compress/",
-    "/image-compress/",
-    "/image-watermark/",
-    "/image-a4-layout/",
-  ]) {
-    assert.match(sitemap, new RegExp(`<loc>[^<]+${path}</loc>`));
+
+  // sitemap 需覆盖全部 21 个语言化路径
+  for (const entry of ENTRIES) {
+    assert.match(
+      sitemap,
+      new RegExp(`<loc>[^<]+${seoPathFor(entry.locale, entry.route)}</loc>`),
+      `sitemap 缺少 ${entry.locale} × ${entry.route}`,
+    );
   }
 
   const parsedManifest = JSON.parse(manifest);
-  assert.equal(parsedManifest.name, "离线工具 · 视频取帧与图片处理");
   assert.equal(parsedManifest.display, "standalone");
   assert.equal(parsedManifest.theme_color, "#000000");
+  assert.ok(
+    typeof parsedManifest.name === "string" && parsedManifest.name.length > 0,
+    "manifest 应有名称",
+  );
+  // manifest 只声明**默认语言**（每次安装一份）：与根路径的英语默认一致。
+  // 安装后打开时，已保存的偏好在首帧前生效，用户仍看到自己选择的语言。
+  assert.equal(
+    parsedManifest.lang,
+    "en",
+    "manifest 的语言应为默认语言（英语），与根路径一致",
+  );
+  assert.equal(
+    parsedManifest.name,
+    seoContentFor("en", "home").applicationNameJsonLd + " · Frame extraction and image processing",
+    "manifest 名称应取自默认语言",
+  );
+  assert.ok(
+    !/[\u4e00-\u9fff]/.test(parsedManifest.name),
+    "manifest 名称不应含中文（默认语言是英语）",
+  );
 
   // 防护「Next.js / vinext / 边缘运行时」回流。用依赖名精确匹配而非子串:
   // `next-themes` 是 shadcn 主题方案的正规依赖,不应被 /next/ 误伤。

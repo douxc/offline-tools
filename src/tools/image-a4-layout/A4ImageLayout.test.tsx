@@ -11,14 +11,18 @@ import {
   type A4SheetItem,
 } from "./A4ImageLayout";
 import { paginateFlow, type FlowRow } from "@/lib/a4-layout";
+import { withLocale } from "@/lib/i18n/test-locale";
 import { ThemeProvider } from "@/lib/theme";
 
+/**
+ * 断言中文文案的用例必须显式包 zh-CN provider：SSR 没有 DOM、也没有 provider，
+ * `useLocale` 会退回默认语言（英语）。
+ */
 const render = (element: ReactElement) =>
   renderToString(
-    createElement(
-      ThemeProvider,
-      { initialTheme: "dark" },
-      element,
+    withLocale(
+      createElement(ThemeProvider, { initialTheme: "dark" }, element),
+      "zh-CN",
     ),
   ).replace(/<!--[\s\S]*?-->/g, "");
 
@@ -52,7 +56,7 @@ describe("A4ImageLayout（空状态）", () => {
     assert.match(html, /添加水印/);
     assert.match(
       html,
-      /href="\/image-a4-layout\/"[^>]*aria-selected="true"[^>]*>A4 排版/,
+      /href="\/zh\/image-a4-layout\/"[^>]*aria-selected="true"[^>]*>A4 排版/,
     );
     assert.match(html, /title="先导入图片"/);
     assert.match(html, /class="seo-content"/);
@@ -219,5 +223,39 @@ describe("分页与行结构", () => {
       pageRows.reduce((sum, rows) => sum + rows.length, 0),
       flow.rows.length,
     );
+  });
+});
+
+describe("A4 工具文案随语言变化", () => {
+  it("英语渲染英语文案与无前缀链接", () => {
+    const html = renderToString(
+      withLocale(createElement(A4ImageLayout), "en"),
+    );
+    // 空状态：打印设置面板尚未渲染，只断言空状态实际存在的文案
+    assert.match(html, /Import images first/);
+    assert.match(html, /Print A4 layout \(0 pages\)/);
+    assert.match(html, /Clear images/);
+    assert.match(html, /Choose images/);
+    assert.doesNotMatch(html, /[\u4e00-\u9fff]/);
+  });
+
+  it("日语渲染日语文案", () => {
+    const html = renderToString(
+      withLocale(createElement(A4ImageLayout), "ja"),
+    );
+    assert.match(html, /先に画像を読み込んでください/);
+    assert.match(html, /画像を選択/);
+    assert.match(html, /A4 版面を印刷/);
+  });
+
+  it("三种语言的分页与列表文案各不相同", () => {
+    const zh = renderToString(withLocale(createElement(A4ImageLayout), "zh-CN"));
+    const en = renderToString(withLocale(createElement(A4ImageLayout), "en"));
+    const ja = renderToString(withLocale(createElement(A4ImageLayout), "ja"));
+    assert.match(zh, /打印 A4 版面/);
+    assert.ok(!en.includes("打印设置"));
+    assert.ok(!ja.includes("打印设置"));
+    assert.match(en, /Print A4 layout/);
+    assert.match(ja, /A4 版面を印刷/);
   });
 });

@@ -1,8 +1,10 @@
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useRegisterSW } from "virtual:pwa-register/react";
+import { useT } from "@/lib/i18n/locale-context";
 
 export function PwaStatus() {
+  const t = useT();
   const offlineToastShown = useRef(false);
   const updateToastShown = useRef(false);
   const {
@@ -17,22 +19,22 @@ export function PwaStatus() {
   useEffect(() => {
     if (!offlineReady || offlineToastShown.current) return;
     offlineToastShown.current = true;
-    toast.success("已可离线使用", {
-      description: "页面资源已保存在当前设备。",
+    toast.success(t("pwa.offlineReady"), {
+      description: t("pwa.offlineReadyBody"),
       duration: 4200,
       onDismiss: () => setOfflineReady(false),
     });
-  }, [offlineReady, setOfflineReady]);
+  }, [offlineReady, setOfflineReady, t]);
 
   useEffect(() => {
     if (!needRefresh || updateToastShown.current) return;
     updateToastShown.current = true;
-    toast.info("新版本已缓存", {
-      description: "不会打断当前工作，下次打开时自动生效。",
+    toast.info(t("pwa.updateReady"), {
+      description: t("pwa.updateReadyBody"),
       duration: 8000,
       onDismiss: () => setNeedRefresh(false),
     });
-  }, [needRefresh, setNeedRefresh]);
+  }, [needRefresh, setNeedRefresh, t]);
 
   return null;
 }

@@ -43,9 +43,11 @@ test("视频取帧:成功/失败/取消分别挂在不同分支", async () => {
 
   // 批量抽帧：成功带帧数与格式，失败在 catch，取消在 cancelBatchRef 分支
   const batch = between(source, "const exportBatch = async", "const handleDrop =");
+  // 文案已迁到词条，因此这里断言**词条键**而不是中文字面量；
+  // 中文取值本身由 messages.test.ts 的完备性断言守护。
   assert.match(
     batch,
-    /catch \{\s*trackBatchFrameExportFailed\(\);[\s\S]*toast\.error\("批量抽帧失败"/,
+    /catch \{\s*trackBatchFrameExportFailed\(\);[\s\S]*toast\.error\(t\("vf\.errBatchFailed"\)/,
   );
   assert.match(
     batch,

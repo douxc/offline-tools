@@ -16,6 +16,9 @@ import {
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useT } from "@/lib/i18n/locale-context";
+import type { MessageKey } from "@/lib/i18n/message-keys";
+import { LocalizedError, translateError } from "@/lib/i18n/localized-error";
 import { ToolHeader } from "@/components/tool-header";
 import { ToolSeoContent } from "@/components/tool-seo-content";
 import { LicenseFooter } from "@/components/license-footer";
@@ -48,7 +51,8 @@ type ProcessedResult = {
   fileName: string;
   originalSize: number;
   outputSize: number;
-  label: string;
+  /** 结果徽标的**词条键**：渲染处用 t(...) 翻成当前语言。 */
+  labelKey: MessageKey;
   contextKey: string;
 };
 
@@ -94,7 +98,7 @@ const canvasToBlob = (
   new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
       (blob) =>
-        blob ? resolve(blob) : reject(new Error("浏览器无法编码这张图片")),
+        blob ? resolve(blob) : reject(new LocalizedError("img.errEncode")),
       mime,
       quality,
     );
@@ -146,7 +150,7 @@ const loadImageAsset = (file: File): Promise<ImageAsset> =>
     image.onload = () => {
       if (image.naturalWidth * image.naturalHeight > MAX_PIXELS) {
         URL.revokeObjectURL(url);
-        reject(new Error(`${file.name} 超过 6000 万像素，暂不处理`));
+        reject(new LocalizedError("img.errTooManyPixels"));
         return;
       }
       resolve({
@@ -160,18 +164,27 @@ const loadImageAsset = (file: File): Promise<ImageAsset> =>
     };
     image.onerror = () => {
       URL.revokeObjectURL(url);
-      reject(new Error(`${file.name} 无法由当前浏览器解码`));
+      reject(new LocalizedError("img.errDecode"));
     };
     image.src = url;
   });
 
-const strategyLabel = (strategy: PngCompressionStrategy) => {
-  if (strategy === "libimagequant-oxipng") return "PNG-8 + OxiPNG";
-  if (strategy === "oxipng") return "OxiPNG 无损";
-  return "原图已最优";
+/**
+ * 压缩策略 -> **词条键**（不是文案）。
+ *
+ * 这个 helper 在模块作用域，没有 React 上下文，因此只产出键；
+ * 渲染处用 `t(...)` 翻成当前语言。
+ */
+const strategyLabelKey = (
+  strategy: PngCompressionStrategy,
+): MessageKey => {
+  if (strategy === "libimagequant-oxipng") return "img.badgeQuantised";
+  if (strategy === "oxipng") return "img.badgeLossless";
+  return "img.badgeAlreadyOptimal";
 };
 
 export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
+  const t = useT();
   const inputRef = useRef<HTMLInputElement>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
   const compressorRef = useRef<PngCompressor | null>(null);
@@ -180,7 +193,9 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
   const [assets, setAssets] = useState<ImageAsset[]>([]);
   const [selectedId, setSelectedId] = useState("");
   const [quality, setQuality] = useState(80);
-  const [watermarkText, setWatermarkText] = useState("样图");
+  // 默认水印文字：用户输入框的初始值，属于**用户数据**而非界面文案，
+  // 因此固定为语言无关的占位（空串由 placeholder 提示）。
+  const [watermarkText, setWatermarkText] = useState("");
   const [watermarkSize, setWatermarkSize] = useState(6);
   const [watermarkOpacity, setWatermarkOpacity] = useState(60);
   const [watermarkAngle, setWatermarkAngle] = useState(-28);
@@ -247,7 +262,7 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
         /\.(png|jpe?g|webp)$/i.test(file.name),
     );
     if (candidates.length === 0) {
-      toast.error("请选择 PNG、JPG 或 WebP 图片");
+      toast.error(t("img.errPickImages"));
       return;
     }
 
@@ -265,11 +280,11 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
       setResults({});
     }
     if (failures.length > 0) {
-      toast.error(`${failures.length} 张图片未能导入`, {
+      toast.error(t("img.importFailed", failures.length), {
         description: failures[0],
       });
     }
-  }, []);
+  }, [t]);
 
   const clearAll = () => {
     for (const asset of assets) URL.revokeObjectURL(asset.url);
@@ -304,7 +319,7 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
       context,
       canvas.width,
       canvas.height,
-      watermarkText.trim() || "样图",
+      watermarkText.trim() || t("img.badgeSample"),
       watermarkSize,
       watermarkOpacity / 100,
       watermarkAngle,
@@ -314,7 +329,7 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
     watermarkAngle,
     watermarkOpacity,
     watermarkSize,
-    watermarkText,
+    watermarkText, t,
   ]);
 
   useEffect(() => {
@@ -335,7 +350,7 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
         fileName: `${baseName(asset.file.name)}.png`,
         originalSize: result.originalSize,
         outputSize: result.outputSize,
-        label: strategyLabel(result.strategy),
+        labelKey: strategyLabelKey(result.strategy),
         contextKey,
       };
     }
@@ -344,7 +359,7 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
     canvas.width = asset.width;
     canvas.height = asset.height;
     const context = canvas.getContext("2d");
-    if (!context) throw new Error("无法创建图片画布");
+    if (!context) throw new LocalizedError("img.errCanvas");
     if (mime === "image/jpeg") {
       context.fillStyle = "#ffffff";
       context.fillRect(0, 0, canvas.width, canvas.height);
@@ -357,11 +372,11 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
       fileName: `${baseName(asset.file.name)}.${extensionForMime(mime)}`,
       originalSize: asset.file.size,
       outputSize: useOriginal ? asset.file.size : candidate.size,
-      label: useOriginal
-        ? "原图已最优"
+      labelKey: useOriginal
+        ? "img.badgeAlreadyOptimal"
         : mime === "image/webp"
-          ? "WebP 自适应质量"
-          : "JPEG 自适应质量",
+          ? "img.badgeWebpAuto"
+          : "img.badgeJpegAuto",
       contextKey,
     };
   };
@@ -374,7 +389,7 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
     canvas.width = asset.width;
     canvas.height = asset.height;
     const context = canvas.getContext("2d");
-    if (!context) throw new Error("无法创建图片画布");
+    if (!context) throw new LocalizedError("img.errCanvas");
     if (mime === "image/jpeg") {
       context.fillStyle = "#ffffff";
       context.fillRect(0, 0, canvas.width, canvas.height);
@@ -384,7 +399,7 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
       context,
       canvas.width,
       canvas.height,
-      watermarkText.trim() || "样图",
+      watermarkText.trim() || t("img.badgeSample"),
       watermarkSize,
       watermarkOpacity / 100,
       watermarkAngle,
@@ -399,7 +414,7 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
       fileName: `${baseName(asset.file.name)}_watermarked.${extensionForMime(blob.type || mime)}`,
       originalSize: asset.file.size,
       outputSize: blob.size,
-      label: "原尺寸文字水印",
+      labelKey: "img.badgeOriginalSizeWatermark",
       contextKey,
     };
   };
@@ -430,9 +445,8 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
           setResults({ ...nextResults });
         } catch (error) {
           failed += 1;
-          toast.error(`${asset.file.name} 处理失败`, {
-            description:
-              error instanceof Error ? error.message : "发生未知错误",
+          toast.error(`${asset.file.name} ${t("img.errProcessing")}`, {
+            description: translateError(t, error) || t("img.errUnknown"),
           });
         }
       }
@@ -446,17 +460,19 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
       });
       if (cancelled) {
         // 失败恢复契约:说明已保留的内容与可继续的路径,不丢失已导入对象
-        toast.info("已取消处理", {
-          description: `已完成的图片保留在列表中，其余 ${assets.length - Object.keys(nextResults).length} 张未处理，可随时重新开始。`,
+        toast.info(t("img.cancelled"), {
+          description: t(
+            "img.cancelledBody",
+            assets.length - Object.keys(nextResults).length,
+          ),
         });
       } else if (failed === 0) {
-        toast.success(`${assets.length} 张图片处理完成`);
+        toast.success(t("img.done", assets.length));
       } else {
         toast.warning(
-          `${assets.length - failed} 张完成，${failed} 张处理失败`,
+          t("img.partial", assets.length - failed, failed),
           {
-            description:
-              "失败的图片保留在列表中，可调整参数后重新处理；已导入的图片不会丢失。",
+            description: t("img.partialBody"),
           },
         );
       }
@@ -508,9 +524,9 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
         trailing={
           assets.length > 0 ? (
             <Popconfirm
-              title="确认清空全部图片？"
-              description={`将移除全部 ${assets.length} 张图片，处理结果一并清除。`}
-              confirmLabel="确认清空"
+              title={t("img.clearTitle")}
+              description={t("img.clearDescription", assets.length)}
+              confirmLabel={t("img.clearConfirm")}
               onConfirm={clearAll}
               trigger={
                 <Button
@@ -518,7 +534,7 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
                   type="button"
                   disabled={processing}
                 >
-                  清空图片
+                  {t("img.clearTrigger")}
                 </Button>
               }
             />
@@ -529,14 +545,14 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
       <section className="image-editor">
         <div className="image-heading">
           <div>
-            <p className="eyebrow">浏览器本地图片处理</p>
+            <p className="eyebrow">{t("img.eyebrow")}</p>
             <h1>
-              {mode === "compress" ? "图片压缩" : "图片添加水印"}
+              {mode === "compress" ? t("img.titleCompress") : t("img.titleWatermark")}
             </h1>
             <p>
               {mode === "compress"
-                ? "在当前浏览器完成压缩与量化，图片不会上传。"
-                : "在当前浏览器批量添加文字水印，图片不会上传。"}
+                ? t("img.leadCompress")
+                : t("img.leadWatermark")}
             </p>
           </div>
           <ToolTabs group="image" active={route} />
@@ -557,24 +573,24 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
               <ImageIcon />
               <Sparkles />
             </div>
-            <strong>拖放图片到这里</strong>
-            <span>或点击选择，可一次导入多张</span>
+            <strong>{t("img.dropIdle")}</strong>
+            <span>{t("img.dropHint")}</span>
             <Button
               type="button"
               size="lg"
               onClick={() => inputRef.current?.click()}
             >
-              选择图片
+              {t("img.selectImages")}
             </Button>
-            <small>支持 PNG、JPG、WebP · 单张不超过 6000 万像素</small>
+            <small>{t("img.acceptedFormats")}</small>
           </div>
         ) : (
           <div className="image-workspace">
             <Card className="image-list-panel">
               <div className="image-panel-title">
                 <div>
-                  <span>待处理图片</span>
-                  <small>{assets.length} 张</small>
+                  <span>{t("img.listTitle")}</span>
+                  <small>{t("img.itemCount", assets.length)}</small>
                 </div>
                 <Button
                   type="button"
@@ -583,7 +599,7 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
                   onClick={() => inputRef.current?.click()}
                   disabled={processing}
                 >
-                  + 添加
+                  + {t("img.add")}
                 </Button>
               </div>
               <div className="image-list">
@@ -611,7 +627,7 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
                           </small>
                           {result && (
                             <small className="result-label">
-                              <Check size={12} /> {result.label}
+                              <Check size={12} /> {t(result.labelKey)}
                             </small>
                           )}
                         </span>
@@ -620,7 +636,7 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
                         variant="ghost"
                         size="icon"
                         className="text-muted-foreground hover:text-destructive"
-                        aria-label={`移除 ${asset.file.name}`}
+                        aria-label={`${t("img.remove")} ${asset.file.name}`}
                         onClick={() => removeAsset(asset.id)}
                       >
                         <Trash2 />
@@ -634,11 +650,11 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
             <Card className="image-preview-panel">
               <div className="image-panel-title">
                 <div>
-                  <span>{mode === "compress" ? "原图预览" : "水印预览"}</span>
+                  <span>{mode === "compress" ? t("img.previewOriginal") : t("img.previewWatermark")}</span>
                   <small>
                     {selected
                       ? `${selected.width} × ${selected.height}`
-                      : "未选择"}
+                      : t("img.noneSelected")}
                   </small>
                 </div>
               </div>
@@ -647,7 +663,7 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
                   (mode === "watermark" ? (
                     <canvas
                       ref={previewCanvasRef}
-                      aria-label="图片水印预览"
+                      aria-label={t("img.previewLabel")}
                     />
                   ) : (
                     <img src={selected.url} alt={selected.file.name} />
@@ -656,7 +672,7 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
                   <div className="processing-overlay" role="status">
                     <LoaderCircle size={25} />
                     <span>
-                      正在处理 {progress.current} / {progress.total}
+                      {t("img.processing")} {progress.current} / {progress.total}
                     </span>
                   </div>
                 )}
@@ -665,11 +681,11 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
 
             <Card className="image-settings-panel">
               <p className="panel-number">01</p>
-              <h2>{mode === "compress" ? "压缩设置" : "文字水印"}</h2>
+              <h2>{mode === "compress" ? t("img.compressSettings") : t("img.watermarkText")}</h2>
 
               {mode === "watermark" && (
                 <label className="text-control">
-                  <span>水印文字</span>
+                  <span>{t("img.watermarkTextLabel")}</span>
                   <input
                     value={watermarkText}
                     maxLength={60}
@@ -682,7 +698,7 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
               <div className="image-slider-control">
                 <div>
                   <label htmlFor="image-quality">
-                    {mode === "compress" ? "压缩质量" : "输出质量"}
+                    {mode === "compress" ? t("img.compressQuality") : t("img.outputQuality")}
                   </label>
                   <span>{quality}%</span>
                 </div>
@@ -701,7 +717,7 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
                 <>
                   <div className="image-slider-control">
                     <div>
-                      <label htmlFor="watermark-size">文字大小</label>
+                      <label htmlFor="watermark-size">{t("img.fontSize")}</label>
                       <span>{watermarkSize}%</span>
                     </div>
                     <Slider
@@ -716,7 +732,7 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
                   </div>
                   <div className="image-slider-control">
                     <div>
-                      <label htmlFor="watermark-opacity">水印强度</label>
+                      <label htmlFor="watermark-opacity">{t("img.watermarkStrength")}</label>
                       <span>{watermarkOpacity}%</span>
                     </div>
                     <Slider
@@ -731,7 +747,7 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
                   </div>
                   <div className="image-slider-control">
                     <div>
-                      <label htmlFor="watermark-angle">倾斜角度</label>
+                      <label htmlFor="watermark-angle">{t("img.angle")}</label>
                       <span>{watermarkAngle}°</span>
                     </div>
                     <Slider
@@ -750,8 +766,8 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
               <div className="image-processing-note">
                 <span className="status-dot" />
                 {mode === "compress"
-                  ? "PNG 自动选择量化或无损方案；JPG/WebP 不变大。"
-                  : "保持原始尺寸与格式，PNG 透明通道不会被填白。"}
+                  ? t("img.compressNote")
+                  : t("img.watermarkNote")}
               </div>
 
               {/* 单槽:处理中在同一位置提供取消,不新增进度行(interaction-modes) */}
@@ -763,8 +779,11 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
                   onClick={cancelProcessing}
                 >
                   <LoaderCircle className="spin" />
-                  停止处理（{modeState.progress?.current ?? 0}/
-                  {modeState.progress?.total ?? assets.length}）
+                  {t(
+                    "img.stop",
+                    modeState.progress?.current ?? 0,
+                    modeState.progress?.total ?? assets.length,
+                  )}
                 </Button>
               ) : (
                 <Button
@@ -773,7 +792,7 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
                   onClick={() => void processAll()}
                 >
                   <Sparkles />
-                  处理全部 {assets.length} 张
+                  {t("img.processAll", assets.length)}
                 </Button>
               )}
 
@@ -781,18 +800,25 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
                 <div className="image-results-summary">
                   <div>
                     <span>
-                      {Object.keys(activeResults).length} 张已完成
-                      {modeState.mode === "partial" && ` · ${assets.length - Object.keys(activeResults).length} 张待重试`}
+                      {t("img.doneCount", Object.keys(activeResults).length)}
+                      {modeState.mode === "partial" &&
+                        ` · ${t(
+                          "img.retryCount",
+                          assets.length - Object.keys(activeResults).length,
+                        )}`}
                     </span>
                     <small>
                       {mode === "compress"
-                        ? `共节省 ${formatBytes(Math.max(0, totalOriginal - totalOutput))}`
-                        : `输出 ${formatBytes(totalOutput)}`}
+                        ? t(
+                            "img.savedBytes",
+                            formatBytes(Math.max(0, totalOriginal - totalOutput)),
+                          )
+                        : t("img.outputBytes", formatBytes(totalOutput))}
                     </small>
                   </div>
                   <Button type="button" size="sm" onClick={downloadAll}>
                     <Download />
-                    下载全部
+                    {t("img.downloadAll")}
                   </Button>
                 </div>
               )}
@@ -805,7 +831,7 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
                   onClick={() => downloadResult(activeResults[selected.id])}
                 >
                   <Download />
-                  下载当前图片
+                  {t("img.downloadCurrent")}
                 </Button>
               )}
             </Card>

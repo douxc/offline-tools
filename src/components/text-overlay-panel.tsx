@@ -1,5 +1,7 @@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Slider } from "@/components/ui/slider";
+import { useT } from "@/lib/i18n/locale-context";
+import type { MessageKey } from "@/lib/i18n/message-keys";
 import { type OverlayPosition } from "@/lib/text-overlay";
 
 export interface TextOverlayPanelProps {
@@ -13,9 +15,9 @@ export interface TextOverlayPanelProps {
   onSizeRatioChange: (sizeRatio: number) => void;
 }
 
-const POSITIONS: { value: OverlayPosition; label: string }[] = [
-  { value: "bottom", label: "底部居中" },
-  { value: "top", label: "顶部居中" },
+const POSITIONS: { value: OverlayPosition; labelKey: MessageKey }[] = [
+  { value: "bottom", labelKey: "overlay.positionBottom" },
+  { value: "top", labelKey: "overlay.positionTop" },
 ];
 
 export function TextOverlayPanel(props: TextOverlayPanelProps) {
@@ -29,6 +31,7 @@ export function TextOverlayPanel(props: TextOverlayPanelProps) {
     sizeRatio,
     onSizeRatioChange,
   } = props;
+  const t = useT();
 
   return (
     <div className="text-overlay-panel">
@@ -38,31 +41,31 @@ export function TextOverlayPanel(props: TextOverlayPanelProps) {
           checked={enabled}
           onChange={(event) => onEnabledChange(event.target.checked)}
         />
-        <span>导出时叠加文字</span>
+        <span>{t("overlay.title")}</span>
       </label>
 
       {enabled && (
         <>
           <label className="text-control">
-            <span>字幕文字</span>
+            <span>{t("overlay.textLabel")}</span>
             <input
               type="text"
               value={text}
               onChange={(event) => onTextChange(event.target.value)}
-              placeholder="输入字幕文字"
+              placeholder={t("overlay.textPlaceholder")}
               maxLength={60}
             />
           </label>
 
           <div className="overlay-position-group">
-            <span>位置</span>
+            <span>{t("overlay.position")}</span>
             <ToggleGroup
               type="single"
               value={position}
               onValueChange={(next) => {
                 if (next) onPositionChange(next as typeof position);
               }}
-              aria-label="字幕位置"
+              aria-label={t("overlay.textAriaLabel")}
               className="w-full"
             >
               {POSITIONS.map((item) => (
@@ -71,7 +74,7 @@ export function TextOverlayPanel(props: TextOverlayPanelProps) {
                   value={item.value}
                   className="flex-1 text-xs"
                 >
-                  {item.label}
+                  {t(item.labelKey)}
                 </ToggleGroupItem>
               ))}
             </ToggleGroup>
@@ -79,7 +82,7 @@ export function TextOverlayPanel(props: TextOverlayPanelProps) {
 
           <div className="quality-group">
             <div className="quality-label">
-              <label htmlFor="overlay-size">字号</label>
+              <label htmlFor="overlay-size">{t("overlay.size")}</label>
               <span>{Math.round(sizeRatio * 100)}%</span>
             </div>
             <Slider
@@ -89,7 +92,7 @@ export function TextOverlayPanel(props: TextOverlayPanelProps) {
               step={0.01}
               value={[sizeRatio]}
               onValueChange={([value]) => onSizeRatioChange(value)}
-              aria-label="字幕字号"
+              aria-label={t("overlay.sizeLabel")}
             />
           </div>
         </>

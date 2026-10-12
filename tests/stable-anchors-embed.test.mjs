@@ -31,7 +31,8 @@ test("图片处理页:反馈与结果位于主操作同一有界容器内", asyn
   for (const region of [
     "image-processing-note",
     "image-results-summary",
-    "处理全部",
+    // 主操作文案已迁到词条，因此断言**词条键**而不是中文字面量
+    't("img.processAll"',
   ]) {
     assert.ok(
       panel.includes(region),
@@ -46,7 +47,7 @@ test("图片处理页:主操作与反馈之间不插入内容流区块", async (
   const panel = source.slice(panelStart, source.indexOf("</Card>", panelStart));
 
   // 主操作之后的直接子区块只允许结果摘要与当前图片下载(二者均为已预留槽位)
-  const afterPrimary = panel.slice(panel.indexOf("处理全部"));
+  const afterPrimary = panel.slice(panel.indexOf('t("img.processAll"'));
   const newBlocks = [...afterPrimary.matchAll(/className="([a-z-]+)"/g)]
     .map((m) => m[1])
     .filter((name) => !name.startsWith("image-results") && name !== "download-current" && name !== "spin");

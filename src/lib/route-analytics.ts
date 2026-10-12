@@ -19,7 +19,7 @@ import {
   type DocumentLike,
   type WindowLike,
 } from "@/lib/analytics";
-import { SEO_PAGES } from "@/lib/seo";
+import { analyticsPathFor } from "@/lib/seo";
 import type { ToolRoute } from "@/lib/tool-navigation";
 
 /**
@@ -89,7 +89,9 @@ export const reportRouteChange = (
 ): ReportedRoute => {
   if (!isReady || !environment) return previous;
   if (previous === null || previous === route) return route;
-  trackPageView(environment, SEO_PAGES[route].path);
+  // PV 口径**语言无关**：用工具路径而非 seoPathFor(locale, …)，
+  // 使语言进入 URL 后既有 7 条报表序列不被拆成 21 条。
+  trackPageView(environment, analyticsPathFor(route));
   return route;
 };
 

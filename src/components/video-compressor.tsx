@@ -12,6 +12,7 @@ import { Card } from "@/components/ui/card";
 import { ToolHeader } from "@/components/tool-header";
 import { ToolSeoContent } from "@/components/tool-seo-content";
 import { ToolTabs } from "@/components/tool-tabs";
+import { useT } from "@/lib/i18n/locale-context";
 import { LicenseFooter } from "@/components/license-footer";
 import { Popconfirm } from "@/components/ui/popconfirm";
 import {
@@ -53,6 +54,7 @@ function formatBytes(bytes: number) {
 }
 
 export function VideoCompressor() {
+  const t = useT();
   const inputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const objectUrlRef = useRef<string | null>(null);
@@ -106,8 +108,8 @@ export function VideoCompressor() {
     (file?: File) => {
       if (!file) return;
       if (!file.type.startsWith("video/")) {
-        toast.error("请选择浏览器支持的视频文件", {
-          description: "当前视频未改变，可重新选择 MP4、WebM 或 MOV 文件。",
+        toast.error(t("vc.errPickVideo"), {
+          description: t("vc.errPickVideoBody"),
         });
         return;
       }
@@ -125,7 +127,7 @@ export function VideoCompressor() {
       setCurrentTime(0);
       setDimensions({ width: 0, height: 0 });
     },
-    [releaseVideo, result],
+    [releaseVideo, result, t],
   );
 
   const onFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -173,8 +175,8 @@ export function VideoCompressor() {
     stopDraw();
     setCompressing(false);
     // 与图片处理/批量导出保持一致:取消需说明未产生文件、内容保持原样
-    toast.info("已取消压缩", {
-      description: "未产生 WebM 文件，已选视频与码率设置保持原样，可重新开始压缩。",
+    toast.info(t("vc.cancelled"), {
+      description: t("vc.cancelledBody"),
     });
   };
 
@@ -183,8 +185,8 @@ export function VideoCompressor() {
     if (!video || !video.videoWidth || compressing) return;
     if (typeof MediaRecorder === "undefined") {
       trackVideoCompressFailed();
-      toast.error("当前浏览器不支持 MediaRecorder，无法压缩导出", {
-        description: "未产生文件，所选视频与参数保持原样。可改用其他浏览器重试。",
+      toast.error(t("vc.errNoRecorder"), {
+        description: t("vc.errNoRecorderBody"),
       });
       return;
     }
@@ -194,8 +196,8 @@ export function VideoCompressor() {
     );
     if (!mime) {
       trackVideoCompressFailed();
-      toast.error("当前浏览器不支持可用的 WebM 编码，无法压缩导出", {
-        description: "未产生文件，所选视频与参数保持原样。可改用其他浏览器重试。",
+      toast.error(t("vc.errNoWebm"), {
+        description: t("vc.errNoWebmBody"),
       });
       return;
     }
@@ -219,7 +221,7 @@ export function VideoCompressor() {
     const context = canvas.getContext("2d");
     if (!context) {
       trackVideoCompressFailed();
-      toast.error("无法创建画布。");
+      toast.error(t("vc.errCanvas"));
       return;
     }
 
@@ -235,7 +237,7 @@ export function VideoCompressor() {
       }
     } catch {
       trackVideoCompressFailed();
-      toast.error("无法采集视频流，请换一种视频格式。");
+      toast.error(t("vc.errCapture"));
       return;
     }
 
@@ -247,7 +249,7 @@ export function VideoCompressor() {
       });
     } catch {
       trackVideoCompressFailed();
-      toast.error("无法创建录制器，请换一种视频格式或浏览器。");
+      toast.error(t("vc.errRecorder"));
       return;
     }
     recorderRef.current = recorder;
@@ -272,8 +274,8 @@ export function VideoCompressor() {
       link.download = `${fileName.replace(/\.[^.]+$/, "")}_compressed.webm`;
       link.click();
       trackVideoCompressSucceeded({ bytes: blob.size, bitrateLevel });
-      toast.success("压缩完成，已保存到下载", {
-        description: `输出 ${formatBytes(blob.size)}。`,
+      toast.success(t("vc.done"), {
+        description: t("vc.doneBody", formatBytes(blob.size)),
       });
     };
 
@@ -285,7 +287,7 @@ export function VideoCompressor() {
       await video.play();
     } catch {
       trackVideoCompressFailed();
-      toast.error("无法播放视频进行压缩。");
+      toast.error(t("vc.errPlayback"));
       cancelCompress();
       return;
     }
@@ -326,16 +328,16 @@ export function VideoCompressor() {
         trailing={
           videoUrl ? (
             <Popconfirm
-              title="确认重新选择视频？"
-              description="当前导入的视频与压缩进度将被清除。"
-              confirmLabel="重新选择"
+              title={t("vc.resetTitle")}
+              description={t("vc.resetDescription")}
+              confirmLabel={t("vc.resetConfirm")}
               onConfirm={reset}
               trigger={
                 <Button
                   variant="outline"
                   type="button"
                 >
-                  重新选择
+                  {t("vc.resetTrigger")}
                 </Button>
               }
             />
@@ -348,21 +350,21 @@ export function VideoCompressor() {
       {!videoUrl ? (
         <section className="welcome">
           <div className="welcome-copy">
-            <p className="eyebrow">在线视频压缩工具</p>
+            <p className="eyebrow">{t("vc.eyebrow")}</p>
             <h1>
-              视频压缩，
+              {t("vc.titleLine1")}
               <br />
-              <span>本地完成导出。</span>
+              <span>{t("vc.titleLine2")}</span>
             </h1>
             <p className="lead">
-              导入一段视频，选择码率与尺寸，
+              {t("vc.leadLine1")}
               <br className="desktop-break" />
-              在浏览器中重新编码并导出 WebM。
+              {t("vc.leadLine2")}
             </p>
-            <div className="feature-row" aria-label="产品特点">
-              <span>可控码率</span>
-              <span>等比缩放</span>
-              <span>完全离线</span>
+            <div className="feature-row" aria-label={t("vc.featureRowLabel")}>
+              <span>{t("vc.featureBitrate")}</span>
+              <span>{t("vc.featureScale")}</span>
+              <span>{t("vc.featureOffline")}</span>
             </div>
           </div>
 
@@ -385,17 +387,17 @@ export function VideoCompressor() {
               <div className="scan-line" />
             </div>
             <div className="drop-copy">
-              <strong>{isDragging ? "松开即可导入" : "把视频放到这里"}</strong>
-              <span>或点击选择本地文件</span>
+              <strong>{isDragging ? t("vc.dropActive") : t("vc.dropIdle")}</strong>
+              <span>{t("vc.dropHint")}</span>
             </div>
             <Button
               type="button"
               size="lg"
               onClick={() => inputRef.current?.click()}
             >
-              选择视频
+              {t("vc.selectVideo")}
             </Button>
-            <small>压缩过程会播放视频并保留原音轨（实验性功能）</small>
+            <small>{t("vc.dropNote")}</small>
           </div>
 
           <div className="privacy-strip">
@@ -403,17 +405,17 @@ export function VideoCompressor() {
               ◉
             </span>
             <div>
-              <strong>你的文件不会离开设备</strong>
-              <p>视频解码与重新编码均在当前浏览器标签页内完成。</p>
+              <strong>{t("vc.privacyTitle")}</strong>
+              <p>{t("vc.privacyBody")}</p>
             </div>
           </div>
         </section>
       ) : (
-        <section className="editor" aria-label="视频压缩工作台">
+        <section className="editor" aria-label={t("vc.editorLabel")}>
           <div className="editor-heading">
             <div>
-              <p className="eyebrow">视频预览</p>
-              <h1>压缩导出</h1>
+              <p className="eyebrow">{t("vc.previewEyebrow")}</p>
+              <h1>{t("vc.editorTitle")}</h1>
             </div>
             <div className="file-meta" title={fileName}>
               <span>{fileName}</span>
@@ -447,16 +449,16 @@ export function VideoCompressor() {
                   }
                   onError={() =>
                     toast.error(
-                      "浏览器无法播放这个视频，请换一种编码或格式。",
+                      t("vc.errPlaybackBody"),
                     )
                   }
-                  aria-label="视频预览"
+                  aria-label={t("vc.previewLabel")}
                 />
               </div>
               {compressing && (
                 <div className="timeline-card">
                   <div className="timeline-labels">
-                    <span>压缩进度</span>
+                    <span>{t("vc.progress")}</span>
                     <span>{progress}%</span>
                   </div>
                   <div
@@ -482,12 +484,12 @@ export function VideoCompressor() {
             <Card className="export-panel" role="complementary">
               <div>
                 <p className="panel-number">01</p>
-                <h2>压缩选项</h2>
+                <h2>{t("vc.optionsTitle")}</h2>
               </div>
 
               <div className="control-group">
                 <p className="panel-number">02</p>
-                <span>目标码率</span>
+                <span>{t("vc.bitrate")}</span>
                 <div className="fps-control">
                   <Select
                     value={bitrateLevel}
@@ -495,13 +497,13 @@ export function VideoCompressor() {
                       setBitrateLevel(value as BitrateLevel)
                     }
                   >
-                    <SelectTrigger className="fps-select" aria-label="目标码率">
+                    <SelectTrigger className="fps-select" aria-label={t("vc.bitrate")}>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="low">低（约 1 Mbps）</SelectItem>
-                      <SelectItem value="medium">中（约 2.5 Mbps）</SelectItem>
-                      <SelectItem value="high">高（约 6 Mbps）</SelectItem>
+                      <SelectItem value="low">{t("vc.bitrateLow")}</SelectItem>
+                      <SelectItem value="medium">{t("vc.bitrateMedium")}</SelectItem>
+                      <SelectItem value="high">{t("vc.bitrateHigh")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -509,7 +511,7 @@ export function VideoCompressor() {
 
               <div className="control-group">
                 <p className="panel-number">03</p>
-                <span>目标宽度（可选，留空保持原尺寸）</span>
+                <span>{t("vc.targetWidth")}</span>
                 <input
                   className="settings-input"
                   type="number"
@@ -517,7 +519,7 @@ export function VideoCompressor() {
                   value={targetWidthInput}
                   onChange={(event) => setTargetWidthInput(event.target.value)}
                   placeholder={String(dimensions.width || 0)}
-                  aria-label="目标宽度像素"
+                  aria-label={t("vc.targetWidthLabel")}
                 />
               </div>
 
@@ -528,7 +530,7 @@ export function VideoCompressor() {
                   variant="outline"
                   onClick={cancelCompress}
                 >
-                  停止压缩
+                  {t("vc.stop")}
                 </Button>
               ) : (
                 <Button
@@ -538,21 +540,23 @@ export function VideoCompressor() {
                   disabled={!dimensions.width}
                 >
                   <span aria-hidden="true">↓</span>
-                  开始压缩导出
+                  {t("vc.start")}
                 </Button>
               )}
 
               {result && (
                 <div className="control-group">
                   <p className="export-note">
-                    已导出 {formatBytes(result.size)}
+                    {t("vc.exported", formatBytes(result.size))}
                     {reduction !== null &&
-                      `（较原图 ${reduction >= 0 ? "减小" : "增大"} ${Math.abs(reduction)}%）`}
+                      (reduction >= 0
+                        ? t("vc.reduced", Math.abs(reduction))
+                        : t("vc.increased", Math.abs(reduction)))}
                   </p>
                 </div>
               )}
               <p className="export-note">
-                通过 MediaRecorder 实时编码为 WebM，压缩过程会播放一遍视频并保留原音轨。
+                {t("vc.exportNote")}
               </p>
             </Card>
           </div>

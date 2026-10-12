@@ -19,23 +19,27 @@ const CANCEL_SITES = [
     name: "图片批量处理",
     path: "src/tools/image-processor/ImageProcessor.tsx",
     guard: "cancelProcessingRef.current",
-    entry: "停止处理",
+    // 文案已迁到词条，断言**词条键**而不是中文字面量
+    entry: 't(\n                    "img.stop"',
     // 取消后必须保留已完成结果,而不是整体丢弃
-    keepsPartial: "已完成的图片保留在列表中",
+    keepsPartial: '"img.cancelledBody"',
   },
   {
     name: "批量抽帧导出",
     path: "src/App.tsx",
     guard: "cancelBatchRef.current",
-    entry: "停止导出",
-    keepsPartial: "未产生 ZIP 文件",
+    // 文案已迁到词条，断言**词条键**而不是中文字面量
+    entry: 't("vf.stopExport"',
+    keepsPartial: 't("vf.cancelledBody")',
   },
   {
     name: "视频压缩录制",
     path: "src/components/video-compressor.tsx",
     guard: "discardRef.current",
-    entry: "停止压缩",
-    keepsPartial: "已取消压缩",
+    // 该文件的文案已迁到词条，因此这里断言**词条键**而不是中文字面量。
+    // 中文取值本身由 messages.test.ts 的完备性断言守护。
+    entry: 't("vc.stop")',
+    keepsPartial: 't("vc.cancelled")',
   },
 ];
 

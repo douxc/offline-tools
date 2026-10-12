@@ -1,0 +1,430 @@
+import type { Messages } from "../message-keys";
+
+/**
+ * 英语词条。站点**默认语言**，因此这些取值也是无前缀路径下实际显示的文案。
+ *
+ * 按英语检索与表达习惯撰写，不是中文的逐字直译（见 design.md 决策 8）。
+ */
+export const en = {
+  "brand.name": "Offline Tools",
+  "brand.homeLabel": "Offline Tools home",
+  "header.navLabel": "Tool navigation",
+  "header.privacyNote": "Processed locally · nothing uploaded",
+  "header.themeToDark": "Switch to dark mode",
+  "header.themeToLight": "Switch to light mode",
+  "header.languageLabel": "Change language",
+
+  "group.video": "Video",
+  "group.image": "Images",
+
+  "tool.home": "Offline Tools",
+  "tool.video-frame": "Frame extractor",
+  "tool.video-compress": "Video compressor",
+  "tool.image-compress": "Image compressor",
+  "tool.image-watermark": "Add watermark",
+  "tool.id-photo": "ID photo",
+  "tool.image-a4-layout": "A4 layout",
+
+  "tabs.label": (group: string) => `${group} tool switch`,
+  "links.related": "Related tools",
+  "links.relatedNavLabel": "Related offline tools",
+
+  "home.eyebrow": "Privacy first · processed locally",
+  "home.titleLine1": "Your files stay on your device.",
+  "home.titleLine2": "The browser does the work.",
+  "home.lead":
+    "No uploads, no account. Once the first visit is cached, it keeps working offline.",
+  "home.openTool": "Open tool",
+  "home.aboutEyebrow": "About these tools",
+  "home.toolboxTitle": "Browser-based offline tools that never upload your files",
+  "home.toolboxBody":
+    "Offline Tools covers video frame extraction, batch image compression, image watermarking, A4 layout printing and ID photo sizing. Everything runs on the browser's own video decoding, image encoding and canvas capabilities, so your files never leave the current device.",
+  "home.toolsNavLabel": "List of offline tools",
+  "home.eyebrowVideo": "Video tool",
+  "home.eyebrowWatermark": "Watermark tool",
+  "home.eyebrowImage": "Image tool",
+  "home.eyebrowPrint": "Print tool",
+  "home.toolDescription.video-frame":
+    "Step through a video and export PNG, JPG or WebP at the original resolution.",
+  "home.toolDescription.video-compress":
+    "Re-encode video to WebM in the browser with a controllable bitrate, proportional scaling and the original audio track.",
+  "home.toolDescription.image-compress":
+    "Shrink images with libimagequant, OxiPNG and the browser's own encoders.",
+  "home.toolDescription.image-watermark":
+    "Add text watermarks in bulk while keeping the original size, format and PNG transparency.",
+  "home.toolDescription.id-photo":
+    "Crop one-inch and two-inch photos, or scale an image down to a custom size.",
+  "home.toolDescription.image-a4-layout":
+    "Set images per row and flow them onto A4 pages by their real aspect ratio, then print from the browser.",
+  "home.detail.videoTitle": "Video frame extraction and screenshots",
+  "home.detail.videoBody":
+    "Pick frames from MP4, WebM or MOV videos and export them as PNG, JPG or WebP at the original resolution.",
+  "home.detail.imageTitle": "PNG, JPG and WebP image compression",
+  "home.detail.imageBody":
+    "Shrink image files in bulk; PNG automatically chooses colour quantisation or lossless optimisation, balancing quality and size.",
+  "home.detail.watermarkTitle": "Bulk text watermarks on images",
+  "home.detail.watermarkBody":
+    "Adjust the watermark text, size, opacity and angle while keeping the original size, format and PNG transparency.",
+
+  "overlay.title": "Burn text onto the export",
+  "overlay.textLabel": "Caption text",
+  "overlay.textPlaceholder": "Enter caption text",
+  "overlay.position": "Position",
+  "overlay.positionTop": "Top center",
+  "overlay.positionBottom": "Bottom center",
+  "overlay.size": "Size",
+  "overlay.sizeLabel": "Caption size",
+  "overlay.textAriaLabel": "Caption text",
+
+  "sampling.mode": "Sampling mode",
+  "sampling.byInterval": "By time interval",
+  "sampling.byStep": "By frame step",
+  "sampling.byCount": "Even count",
+
+  "footer.license": "GPL-3.0-or-later · Processed locally · Nothing uploaded",
+  "footer.analyticsNote":
+    "This site uses Baidu Analytics for page views only; no files are uploaded",
+  "footer.thirdParty": "Third-party licences",
+  "footer.source": "Corresponding source",
+
+  "pwa.offlineReady": "Ready to use offline",
+  "pwa.offlineReadyBody": "Page assets are stored on this device.",
+  "pwa.updateReady": "A new version is cached",
+  "pwa.updateReadyBody":
+    "It will not interrupt your work and takes effect next time you open the page.",
+
+  "vc.previewLabel": "Video preview",
+  "vf.eyebrow": "Online video frame extractor",
+  "vf.titleLine1": "Extract a frame,",
+  "vf.titleLine2": "freeze the moment.",
+  "vf.leadLine1": "Import a video and move precisely to the frame you want,",
+  "vf.leadLine2": "then export it as an image at the original resolution.",
+  "vf.featuresLabel": "Product features",
+  "vf.featureQuality": "Original-quality export",
+  "vf.featureStep": "Frame-by-frame control",
+  "vf.featureOffline": "Fully offline",
+  "vf.dropIdle": "Drop your video here",
+  "vf.dropActive": "Release to import",
+  "vf.dropHint": "or click to choose a local file",
+  "vf.selectVideo": "Choose video",
+  "vf.formats": "Supports MP4, WebM, MOV and other formats your browser can play",
+  "vf.privacyTitle": "Your file never leaves this device",
+  "vf.privacyBody":
+    "Video decoding and image generation both happen in this browser tab.",
+  "vf.editorLabel": "Frame extraction workspace",
+  "vf.previewEyebrow": "Video frame",
+  "vf.editorTitle": "Pick a frame",
+  "vf.previewLabel": "Video frame preview",
+  "vf.resolutionReading": "Reading",
+  "vf.timelineLabel": "Video timeline",
+  "vf.prevFrame": "Previous frame",
+  "vf.prevFrameTitle": "Previous frame (←)",
+  "vf.pause": "Pause",
+  "vf.play": "Play",
+  "vf.playPauseTitle": "Play/pause (Space)",
+  "vf.nextFrame": "Next frame",
+  "vf.nextFrameTitle": "Next frame (→)",
+  "vf.fps": "Frame rate",
+  "vf.panelCurrent": "Current frame",
+  "vf.timecodeHint": "h : m : s : frame",
+  "vf.format": "Image format",
+  "vf.formatLabel": "Image format",
+  "vf.quality": "Image quality",
+  "vf.qualityLabel": "Image quality",
+  "vf.batch": "Batch extraction",
+  "vf.batchOn": "On",
+  "vf.batchOff": "Off",
+  "vf.interval": "Interval (seconds)",
+  "vf.intervalAria": "Sampling interval in seconds",
+  "vf.step": "Every N frames",
+  "vf.stepAria": "Sampling frame step",
+  "vf.count": "Count",
+  "vf.countAria": "Number of evenly spaced frames",
+  "vf.stopExport": (current: number, total: number) =>
+    `Stop exporting (${current}/${total})`,
+  "vf.exported": "Saved to downloads",
+  "vf.exportBatch": "Export batch frames (ZIP)",
+  "vf.generating": "Generating…",
+  "vf.exportFrame": "Export current frame",
+  "vf.exportNoteBatch":
+    "Samples frames by the chosen rule and packs them into a ZIP, each at the original resolution.",
+  "vf.exportNoteSingle":
+    "Exported at the video's original resolution, without scaling or cropping.",
+  "vf.shortcutFrame": "frame",
+  "vf.shortcutSpace": "Space",
+  "vf.shortcutPlay": "play / pause",
+  "vf.resetTitle": "Choose a different video?",
+  "vf.resetDescription":
+    "The imported video and preview progress will be cleared.",
+  "vf.resetConfirm": "Choose again",
+  "vf.resetTrigger": "Choose again",
+  "vf.errPickVideo": "Choose a video file your browser can play",
+  "vf.errPickVideoBody":
+    "The current video is unchanged. Try an MP4, WebM or MOV file.",
+  "vf.errCanvas": "Could not create a canvas",
+  "vf.errEncode": "Image encoding failed",
+  "vf.errExportFailed": "Exporting the current frame failed",
+  "vf.errExportFailedBody":
+    "No file was produced and the video and playback position are unchanged. Try another image format.",
+  "vf.errBatchFailed": "Batch extraction failed",
+  "vf.errBatchFailedBody":
+    "No ZIP file was produced and the frames already extracted were not kept; the video and chosen settings are unchanged. Try a shorter range or fewer frames.",
+  "vf.cancelled": "Export cancelled",
+  "vf.cancelledBody":
+    "No ZIP file was produced. The video and chosen settings are unchanged, so you can export again at any time.",
+  "vf.batchExported": (count: number) => `Exported ${count} frames (ZIP)`,
+  "vf.batchExportedBody": "The file was saved to your browser's download folder.",
+  "vf.errPlayback":
+    "The browser cannot play this video. Try a different codec or format.",
+
+  "vc.eyebrow": "Online video compressor",
+  "vc.titleLine1": "Compress video,",
+  "vc.titleLine2": "export it locally.",
+  "vc.leadLine1": "Import a video, pick a bitrate and size,",
+  "vc.leadLine2": "then re-encode and export WebM in the browser.",
+  "vc.featureRowLabel": "Product features",
+  "vc.featureBitrate": "Controllable bitrate",
+  "vc.featureScale": "Proportional scaling",
+  "vc.featureOffline": "Fully offline",
+  "vc.dropIdle": "Drop your video here",
+  "vc.dropActive": "Release to import",
+  "vc.dropHint": "or click to choose a local file",
+  "vc.selectVideo": "Choose video",
+  "vc.dropNote":
+    "Compression plays the video through and keeps the original audio track (experimental)",
+  "vc.privacyTitle": "Your file never leaves this device",
+  "vc.privacyBody":
+    "Video decoding and re-encoding both happen in this browser tab.",
+  "vc.editorLabel": "Video compression workspace",
+  "vc.previewEyebrow": "Video preview",
+  "vc.editorTitle": "Compress and export",
+  "vc.optionsTitle": "Compression options",
+  "vc.bitrate": "Target bitrate",
+  "vc.bitrateLow": "Low (about 1 Mbps)",
+  "vc.bitrateMedium": "Medium (about 2.5 Mbps)",
+  "vc.bitrateHigh": "High (about 6 Mbps)",
+  "vc.targetWidth": "Target width (optional, leave blank to keep the original)",
+  "vc.targetWidthLabel": "Target width in pixels",
+  "vc.stop": "Stop compressing",
+  "vc.start": "Start compressing",
+  "vc.progress": "Compression progress",
+  "vc.exported": (size: string) => `Exported ${size}`,
+  "vc.reduced": (percent: number) => ` (${percent}% smaller than the original)`,
+  "vc.increased": (percent: number) => ` (${percent}% larger than the original)`,
+  "vc.exportNote":
+    "Encoded live to WebM through MediaRecorder. The video plays through once and the original audio track is kept.",
+  "vc.resetTitle": "Choose a different video?",
+  "vc.resetDescription":
+    "The imported video and compression progress will be cleared.",
+  "vc.resetConfirm": "Choose again",
+  "vc.resetTrigger": "Choose again",
+  "vc.errPickVideo": "Choose a video file your browser can play",
+  "vc.errPickVideoBody":
+    "The current video is unchanged. Try an MP4, WebM or MOV file.",
+  "vc.cancelled": "Compression cancelled",
+  "vc.cancelledBody":
+    "No WebM file was produced. The chosen video and bitrate settings are unchanged, so you can start again.",
+  "vc.errNoRecorder":
+    "This browser does not support MediaRecorder, so it cannot compress and export",
+  "vc.errNoRecorderBody":
+    "No file was produced and your video and settings are unchanged. Try another browser.",
+  "vc.errNoWebm":
+    "This browser has no usable WebM encoder, so it cannot compress and export",
+  "vc.errNoWebmBody":
+    "No file was produced and your video and settings are unchanged. Try another browser.",
+  "vc.errCanvas": "Could not create a canvas.",
+  "vc.errCapture": "Could not capture the video stream. Try another video format.",
+  "vc.errRecorder":
+    "Could not create a recorder. Try another video format or browser.",
+  "vc.done": "Compression finished and saved to downloads",
+  "vc.doneBody": (size: string) => `Output ${size}.`,
+  "vc.errPlayback": "Could not play the video to compress it.",
+  "vc.errPlaybackBody":
+    "The browser cannot play this video. Try a different codec or format.",
+  "a4.pageLabel": (n: number) => `A4 sheet ${n}`,
+  "a4.itemIndex": (n: string) => `Image ${n} · `,
+  "a4.moveUp": (name: string) => `Move ${name} up`,
+  "a4.moveDown": (name: string) => `Move ${name} down`,
+  "a4.remove": (name: string) => `Remove ${name}`,
+  "a4.prevPage": "Previous page",
+  "a4.pageOf": (current: number, total: number) => `Page ${current} of ${total}`,
+  "a4.nextPage": "Next page",
+  "a4.colsPerRow": "Images per row",
+  "a4.colsOptionLabel": (cols: number) => `${cols} per row`,
+  "a4.colsOptionText": (cols: number) => `${cols}`,
+  "a4.decodeFailed": (count: number) => `${count} images could not be decoded and were skipped`,
+  "a4.decodeFailedOne": (name: string) => `Could not decode and skipped: ${name}`,
+  "a4.printDisabledTitle": "Import images first",
+  "a4.print": (pages: number) => `Print A4 layout (${pages} pages)`,
+  "a4.clearTitle": "Clear all images?",
+  "a4.clearDescription": (count: number) => `All ${count} images will be removed.`,
+  "a4.clearConfirm": "Clear all",
+  "a4.clearTrigger": "Clear images",
+  "a4.emptyTitle": "Import images first",
+  "a4.emptyHint": "Drop images here, or click to choose. You can import several at once.",
+  "a4.selectImages": "Choose images",
+  "a4.emptyNote": "Formats your browser can decode · images stay on this device",
+  "a4.listTitle": "Images to lay out",
+  "a4.itemCount": (count: number) => `${count} images`,
+  "a4.add": "Add",
+  "a4.previewTitle": "A4 page preview",
+  "a4.previewMeta": (margin: number, cols: number, rows: number) =>
+    `A4 · ${margin}mm margins · ${cols} per row · ${rows} rows`,
+  "a4.settingsTitle": "Print settings",
+  "a4.colsLabel": "Images per row",
+  "a4.colsHint":
+    "Set only how many images go across each row. Images flow in at their own aspect ratio and the row height follows the tallest image.",
+  "a4.margin": "Page margins",
+  "idPhoto.cropPreviewLabel":
+    "Crop preview. Drag the image to reposition, use the arrow keys to nudge, hold Shift to move faster.",
+
+  "common.confirm": "Confirm",
+  "common.cancel": "Cancel",
+  "err.idPhoto.invalidPixels": "Enter a positive whole number of pixels",
+  "err.idPhoto.cannotUpscale":
+    "Proportional scaling only shrinks; reduce the target size",
+  "err.idPhoto.canvasFailed":
+    "Could not create the image canvas. Try a smaller size.",
+  "err.idPhoto.encodeFailed":
+    "The browser could not encode the image. Please try again.",
+  "err.idPhoto.unsupportedOutputFormat":
+    "This browser cannot output the original format. Choose a different one.",
+  "err.idPhoto.decodeFailed":
+    "This browser cannot decode the file. Choose a valid PNG, JPG or WebP.",
+  "err.idPhoto.invalidDimensions": "The image dimensions are not valid",
+  "err.idPhoto.tooManyPixels":
+    "The source image exceeds 60 megapixels and is not processed",
+  "err.idPhoto.notAcceptedFormat": "Choose a PNG, JPG or WebP file",
+  "err.png.loadFailed": "The PNG compression module failed to load",
+  "err.png.timeout": "PNG compression timed out",
+  "err.png.cancelled": "PNG compression was cancelled",
+  "err.png.invalidPng": "The chosen file is not a valid PNG image",
+  "err.png.compressFailed": "PNG compression failed",
+  "idPhotoPreset.oneInch": "1 inch",
+  "idPhotoPreset.twoInch": "2 inch",
+  "idPhoto.importFailed": (count: number) => `${count} images could not be imported`,
+  "idPhoto.processPartial": (done: number, failed: number) =>
+    `${done} done, ${failed} not processed`,
+  "idPhoto.processPartialBody": (details: string) =>
+    `${details}. The originals and your settings were kept, so you can adjust and process again.`,
+  "idPhoto.processDone": (count: number) => `${count} images processed`,
+  "idPhoto.stopped": "Processing stopped",
+  "idPhoto.stoppedBody":
+    "The temporary results were discarded. The originals, compositions and settings were kept, so you can start again.",
+  "img.errEncode": "The browser could not encode this image",
+  "img.errTooManyPixels": "Over 60 megapixels, so it is not processed",
+  "img.errDecode": "This browser cannot decode it",
+  "img.errCanvas": "Could not create the image canvas",
+  "img.badgeQuantised": "PNG-8 + OxiPNG",
+  "img.badgeLossless": "OxiPNG lossless",
+  "img.badgeAlreadyOptimal": "Already optimal",
+  "img.badgeSample": "Sample",
+  "img.badgeWebpAuto": "WebP adaptive quality",
+  "img.badgeJpegAuto": "JPEG adaptive quality",
+  "img.badgeOriginalSizeWatermark": "Original-size text watermark",
+  "img.errPickImages": "Choose PNG, JPG or WebP images",
+  "img.importFailed": (count: number) => `${count} images could not be imported`,
+  "img.errProcessing": "Processing failed",
+  "img.errUnknown": "An unknown error occurred",
+  "img.cancelled": "Processing cancelled",
+  "img.cancelledBody": (remaining: number) =>
+    `Finished images stay in the list; the remaining ${remaining} were not processed and you can restart at any time.`,
+  "img.done": (count: number) => `${count} images processed`,
+  "img.partial": (done: number, failed: number) =>
+    `${done} done, ${failed} failed`,
+  "img.partialBody":
+    "Failed images stay in the list so you can adjust the settings and try again; imported images are never lost.",
+  "img.clearTitle": "Clear all images?",
+  "img.clearDescription": (count: number) =>
+    `All ${count} images will be removed along with their results.`,
+  "img.clearConfirm": "Clear all",
+  "img.clearTrigger": "Clear images",
+  "img.eyebrow": "Image processing in your browser",
+  "img.titleCompress": "Image compression",
+  "img.titleWatermark": "Add an image watermark",
+  "img.leadCompress":
+    "Compression and quantisation run in this browser; images are never uploaded.",
+  "img.leadWatermark":
+    "Add text watermarks in bulk in this browser; images are never uploaded.",
+  "img.dropIdle": "Drop images here",
+  "img.dropHint": "or click to choose several at once",
+  "img.selectImages": "Choose images",
+  "img.acceptedFormats":
+    "Supports PNG, JPG and WebP · up to 60 megapixels each",
+  "img.listTitle": "Images to process",
+  "img.itemCount": (count: number) => `${count} images`,
+  "img.add": "Add",
+  "img.remove": "Remove",
+  "img.previewOriginal": "Original preview",
+  "img.previewWatermark": "Watermark preview",
+  "img.noneSelected": "None selected",
+  "img.previewLabel": "Image watermark preview",
+  "img.processing": "Processing",
+  "img.compressSettings": "Compression settings",
+  "img.watermarkText": "Text watermark",
+  "img.watermarkTextLabel": "Watermark text",
+  "img.compressQuality": "Compression quality",
+  "img.outputQuality": "Output quality",
+  "img.fontSize": "Text size",
+  "img.watermarkStrength": "Watermark strength",
+  "img.angle": "Angle",
+  "img.compressNote":
+    "PNG picks quantisation or a lossless mode automatically; JPG/WebP never grow.",
+  "img.watermarkNote":
+    "Keeps the original size and format; PNG transparency is never filled white.",
+  "img.stop": (current: number, total: number) => `Stop processing (${current}/${total})`,
+  "img.processAll": (count: number) => `Process all ${count}`,
+  "img.doneCount": (count: number) => `${count} done`,
+  "img.retryCount": (count: number) => `${count} to retry`,
+  "img.savedBytes": (size: string) => `Saved ${size}`,
+  "img.outputBytes": (size: string) => `Output ${size}`,
+  "img.downloadAll": "Download all",
+  "img.downloadCurrent": "Download current image",
+
+  "idPhoto.clearTitle": "Clear all images?",
+  "idPhoto.clearDescription": (count: number) =>
+    `All ${count} images will be removed along with their compositions and results.`,
+  "idPhoto.clearTrigger": "Clear images",
+  "idPhoto.editorLabel": "ID photo editor",
+  "idPhoto.title": "ID photo",
+  "idPhoto.lead":
+    "Crop to a standard size, or scale down proportionally to a custom size.",
+  "idPhoto.emptyTitle": "Choose the photos to process",
+  "idPhoto.emptyHint":
+    "Supports PNG, JPG and WebP, and you can import several at once.",
+  "idPhoto.importing": "Importing images…",
+  "idPhoto.selectImages": "Choose images",
+  "idPhoto.listTitle": (count: number) => `Images · ${count}`,
+  "idPhoto.append": "Add images",
+  "idPhoto.doneSuffix": " · Done",
+  "idPhoto.remove": (name: string) => `Remove ${name}`,
+  "idPhoto.previewCrop": "Crop preview",
+  "idPhoto.previewFull": "Full image preview",
+  "idPhoto.cropHelp":
+    "Drag the image to reposition. Use the arrow keys to nudge, and Shift + arrow to move faster.",
+  "idPhoto.fullHelp":
+    "Keeps the whole image and scales it by the original aspect ratio.",
+  "idPhoto.settingsTitle": "Size settings",
+  "idPhoto.modeLabel": "Size mode",
+  "idPhoto.modeFixed": "Standard sizes",
+  "idPhoto.modeCustom": "Custom proportional scaling",
+  "idPhoto.presetLabel": "ID photo size",
+  "idPhoto.ppiNote": (widthMm: number, heightMm: number) =>
+    `${widthMm} × ${heightMm} mm · converted at 300 PPI`,
+  "idPhoto.zoom": "Image zoom",
+  "idPhoto.resetPosition": "Reset position",
+  "idPhoto.zoomNote":
+    "The image always keeps its proportions and covers the crop frame. Enlarging may soften it.",
+  "idPhoto.axisLabel": "Dimension to set",
+  "idPhoto.axisWidthShort": "width",
+  "idPhoto.axisWidth": "By width",
+  "idPhoto.axisHeightShort": "height",
+  "idPhoto.axisHeight": "By height",
+  "idPhoto.targetLabel": (axis: string) => `Target ${axis} (px)`,
+  "idPhoto.customNote":
+    "The other side is calculated from the original ratio. The full picture is kept and enlarging is not supported.",
+  "idPhoto.progressHeld": "Processing; originals and compositions kept",
+  "idPhoto.resultsReady": (count: number) => `${count} results ready to download`,
+  "idPhoto.outputNote": "Output keeps the original format",
+
+} satisfies Messages;

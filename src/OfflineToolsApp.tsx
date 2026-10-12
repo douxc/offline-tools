@@ -9,6 +9,7 @@ import {
 } from "@/lib/tool-navigation";
 import { useRouteSeo } from "@/lib/seo";
 import { ImageProcessor } from "@/tools/image-processor/ImageProcessor";
+import { IdPhoto } from "@/tools/id-photo/IdPhoto";
 import { A4ImageLayout } from "@/tools/image-a4-layout/A4ImageLayout";
 
 export function OfflineToolsApp() {
@@ -27,6 +28,7 @@ export function OfflineToolsApp() {
   if (
     route === "image-compress" ||
     route === "image-watermark" ||
+    route === "id-photo" ||
     route === "image-a4-layout"
   ) {
     // 图片工具保持常挂载并按路由切换可见性，互切时不丢已导入图片，
@@ -42,6 +44,9 @@ export function OfflineToolsApp() {
             }
             route={route}
           />
+        </div>
+        <div hidden={route !== "id-photo"}>
+          <IdPhoto active={route === "id-photo"} />
         </div>
         <div hidden={route !== "image-a4-layout"}>
           <A4ImageLayout />

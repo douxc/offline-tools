@@ -1,4 +1,12 @@
 import { useEffect } from "react";
+import { buildJsonLd } from "@/lib/i18n/json-ld";
+import {
+  LOCALES,
+  LOCALE_STORAGE_KEY,
+  resolveLocale,
+  type LocaleCode,
+} from "@/lib/i18n/locales";
+import { seoContentFor, seoPathFor } from "@/lib/i18n/seo-content";
 import { OG_IMAGE_URL, SITE_URL } from "@/lib/site";
 import type { ToolRoute } from "@/lib/tool-navigation";
 
@@ -10,231 +18,56 @@ type SeoPage = {
   jsonLd: Record<string, unknown>;
 };
 
-const toolJsonLd = ({
-  name,
-  description,
-  path,
-  category,
-  features,
-}: {
-  name: string;
-  description: string;
-  path: string;
-  category: string;
-  features: string[];
-}) => ({
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "BreadcrumbList",
-      itemListElement: [
-        {
-          "@type": "ListItem",
-          position: 1,
-          name: "离线工具",
-          item: `${SITE_URL}/`,
-        },
-        {
-          "@type": "ListItem",
-          position: 2,
-          name,
-          item: `${SITE_URL}${path}`,
-        },
-      ],
-    },
-    {
-      "@type": "WebApplication",
-      name,
-      url: `${SITE_URL}${path}`,
-      description,
-      applicationCategory: category,
-      applicationSubCategory: "Browser-based utility",
-      operatingSystem: "Windows, macOS, Linux, Android, iOS",
-      browserRequirements: "Requires JavaScript and an HTML5-compatible browser",
-      inLanguage: "zh-CN",
-      isAccessibleForFree: true,
-      offers: {
-        "@type": "Offer",
-        price: "0",
-        priceCurrency: "CNY",
-      },
-      featureList: features,
-      image: OG_IMAGE_URL,
-    },
-  ],
-});
+/**
+ * 按「语言 + 工具」取 SEO 元数据。
+ *
+ * 数据来自 `src/lib/i18n/seo-content.ts` —— 与构建期生成入口页用的是**同一份**；
+ * JSON-LD 由 `json-ld.ts` 的唯一实现构造。因此静态 HTML 与客户端更新不可能漂移，
+ * 而改造前 `SEO_PAGES` 与 7 个手写入口页各写一份文案、只能靠测试防漂移。
+ */
+export const seoPageFor = (locale: LocaleCode, route: ToolRoute): SeoPage => {
+  const content = seoContentFor(locale, route);
+  return {
+    title: content.title,
+    description: content.description,
+    keywords: content.keywords,
+    path: seoPathFor(locale, route),
+    jsonLd: buildJsonLd(locale, route) as unknown as Record<string, unknown>,
+  };
+};
 
+/**
+ * 默认语言（英语）下的 SEO 元数据。
+ *
+ * 保留 `SEO_PAGES[route].path` 这一形态是因为**语言无关的工具路径**仍被统计
+ * 上报使用：PV 口径不随语言变化，既有报表序列因此不被打散。
+ */
 export const SEO_PAGES: Record<ToolRoute, SeoPage> = {
-  home: {
-    title: "离线工具箱｜在线视频取帧、图片压缩与图片加水印",
-    description:
-      "免费浏览器离线工具箱：在线完成视频取帧、视频截图、PNG/JPG/WebP 图片压缩和批量图片加水印。文件只在本机处理，无需上传或注册。",
-    keywords:
-      "离线工具,在线工具箱,浏览器工具,视频取帧,视频截图,图片压缩,图片加水印,批量图片处理,本地处理",
-    path: "/",
-    jsonLd: {
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "WebSite",
-          name: "离线工具",
-          alternateName: "浏览器离线工具箱",
-          url: `${SITE_URL}/`,
-          inLanguage: "zh-CN",
-        },
-        {
-          "@type": "CollectionPage",
-          name: "离线工具箱",
-          url: `${SITE_URL}/`,
-          description:
-            "无需上传文件的在线视频取帧、图片压缩与图片加水印工具集合。",
-          inLanguage: "zh-CN",
-          mainEntity: {
-            "@type": "ItemList",
-            itemListElement: [
-              {
-                "@type": "ListItem",
-                position: 1,
-                name: "视频取帧工具",
-                url: `${SITE_URL}/video-frame/`,
-              },
-              {
-                "@type": "ListItem",
-                position: 2,
-                name: "在线视频压缩工具",
-                url: `${SITE_URL}/video-compress/`,
-              },
-              {
-                "@type": "ListItem",
-                position: 3,
-                name: "在线图片压缩工具",
-                url: `${SITE_URL}/image-compress/`,
-              },
-              {
-                "@type": "ListItem",
-                position: 4,
-                name: "图片加水印工具",
-                url: `${SITE_URL}/image-watermark/`,
-              },
-              {
-                "@type": "ListItem",
-                position: 5,
-                name: "图片 A4 排版打印工具",
-                url: `${SITE_URL}/image-a4-layout/`,
-              },
-            ],
-          },
-        },
-      ],
-    },
-  },
-  "video-frame": {
-    title: "视频取帧工具｜在线逐帧截图、视频转图片 - 离线工具",
-    description:
-      "免费在线视频取帧工具，支持逐帧定位 MP4、WebM、MOV 等视频画面，按原始分辨率导出 PNG、JPG 或 WebP。视频不上传，浏览器本地处理。",
-    keywords:
-      "视频取帧,视频截图,视频转图片,在线截帧,逐帧截图,提取视频帧,MP4截图,视频帧导出",
-    path: "/video-frame/",
-    jsonLd: toolJsonLd({
-      name: "视频取帧工具",
-      description:
-        "在浏览器本地逐帧定位视频画面，并按原始分辨率导出 PNG、JPG 或 WebP 图片。",
-      path: "/video-frame/",
-      category: "MultimediaApplication",
-      features: [
-        "逐帧前进与后退",
-        "按原始分辨率导出",
-        "支持 PNG、JPG 与 WebP",
-        "视频仅在浏览器本地处理",
-      ],
-    }),
-  },
-  "video-compress": {
-    title: "在线视频压缩工具｜浏览器本地压缩导出 WebM - 离线工具",
-    description:
-      "免费在线视频压缩工具，在浏览器中重新编码视频为 WebM，可控码率与等比缩放尺寸，保留原音轨。视频不上传，本地完成压缩导出。",
-    keywords:
-      "视频压缩,在线视频压缩,视频压缩导出,WebM压缩,视频减小体积,浏览器压缩视频,本地视频处理",
-    path: "/video-compress/",
-    jsonLd: toolJsonLd({
-      name: "在线视频压缩工具",
-      description:
-        "在浏览器本地通过 MediaRecorder 重新编码视频为 WebM，可控码率与等比缩放，保留原音轨。",
-      path: "/video-compress/",
-      category: "MultimediaApplication",
-      features: [
-        "可控码率压缩导出",
-        "等比缩放视频尺寸",
-        "保留原音轨",
-        "视频仅在浏览器本地处理",
-      ],
-    }),
-  },
-  "image-compress": {
-    title: "在线图片压缩工具｜批量压缩 PNG、JPG、WebP - 离线工具",
-    description:
-      "免费在线图片压缩工具，批量压缩 PNG、JPG 和 WebP。PNG 自动选择颜色量化或无损优化，图片不上传，直接在浏览器本地减小文件体积。",
-    keywords:
-      "图片压缩,在线图片压缩,批量图片压缩,PNG压缩,JPG压缩,JPEG压缩,WebP压缩,无损图片压缩,减小图片体积",
-    path: "/image-compress/",
-    jsonLd: toolJsonLd({
-      name: "在线图片压缩工具",
-      description:
-        "在浏览器本地批量压缩 PNG、JPG 与 WebP 图片，自动选择合适的压缩策略。",
-      path: "/image-compress/",
-      category: "MultimediaApplication",
-      features: [
-        "批量压缩 PNG、JPG 与 WebP",
-        "PNG 自适应量化或无损优化",
-        "避免生成比原图更大的文件",
-        "图片仅在浏览器本地处理",
-      ],
-    }),
-  },
-  "image-watermark": {
-    title: "图片加水印工具｜在线批量添加文字水印 - 离线工具",
-    description:
-      "免费图片加水印工具，在线批量添加文字水印，可调整文字内容、大小、透明度和角度。保持原始尺寸、格式及 PNG 透明背景，图片不上传。",
-    keywords:
-      "图片加水印,在线加水印,批量加水印,文字水印,照片加水印,PNG加水印,JPG加水印,WebP加水印",
-    path: "/image-watermark/",
-    jsonLd: toolJsonLd({
-      name: "图片加水印工具",
-      description:
-        "在浏览器本地为 PNG、JPG 与 WebP 图片批量添加可调节的文字水印。",
-      path: "/image-watermark/",
-      category: "DesignApplication",
-      features: [
-        "批量添加文字水印",
-        "调整文字大小、透明度与角度",
-        "保持图片原始尺寸和格式",
-        "保留 PNG 透明通道",
-      ],
-    }),
-  },
-  "image-a4-layout": {
-    title: "图片 A4 排版打印工具｜批量排版照片打印 - 离线工具",
-    description:
-      "免费图片 A4 排版打印工具，本地图片按每行 1–6 张流动排列到 A4 纸，只设横向张数，行高按图片实际宽高比自动适配，直接调用浏览器打印。图片不上传。",
-    keywords:
-      "图片排版,打印排版,A4排版,照片排版打印,批量图片打印,按行排版,图片打印,证件照排版",
-    path: "/image-a4-layout/",
-    jsonLd: toolJsonLd({
-      name: "图片 A4 排版打印工具",
-      description:
-        "在浏览器本地把图片按每行张数流动排列到 A4 页面，行高按图片实际宽高比自适应，可调页边距、自动分页并调用浏览器打印。",
-      path: "/image-a4-layout/",
-      category: "DesignApplication",
-      features: [
-        "每行 1–6 张自由设置",
-        "按图片实际宽高比流动排版",
-        "可调 A4 页边距与自动分页",
-        "保持图片比例、不裁切",
-        "打印对话框输出 A4 版面",
-        "图片仅在浏览器本地处理",
-      ],
-    }),
-  },
+  home: seoPageFor("en", "home"),
+  "video-frame": seoPageFor("en", "video-frame"),
+  "video-compress": seoPageFor("en", "video-compress"),
+  "image-compress": seoPageFor("en", "image-compress"),
+  "image-watermark": seoPageFor("en", "image-watermark"),
+  "id-photo": seoPageFor("en", "id-photo"),
+  "image-a4-layout": seoPageFor("en", "image-a4-layout"),
+};
+
+/**
+ * 语言无关的工具路径 —— 统计 PV 口径。
+ *
+ * 上报必须用这个而不是 `seoPageFor(locale, route).path`：语言进入 URL 后 PV
+ * 仍按 7 条工具路径聚合，既有报表序列不被拆成 21 条。
+ */
+export const analyticsPathFor = (route: ToolRoute): string =>
+  SEO_PAGES[route].path;
+
+/** 读取已保存的语言偏好（存储不可用时返回 null）。 */
+const readStoredLocale = (): string | null => {
+  try {
+    return window.localStorage.getItem(LOCALE_STORAGE_KEY);
+  } catch {
+    return null;
+  }
 };
 
 function setMeta(selector: string, content: string) {
@@ -244,19 +77,38 @@ function setMeta(selector: string, content: string) {
   );
 }
 
-export function useRouteSeo(route: ToolRoute) {
+/**
+ * 按路由与语言更新文档头。
+ *
+ * `locale` 可省略：省略时按当前 URL 与已保存偏好解析，调用方不必自己算一遍。
+ * 除标题与 canonical 外，这里还同步 `<html lang>`、`og:locale` 与 og/twitter 图片，
+ * 使客户端更新后的文档头与静态 HTML 保持一致。
+ */
+export function useRouteSeo(route: ToolRoute, locale?: LocaleCode) {
   useEffect(() => {
-    const seo = SEO_PAGES[route];
+    const resolved =
+      locale ??
+      resolveLocale({
+        pathname: window.location.pathname,
+        stored: readStoredLocale(),
+        navigatorLanguage: window.navigator?.language ?? null,
+      });
+
+    const seo = seoPageFor(resolved, route);
     const canonicalUrl = `${SITE_URL}${seo.path}`;
 
     document.title = seo.title;
+    document.documentElement.lang = LOCALES[resolved].htmlLang;
     setMeta('meta[name="description"]', seo.description);
     setMeta('meta[name="keywords"]', seo.keywords);
+    setMeta('meta[property="og:locale"]', LOCALES[resolved].ogLocale);
     setMeta('meta[property="og:title"]', seo.title);
     setMeta('meta[property="og:description"]', seo.description);
     setMeta('meta[property="og:url"]', canonicalUrl);
     setMeta('meta[name="twitter:title"]', seo.title);
     setMeta('meta[name="twitter:description"]', seo.description);
+    setMeta('meta[property="og:image"]', OG_IMAGE_URL);
+    setMeta('meta[name="twitter:image"]', OG_IMAGE_URL);
 
     document
       .querySelector<HTMLLinkElement>('link[rel="canonical"]')
@@ -268,5 +120,5 @@ export function useRouteSeo(route: ToolRoute) {
     if (structuredData) {
       structuredData.textContent = JSON.stringify(seo.jsonLd);
     }
-  }, [route]);
+  }, [route, locale]);
 }

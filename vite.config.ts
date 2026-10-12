@@ -5,6 +5,10 @@ import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 import { ANALYTICS_ID_TOKEN, resolveAnalyticsId } from "./src/lib/analytics";
+import {
+  i18nEntriesPlugin,
+  listEntrySources,
+} from "./scripts/vite-plugin-i18n-entries";
 import { SITE_URL, SITE_URL_TOKEN } from "./src/lib/site";
 
 /**
@@ -126,29 +130,14 @@ const siteMetaPlugin = (): Plugin => ({
 export default defineConfig({
   build: {
     rollupOptions: {
-      input: {
-        home: path.resolve(import.meta.dirname, "index.html"),
-        videoFrame: path.resolve(
-          import.meta.dirname,
-          "video-frame/index.html",
-        ),
-        videoCompress: path.resolve(
-          import.meta.dirname,
-          "video-compress/index.html",
-        ),
-        imageCompress: path.resolve(
-          import.meta.dirname,
-          "image-compress/index.html",
-        ),
-        imageWatermark: path.resolve(
-          import.meta.dirname,
-          "image-watermark/index.html",
-        ),
-        imageA4Layout: path.resolve(
-          import.meta.dirname,
-          "image-a4-layout/index.html",
-        ),
-      },
+      // 21 个「语言 × 工具」入口由 offline-tools:i18n-entries 在构建期生成到
+      // 各自的 URL 路径上（Vite 的产物位置镜像入口相对 root 的路径）。
+      input: Object.fromEntries(
+        listEntrySources().map(({ locale, route, relativeFile }) => [
+          `${locale}--${route}`,
+          path.resolve(import.meta.dirname, relativeFile),
+        ]),
+      ),
     },
   },
   resolve: {
@@ -157,17 +146,23 @@ export default defineConfig({
     },
   },
   plugins: [
+    i18nEntriesPlugin(),
     siteMetaPlugin(),
     react(),
     tailwindcss(),
     VitePWA({
       registerType: "prompt",
       injectRegister: "auto",
+      // 站点有 21 个语言入口，但 PWA 只有一份 manifest（每次安装一份）。
+      // 因此这里声明的是**默认语言**的元数据：英文站点名 + lang: "en"，
+      // 与根路径 `/` 的英语默认一致。安装后打开时，已保存的语言偏好在首帧前
+      // 由 LocaleProvider 生效，用户仍会看到自己选择的语言。
       manifest: {
-        name: "离线工具 · 视频取帧与图片处理",
-        short_name: "离线工具",
-        description: "视频与图片不上传，在浏览器中完成取帧、压缩和水印。",
-        lang: "zh-CN",
+        name: "Offline Tools · Frame extraction and image processing",
+        short_name: "Offline Tools",
+        description:
+          "Extract video frames, compress images, add watermarks, crop ID photos and lay out A4 pages — all in the browser, nothing uploaded.",
+        lang: "en",
         start_url: "/",
         scope: "/",
         display: "standalone",

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { type AnalyticsEnvironment } from "./analytics";
+import { analyticsPathFor } from "./seo";
 import {
   readSiteIdFromMeta,
   reportRouteChange,
@@ -123,5 +124,71 @@ describe("useRouteAnalytics 接线", () => {
     assert.equal(withMeta("  spaced  "), "spaced");
     assert.equal(withMeta(null), "");
     assert.equal(withMeta(""), "");
+  });
+});
+
+/**
+ * PV 口径**语言无关**（6.5 / design 风险 6）。
+ *
+ * 语言进入 URL 后，若 PV 用 `window.location.pathname` 上报，既有 7 条工具路径的
+ * 报表序列会被拆成 21 条。`reportRouteChange` 收的是 `ToolRoute`（已剥掉语言前缀
+ * 的工具身份），因此语言不会进入 PV —— 这组断言把该性质钉住。
+ */
+describe("PV 口径语言无关", () => {
+  it("同一工具在不同语言下上报同一条路径", () => {
+    const reports = (["en", "zh-CN", "ja"] as const).map(() => {
+      const env = createEnvironment();
+      reportRouteChange(env.environment, "home", "video-compress", true);
+      return env.queue();
+    });
+
+    // 三次调用的参数完全相同（语言根本不参与），因此上报必然一致
+    for (const queue of reports) {
+      assert.deepEqual(
+        queue,
+        [["_trackPageview", "/video-compress/"]],
+        "PV 应上报语言无关的工具路径",
+      );
+    }
+    assert.deepEqual(reports[0], reports[1]);
+    assert.deepEqual(reports[1], reports[2]);
+  });
+
+  it("上报路径永不含语言前缀", () => {
+    const env = createEnvironment();
+    let reported: ReturnType<typeof reportRouteChange> = null;
+    for (const route of [
+      "home",
+      "video-frame",
+      "video-compress",
+      "image-compress",
+      "image-watermark",
+      "id-photo",
+      "image-a4-layout",
+    ] as const) {
+      reported = reportRouteChange(env.environment, reported, route, true);
+    }
+    for (const entry of env.queue() as Array<[string, string]>) {
+      const path = entry[1];
+      assert.ok(!path.startsWith("/zh/"), `不应出现 /zh 前缀：${path}`);
+      assert.ok(!path.startsWith("/ja/"), `不应出现 /ja 前缀：${path}`);
+      assert.ok(!path.startsWith("/en/"), `不应出现 /en 前缀：${path}`);
+    }
+    assert.equal((env.queue() as unknown[]).length, 6, "七个工具应上报六次（首页不计）");
+  });
+
+  it("analyticsPathFor 与语言无关，等于默认语言的工具路径", () => {
+    for (const route of [
+      "home",
+      "video-frame",
+      "video-compress",
+      "image-compress",
+      "image-watermark",
+      "id-photo",
+      "image-a4-layout",
+    ] as const) {
+      const path = analyticsPathFor(route);
+      assert.ok(!path.startsWith("/zh/") && !path.startsWith("/ja/"), path);
+    }
   });
 });

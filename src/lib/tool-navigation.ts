@@ -1,47 +1,30 @@
 import type { MouseEvent } from "react";
+import { LOCALE_CODES, LOCALES } from "./i18n/locales";
+import { TOOL_PATHS, type ToolRoute } from "./i18n/tool-routes";
 
-export type ToolRoute =
-  | "home"
-  | "video-frame"
-  | "video-compress"
-  | "image-compress"
-  | "image-watermark"
-  | "image-a4-layout";
+// 路由数据已拆到 ./i18n/tool-routes（构建期也要用，且那边不碰 DOM）。
+// 这里继续对外导出，避免既有调用点全部改 import。
+export { TOOL_PATHS, TOOL_ROUTES, type ToolRoute } from "./i18n/tool-routes";
 
-export const TOOL_PATHS: Record<ToolRoute, string> = {
-  home: "/",
-  "video-frame": "/video-frame/",
-  "video-compress": "/video-compress/",
-  "image-compress": "/image-compress/",
-  "image-watermark": "/image-watermark/",
-  "image-a4-layout": "/image-a4-layout/",
-};
-
-/** 工具显示名（导航、tab、相关链接共用，单一来源）。 */
-export const TOOL_LABELS: Record<ToolRoute, string> = {
-  home: "离线工具",
-  "video-frame": "视频取帧",
-  "video-compress": "视频压缩",
-  "image-compress": "图片压缩",
-  "image-watermark": "添加水印",
-  "image-a4-layout": "A4 排版",
-};
-
-/** 一级分组：每个分组覆盖一组工具路由，点击分组跳到该组默认工具。 */
+/**
+ * 一级分组：每个分组覆盖一组工具路由，点击分组跳到该组默认工具。
+ *
+ * 这里只保留**与语言无关**的结构（默认工具与成员路由）；显示名在词条里
+ * （`group.video` / `group.image`，见 `label-keys.ts` 的 `groupLabelKey`），
+ * 因此新增语言不需要改本文件。
+ */
 export const TOOL_GROUPS = {
   video: {
-    label: "视频",
     default: "video-frame",
     routes: ["video-frame", "video-compress"],
   },
   image: {
-    label: "图片",
     default: "image-compress",
-    routes: ["image-compress", "image-watermark", "image-a4-layout"],
+    routes: ["image-compress", "image-watermark", "id-photo", "image-a4-layout"],
   },
 } as const satisfies Record<
   string,
-  { label: string; default: ToolRoute; routes: readonly ToolRoute[] }
+  { default: ToolRoute; routes: readonly ToolRoute[] }
 >;
 
 export type ToolGroup = keyof typeof TOOL_GROUPS;
@@ -56,12 +39,39 @@ export const toolGroupForRoute = (route: ToolRoute): ToolGroup | null => {
   return null;
 };
 
-export const readToolRoute = (): ToolRoute => {
-  const path = window.location.pathname.replace(/\/+$/, "") || "/";
+/**
+ * 由 pathname 判定当前工具路由。
+ *
+ * 先剥除**已支持的语言前缀**（`/zh`、`/ja`），再按工具段判定，因此
+ * `/ja/video-frame/`、`/zh/id-photo/` 与无前缀路径得到同一路由。页头一级分组
+ * 的高亮依赖这一结果，所以任一语言下的分组高亮都正确。
+ *
+ * 只剥除已支持的前缀：`/fr/video-frame/` 不会被当作「法语前缀」而改变判定逻辑。
+ *
+ * `pathname` 可注入，使该判定无需浏览器环境即可穷举测试。
+ */
+export const stripLocalePrefix = (pathname: string): string => {
+  for (const code of LOCALE_CODES) {
+    const { prefix } = LOCALES[code];
+    if (prefix === "") continue;
+    if (pathname === prefix) return "/";
+    if (pathname.startsWith(`${prefix}/`)) {
+      return pathname.slice(prefix.length);
+    }
+  }
+  return pathname;
+};
+
+export const readToolRoute = (pathname?: string): ToolRoute => {
+  const raw =
+    pathname ??
+    (typeof window === "undefined" ? "/" : window.location.pathname);
+  const path = stripLocalePrefix(raw).replace(/\/+$/, "") || "/";
   if (path.endsWith("/video-frame")) return "video-frame";
   if (path.endsWith("/video-compress")) return "video-compress";
   if (path.endsWith("/image-compress")) return "image-compress";
   if (path.endsWith("/image-watermark")) return "image-watermark";
+  if (path.endsWith("/id-photo")) return "id-photo";
   if (path.endsWith("/image-a4-layout")) return "image-a4-layout";
   return "home";
 };

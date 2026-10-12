@@ -1,4 +1,5 @@
 import * as imageQuantWasm from "libimagequant-wasm/wasm/libimagequant_wasm.js";
+import { LocalizedError } from "../lib/i18n/localized-error";
 import imageQuantWasmBytes from "libimagequant-wasm/wasm/libimagequant_wasm_bg.wasm";
 import initOxiPng, {
   optimise as optimisePng,
@@ -79,7 +80,7 @@ const compressPng = async (
 ): Promise<CompressResponse> => {
   const original = new Uint8Array(request.png);
   if (!isPng(original)) {
-    throw new Error("所选文件不是有效的 PNG 图片");
+    throw new LocalizedError("err.png.invalidPng");
   }
 
   await initializeCodecs();
@@ -192,7 +193,7 @@ workerScope.onmessage = (event): void => {
       workerScope.postMessage({
         id: request.id,
         success: false,
-        error: error instanceof Error ? error.message : "PNG 压缩失败",
+        error: error instanceof Error ? error.message : "err.png.compressFailed",
       });
     });
 };

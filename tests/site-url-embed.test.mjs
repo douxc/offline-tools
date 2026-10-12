@@ -3,6 +3,8 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { SITE_URL, SITE_URL_TOKEN } from "../src/lib/site.ts";
+import { allEntryCombinations } from "../src/lib/i18n/entry-html.ts";
+import { seoPathFor } from "../src/lib/i18n/seo-content.ts";
 
 /**
  * 产物契约：站点绝对 URL 的一致性。
@@ -30,20 +32,23 @@ const DEPRECATED_HOSTS = ["framecut-offline.douxc512.chatgpt.site"];
 const ALLOWED_THIRD_PARTY_HOSTS = new Set([
   "www.sitemaps.org", // sitemap.xml 的 XML 命名空间
   "schema.org", // JSON-LD 的 @context
+  // 多语言 sitemap 用 xhtml:link 声明 hreflang 互指，需要 xhtml 命名空间。
+  // 与上面两条同类：命名空间标识，不是站点地址。
+  "www.w3.org",
 ]);
 
 const distRoot = new URL("../dist/", import.meta.url);
 const expectedHost = new URL(SITE_URL).host;
 
-/** 六个 HTML 入口：文件 -> 自身路由。 */
-const PAGES = [
-  ["index.html", "/"],
-  ["video-frame/index.html", "/video-frame/"],
-  ["video-compress/index.html", "/video-compress/"],
-  ["image-compress/index.html", "/image-compress/"],
-  ["image-watermark/index.html", "/image-watermark/"],
-  ["image-a4-layout/index.html", "/image-a4-layout/"],
-];
+/**
+ * 全部 21 个语言化入口：文件 -> 自身规范路径。
+ *
+ * 由语言数据源驱动，新增语言时本文件无需改写字面量。
+ */
+const PAGES = allEntryCombinations().map(({ path, route, locale }) => [
+  `${[...path.split("/").filter(Boolean), "index.html"].join("/")}`,
+  seoPathFor(locale, route),
+]);
 
 const SEO_ARTIFACTS = [
   ...PAGES.map(([file]) => file),
@@ -130,7 +135,7 @@ test("站点地址产物中不残留未替换的占位符", async () => {
   }
 });
 
-test("六个入口的 canonical 与 og:url 指向自身路径", async () => {
+test("全部 21 个语言入口的 canonical 与 og:url 指向自身语言路径", async () => {
   for (const [file, routePath] of PAGES) {
     const html = await readFile(new URL(file, distRoot), "utf8");
     const canonical = html.match(
@@ -147,13 +152,64 @@ test("六个入口的 canonical 与 og:url 指向自身路径", async () => {
 test("sitemap 与 robots 使用单一来源的 host", async () => {
   const sitemap = await readFile(new URL("sitemap.xml", distRoot), "utf8");
   const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
-  assert.equal(locs.length, 6, "sitemap 应有 6 条条目");
+  // 21 条「语言 × 工具」URL，由语言数据源驱动
+  assert.equal(locs.length, 21, "sitemap 应有 21 条条目");
   for (const loc of locs) assert.equal(new URL(loc).host, expectedHost, loc);
+
+  for (const { path } of allEntryCombinations()) {
+    assert.ok(
+      locs.some((loc) => new URL(loc).pathname === path),
+      `sitemap 缺少 ${path}`,
+    );
+  }
 
   const robots = await readFile(new URL("robots.txt", distRoot), "utf8");
   const sitemapLine = robots.match(/^Sitemap: (.+)$/m)?.[1];
   assert.ok(sitemapLine, "robots.txt 缺少 Sitemap 声明");
   assert.equal(new URL(sitemapLine).host, expectedHost);
+});
+
+test("sitemap 每条目带四条 xhtml:link 且中文指向 /zh/", async () => {
+  const sitemap = await readFile(new URL("sitemap.xml", distRoot), "utf8");
+  const blocks = [...sitemap.matchAll(/<url>([\s\S]*?)<\/url>/g)].map((m) => m[1]);
+  assert.equal(blocks.length, 21, "应有 21 个 <url> 块");
+
+  for (const block of blocks) {
+    const loc = block.match(/<loc>([^<]+)<\/loc>/)?.[1];
+    const links = [
+      ...block.matchAll(
+        /<xhtml:link rel="alternate" hreflang="([^"]+)" href="([^"]+)" \/>/g,
+      ),
+    ].map(([, hreflang, href]) => ({ hreflang, href }));
+
+    // 三语言 + x-default
+    assert.deepEqual(
+      links.map((link) => link.hreflang).sort(),
+      ["en", "ja", "x-default", "zh-CN"],
+      `${loc} 的 alternate 集合`,
+    );
+
+    for (const link of links) {
+      assert.equal(new URL(link.href).host, expectedHost, `${loc} -> ${link.href}`);
+    }
+
+    // 互指闭合：x-default 与英语同指，且本条目自身出现在 alternate 中
+    const xDefault = links.find((link) => link.hreflang === "x-default");
+    const english = links.find((link) => link.hreflang === "en");
+    assert.equal(xDefault.href, english.href, `${loc} 的 x-default 应指向英语版`);
+    assert.ok(
+      links.some((link) => link.href === loc),
+      `${loc} 未在自身条目的 alternate 中自指`,
+    );
+
+    // 中文指向 /zh/，不得指向根路径
+    const chinese = links.find((link) => link.hreflang === "zh-CN");
+    assert.ok(
+      new URL(chinese.href).pathname === "/zh/" ||
+        new URL(chinese.href).pathname.startsWith("/zh/"),
+      `${loc} 的 zh-CN 应指向 /zh/…，实际为 ${chinese.href}`,
+    );
+  }
 });
 
 test("注入结果先于预缓存修订号计算（否则预缓存会失配）", async () => {

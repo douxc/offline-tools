@@ -3,15 +3,19 @@ import { describe, it } from "node:test";
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { VideoCompressor } from "./video-compressor";
+import { withLocale } from "@/lib/i18n/test-locale";
 import { ThemeProvider } from "@/lib/theme";
 
 describe("VideoCompressor", () => {
   it("AC-10: renders the drop prompt and the audio-retention note without a video", () => {
     const html = renderToString(
-      createElement(
-        ThemeProvider,
-        { initialTheme: "dark" },
-        createElement(VideoCompressor),
+      withLocale(
+        createElement(
+          ThemeProvider,
+          { initialTheme: "dark" },
+          createElement(VideoCompressor),
+        ),
+        "zh-CN",
       ),
     );
 

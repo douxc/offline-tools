@@ -1,0 +1,428 @@
+import type { Messages } from "../message-keys";
+
+/**
+ * 日语词条。
+ *
+ * 按日语界面与检索习惯撰写，不是中文的逐字直译（见 design.md 决策 8）。
+ * 术语取常见说法：フレーム抽出 / 圧縮 / ウォーターマーク / 証明写真。
+ */
+export const ja = {
+  "brand.name": "オフラインツール",
+  "brand.homeLabel": "オフラインツールのホーム",
+  "header.navLabel": "ツールナビゲーション",
+  "header.privacyNote": "端末内で処理 · アップロードなし",
+  "header.themeToDark": "ダークモードに切り替え",
+  "header.themeToLight": "ライトモードに切り替え",
+  "header.languageLabel": "言語を切り替え",
+
+  "group.video": "動画",
+  "group.image": "画像",
+
+  "tool.home": "オフラインツール",
+  "tool.video-frame": "フレーム抽出",
+  "tool.video-compress": "動画圧縮",
+  "tool.image-compress": "画像圧縮",
+  "tool.image-watermark": "ウォーターマーク",
+  "tool.id-photo": "証明写真",
+  "tool.image-a4-layout": "A4 レイアウト",
+
+  "tabs.label": (group: string) => `${group}ツールの切り替え`,
+  "links.related": "関連ツール",
+  "links.relatedNavLabel": "関連するオフラインツール",
+
+  "home.eyebrow": "プライバシー優先 · 端末内で処理",
+  "home.titleLine1": "ファイルは端末の中に。",
+  "home.titleLine2": "処理はブラウザの中で。",
+  "home.lead":
+    "アップロードもアカウントも不要です。初回のキャッシュ後はオフラインでも使えます。",
+  "home.openTool": "ツールを開く",
+  "home.aboutEyebrow": "このツールについて",
+  "home.toolboxTitle": "アップロード不要のブラウザ完結型オフラインツール",
+  "home.toolboxBody":
+    "オフラインツールは、動画のフレーム抽出、画像の一括圧縮、画像へのウォーターマーク、A4 レイアウト印刷、証明写真のサイズ調整をまとめたものです。ブラウザの動画デコード・画像エンコード・Canvas をそのまま使うため、ファイルは端末から出ません。",
+  "home.toolsNavLabel": "オフラインツール一覧",
+  "home.eyebrowVideo": "動画ツール",
+  "home.eyebrowWatermark": "ウォーターマークツール",
+  "home.eyebrowImage": "画像ツール",
+  "home.eyebrowPrint": "印刷ツール",
+  "home.toolDescription.video-frame":
+    "コマ単位で位置を決め、元の解像度のまま PNG・JPG・WebP で書き出します。",
+  "home.toolDescription.video-compress":
+    "ブラウザ内で WebM に再エンコード。ビットレートと等比縮小を調整でき、音声はそのまま保持します。",
+  "home.toolDescription.image-compress":
+    "libimagequant・OxiPNG とブラウザのエンコーダで画像を軽くします。",
+  "home.toolDescription.image-watermark":
+    "元のサイズ・形式・PNG の透過を保ったまま、テキストの透かしを一括で追加します。",
+  "home.toolDescription.id-photo":
+    "1 寸・2 寸写真の位置指定トリミング、または任意サイズへの等比縮小。",
+  "home.toolDescription.image-a4-layout":
+    "1 行あたりの枚数を決めて、実際の縦横比どおりに A4 へ流し込み、ブラウザから印刷します。",
+  "home.detail.videoTitle": "動画のフレーム抽出とスクリーンショット",
+  "home.detail.videoBody":
+    "MP4・WebM・MOV などの動画からコマ単位で画面を選び、元の解像度のまま PNG・JPG・WebP で書き出します。",
+  "home.detail.imageTitle": "PNG・JPG・WebP の画像圧縮",
+  "home.detail.imageBody":
+    "画像ファイルを一括で軽くします。PNG は色数削減か可逆最適化を自動で選び、画質とサイズの両立を図ります。",
+  "home.detail.watermarkTitle": "画像へのテキスト透かし一括追加",
+  "home.detail.watermarkBody":
+    "透かしの文字・サイズ・不透明度・角度を調整し、元のサイズと形式、PNG の透過を保ちます。",
+
+  "overlay.title": "書き出しに文字を焼き込む",
+  "overlay.textLabel": "字幕テキスト",
+  "overlay.textPlaceholder": "字幕テキストを入力",
+  "overlay.position": "位置",
+  "overlay.positionTop": "上寄せ中央",
+  "overlay.positionBottom": "下寄せ中央",
+  "overlay.size": "文字サイズ",
+  "overlay.sizeLabel": "字幕の文字サイズ",
+  "overlay.textAriaLabel": "字幕テキスト",
+
+  "sampling.mode": "抽出モード",
+  "sampling.byInterval": "時間間隔で",
+  "sampling.byStep": "フレーム数で",
+  "sampling.byCount": "枚数を均等に",
+
+  "footer.license": "GPL-3.0-or-later · 端末内で処理 · アップロードなし",
+  "footer.analyticsNote":
+    "当サイトはページ閲覧の把握のみに百度統計を使用しており、ファイルの送信はありません",
+  "footer.thirdParty": "第三者ライセンス",
+  "footer.source": "対応するソースコード",
+
+  "pwa.offlineReady": "オフラインで使えます",
+  "pwa.offlineReadyBody": "ページのリソースをこの端末に保存しました。",
+  "pwa.updateReady": "新しいバージョンを保存しました",
+  "pwa.updateReadyBody":
+    "作業を中断しません。次に開いたときに反映されます。",
+
+  "vc.previewLabel": "動画プレビュー",
+  "vf.eyebrow": "オンライン動画フレーム抽出ツール",
+  "vf.titleLine1": "フレームを切り出して、",
+  "vf.titleLine2": "この一瞬を止める。",
+  "vf.leadLine1": "動画を読み込み、目的の画面まで正確に移动して、",
+  "vf.leadLine2": "元の解像度のまま画像として書き出します。",
+  "vf.featuresLabel": "主な特長",
+  "vf.featureQuality": "元画質で書き出し",
+  "vf.featureStep": "コマ単位の微調整",
+  "vf.featureOffline": "完全オフライン",
+  "vf.dropIdle": "ここに動画をドロップ",
+  "vf.dropActive": "離すと読み込みます",
+  "vf.dropHint": "またはクリックしてファイルを選択",
+  "vf.selectVideo": "動画を選択",
+  "vf.formats": "MP4・WebM・MOV など、ブラウザが再生できる形式に対応",
+  "vf.privacyTitle": "ファイルは端末から出ません",
+  "vf.privacyBody":
+    "動画のデコードと画像の生成は、どちらもこのブラウザタブ内で行います。",
+  "vf.editorLabel": "フレーム抽出ワークスペース",
+  "vf.previewEyebrow": "動画の画面",
+  "vf.editorTitle": "画面を選ぶ",
+  "vf.previewLabel": "動画プレビュー",
+  "vf.resolutionReading": "読み取り中",
+  "vf.timelineLabel": "動画タイムライン",
+  "vf.prevFrame": "1 コマ戻る",
+  "vf.prevFrameTitle": "1 コマ戻る（←）",
+  "vf.pause": "一時停止",
+  "vf.play": "再生",
+  "vf.playPauseTitle": "再生/一時停止（スペース）",
+  "vf.nextFrame": "1 コマ進む",
+  "vf.nextFrameTitle": "1 コマ進む（→）",
+  "vf.fps": "フレームレート",
+  "vf.panelCurrent": "現在のフレーム",
+  "vf.timecodeHint": "時 : 分 : 秒 : コマ",
+  "vf.format": "画像形式",
+  "vf.formatLabel": "画像形式",
+  "vf.quality": "画質",
+  "vf.qualityLabel": "画質",
+  "vf.batch": "一括抽出",
+  "vf.batchOn": "オン",
+  "vf.batchOff": "オフ",
+  "vf.interval": "間隔（秒）",
+  "vf.intervalAria": "抽出間隔（秒）",
+  "vf.step": "N コマごと",
+  "vf.stepAria": "抽出のコマ間隔",
+  "vf.count": "枚数",
+  "vf.countAria": "均等抽出の枚数",
+  "vf.stopExport": (current: number, total: number) =>
+    `書き出しを停止（${current}/${total}）`,
+  "vf.exported": "ダウンロードに保存しました",
+  "vf.exportBatch": "一括フレームを書き出す (ZIP)",
+  "vf.generating": "生成中…",
+  "vf.exportFrame": "現在のフレームを書き出す",
+  "vf.exportNoteBatch":
+    "選択した規則で 1 コマずつ抽出し ZIP にまとめます。各コマは元の解像度で書き出します。",
+  "vf.exportNoteSingle":
+    "動画の元の解像度で書き出します。拡大・縮小やトリミングは行いません。",
+  "vf.shortcutFrame": "コマ送り",
+  "vf.shortcutSpace": "スペース",
+  "vf.shortcutPlay": "再生 / 一時停止",
+  "vf.resetTitle": "動画を選び直しますか？",
+  "vf.resetDescription": "読み込んだ動画とプレビューの進捗は破棄されます。",
+  "vf.resetConfirm": "選び直す",
+  "vf.resetTrigger": "選び直す",
+  "vf.errPickVideo": "ブラウザで再生できる動画ファイルを選んでください",
+  "vf.errPickVideoBody":
+    "現在の動画は変更されていません。MP4・WebM・MOV をお試しください。",
+  "vf.errCanvas": "キャンバスを作成できませんでした",
+  "vf.errEncode": "画像のエンコードに失敗しました",
+  "vf.errExportFailed": "現在のフレームの書き出しに失敗しました",
+  "vf.errExportFailedBody":
+    "ファイルは作成されておらず、動画と再生位置はそのままです。別の画像形式でお試しください。",
+  "vf.errBatchFailed": "一括抽出に失敗しました",
+  "vf.errBatchFailedBody":
+    "ZIP ファイルは作成されず、抽出済みのコマも保持されません。動画と選択した設定はそのままです。範囲を短くするか枚数を減らしてお試しください。",
+  "vf.cancelled": "書き出しを中止しました",
+  "vf.cancelledBody":
+    "ZIP ファイルは作成されていません。動画と選択した設定はそのままなので、いつでもやり直せます。",
+  "vf.batchExported": (count: number) => `${count} コマを書き出しました（ZIP）`,
+  "vf.batchExportedBody": "ファイルはブラウザのダウンロード先に保存されました。",
+  "vf.errPlayback":
+    "ブラウザがこの動画を再生できません。別のコーデックか形式をお試しください。",
+
+  "vc.eyebrow": "オンライン動画圧縮ツール",
+  "vc.titleLine1": "動画を圧縮して、",
+  "vc.titleLine2": "端末内で書き出す。",
+  "vc.leadLine1": "動画を読み込み、ビットレートとサイズを選んで、",
+  "vc.leadLine2": "ブラウザ内で再エンコードし WebM として書き出します。",
+  "vc.featureRowLabel": "主な特長",
+  "vc.featureBitrate": "ビットレート指定",
+  "vc.featureScale": "等比縮小",
+  "vc.featureOffline": "完全オフライン",
+  "vc.dropIdle": "ここに動画をドロップ",
+  "vc.dropActive": "離すと読み込みます",
+  "vc.dropHint": "またはクリックしてファイルを選択",
+  "vc.selectVideo": "動画を選択",
+  "vc.dropNote":
+    "圧縮中は動画を最後まで再生し、元の音声トラックを保持します（実験的機能）",
+  "vc.privacyTitle": "ファイルは端末から出ません",
+  "vc.privacyBody":
+    "動画のデコードと再エンコードは、どちらもこのブラウザタブ内で行います。",
+  "vc.editorLabel": "動画圧縮ワークスペース",
+  "vc.previewEyebrow": "動画プレビュー",
+  "vc.editorTitle": "圧縮して書き出す",
+  "vc.optionsTitle": "圧縮オプション",
+  "vc.bitrate": "目標ビットレート",
+  "vc.bitrateLow": "低（約 1 Mbps）",
+  "vc.bitrateMedium": "中（約 2.5 Mbps）",
+  "vc.bitrateHigh": "高（約 6 Mbps）",
+  "vc.targetWidth": "目標の幅（任意。空欄なら元のサイズを維持）",
+  "vc.targetWidthLabel": "目標の幅（ピクセル）",
+  "vc.stop": "圧縮を停止",
+  "vc.start": "圧縮を開始",
+  "vc.progress": "圧縮の進捗",
+  "vc.exported": (size: string) => `${size} を書き出しました`,
+  "vc.reduced": (percent: number) => `（元より ${percent}% 小さい）`,
+  "vc.increased": (percent: number) => `（元より ${percent}% 大きい）`,
+  "vc.exportNote":
+    "MediaRecorder でリアルタイムに WebM へエンコードします。圧縮中は動画を一度再生し、元の音声トラックを保持します。",
+  "vc.resetTitle": "動画を選び直しますか？",
+  "vc.resetDescription": "読み込んだ動画と圧縮の進捗は破棄されます。",
+  "vc.resetConfirm": "選び直す",
+  "vc.resetTrigger": "選び直す",
+  "vc.errPickVideo": "ブラウザで再生できる動画ファイルを選んでください",
+  "vc.errPickVideoBody":
+    "現在の動画は変更されていません。MP4・WebM・MOV をお試しください。",
+  "vc.cancelled": "圧縮を中止しました",
+  "vc.cancelledBody":
+    "WebM ファイルは作成されていません。選択した動画とビットレート設定はそのままなので、やり直せます。",
+  "vc.errNoRecorder":
+    "このブラウザは MediaRecorder に対応していないため、圧縮して書き出せません",
+  "vc.errNoRecorderBody":
+    "ファイルは作成されておらず、動画と設定はそのままです。別のブラウザでお試しください。",
+  "vc.errNoWebm":
+    "このブラウザには使用可能な WebM エンコーダがないため、圧縮して書き出せません",
+  "vc.errNoWebmBody":
+    "ファイルは作成されておらず、動画と設定はそのままです。別のブラウザでお試しください。",
+  "vc.errCanvas": "キャンバスを作成できませんでした。",
+  "vc.errCapture":
+    "動画ストリームを取得できませんでした。別の形式をお試しください。",
+  "vc.errRecorder":
+    "レコーダーを作成できませんでした。別の形式かブラウザをお試しください。",
+  "vc.done": "圧縮が完了し、ダウンロードに保存しました",
+  "vc.doneBody": (size: string) => `出力 ${size}。`,
+  "vc.errPlayback": "圧縮するために動画を再生できませんでした。",
+  "vc.errPlaybackBody":
+    "ブラウザがこの動画を再生できません。別のコーデックか形式をお試しください。",
+  "a4.pageLabel": (n: number) => `${n} ページ目の A4 版面`,
+  "a4.itemIndex": (n: string) => `${n} 枚目 · `,
+  "a4.moveUp": (name: string) => `${name} を上へ`,
+  "a4.moveDown": (name: string) => `${name} を下へ`,
+  "a4.remove": (name: string) => `${name} を削除`,
+  "a4.prevPage": "前のページ",
+  "a4.pageOf": (current: number, total: number) => `${current} / ${total} ページ`,
+  "a4.nextPage": "次のページ",
+  "a4.colsPerRow": "1 行あたりの枚数",
+  "a4.colsOptionLabel": (cols: number) => `1 行 ${cols} 枚`,
+  "a4.colsOptionText": (cols: number) => `${cols} 枚`,
+  "a4.decodeFailed": (count: number) => `${count} 枚の画像をデコードできず、スキップしました`,
+  "a4.decodeFailedOne": (name: string) => `デコードできずスキップしました：${name}`,
+  "a4.printDisabledTitle": "先に画像を読み込んでください",
+  "a4.print": (pages: number) => `A4 版面を印刷（${pages} ページ）`,
+  "a4.clearTitle": "すべての画像を消去しますか？",
+  "a4.clearDescription": (count: number) => `${count} 枚すべてを削除します。`,
+  "a4.clearConfirm": "消去する",
+  "a4.clearTrigger": "画像を消去",
+  "a4.emptyTitle": "先に画像を読み込んでください",
+  "a4.emptyHint": "ここに画像をドロップするか、クリックして選択。まとめて読み込めます。",
+  "a4.selectImages": "画像を選択",
+  "a4.emptyNote": "ブラウザがデコードできる形式 · 画像は端末内に保持",
+  "a4.listTitle": "レイアウトする画像",
+  "a4.itemCount": (count: number) => `${count} 枚`,
+  "a4.add": "追加",
+  "a4.previewTitle": "A4 ページプレビュー",
+  "a4.previewMeta": (margin: number, cols: number, rows: number) =>
+    `A4 · 余白 ${margin}mm · 1 行 ${cols} 枚 · ${rows} 行`,
+  "a4.settingsTitle": "印刷設定",
+  "a4.colsLabel": "1 行あたりの枚数",
+  "a4.colsHint":
+    "横に何枚並べるかだけを設定します。画像はそれぞれの縦横比のまま順に流し込まれ、行の高さはその行で最も高い画像で決まります。",
+  "a4.margin": "余白",
+  "idPhoto.cropPreviewLabel":
+    "トリミングプレビュー。画像をドラッグして位置を調整、矢印キーで微調整、Shift で速く移動できます。",
+
+  "common.confirm": "確定",
+  "common.cancel": "キャンセル",
+  "err.idPhoto.invalidPixels": "正の整数でピクセル数を入力してください",
+  "err.idPhoto.cannotUpscale":
+    "任意サイズの等比縮小は拡大に対応していません。目標サイズを小さくしてください",
+  "err.idPhoto.canvasFailed":
+    "画像キャンバスを作成できませんでした。より小さいサイズでお試しください。",
+  "err.idPhoto.encodeFailed":
+    "ブラウザが画像をエンコードできませんでした。もう一度お試しください。",
+  "err.idPhoto.unsupportedOutputFormat":
+    "このブラウザは元の形式で出力できません。別の形式を選んでください。",
+  "err.idPhoto.decodeFailed":
+    "このブラウザはファイルをデコードできません。有効な PNG・JPG・WebP を選んでください。",
+  "err.idPhoto.invalidDimensions": "画像のサイズが不正です",
+  "err.idPhoto.tooManyPixels": "元画像が 6000 万画素を超えるため、処理しません",
+  "err.idPhoto.notAcceptedFormat": "PNG・JPG・WebP を選んでください",
+  "err.png.loadFailed": "PNG 圧縮コンポーネントの読み込みに失敗しました",
+  "err.png.timeout": "PNG 圧縮がタイムアウトしました",
+  "err.png.cancelled": "PNG 圧縮を中止しました",
+  "err.png.invalidPng": "選択したファイルは有効な PNG 画像ではありません",
+  "err.png.compressFailed": "PNG 圧縮に失敗しました",
+  "idPhotoPreset.oneInch": "1 寸",
+  "idPhotoPreset.twoInch": "2 寸",
+  "idPhoto.importFailed": (count: number) => `${count} 枚の画像を読み込めませんでした`,
+  "idPhoto.processPartial": (done: number, failed: number) =>
+    `${done} 枚完了、${failed} 枚未処理`,
+  "idPhoto.processPartialBody": (details: string) =>
+    `${details}。元画像と設定は保持されているため、調整して再処理できます。`,
+  "idPhoto.processDone": (count: number) => `${count} 枚の画像を処理しました`,
+  "idPhoto.stopped": "処理を停止しました",
+  "idPhoto.stoppedBody":
+    "今回の一時結果は破棄されました。元画像・構図・設定は保持されているため、やり直せます。",
+  "img.errEncode": "ブラウザがこの画像をエンコードできませんでした",
+  "img.errTooManyPixels": "6000 万画素を超えるため、処理しません",
+  "img.errDecode": "このブラウザではデコードできません",
+  "img.errCanvas": "画像キャンバスを作成できませんでした",
+  "img.badgeQuantised": "PNG-8 + OxiPNG",
+  "img.badgeLossless": "OxiPNG 可逆",
+  "img.badgeAlreadyOptimal": "元画像が最適",
+  "img.badgeSample": "サンプル",
+  "img.badgeWebpAuto": "WebP 適応品質",
+  "img.badgeJpegAuto": "JPEG 適応品質",
+  "img.badgeOriginalSizeWatermark": "元サイズのテキスト透かし",
+  "img.errPickImages": "PNG・JPG・WebP の画像を選んでください",
+  "img.importFailed": (count: number) => `${count} 枚の画像を読み込めませんでした`,
+  "img.errProcessing": "処理に失敗しました",
+  "img.errUnknown": "不明なエラーが発生しました",
+  "img.cancelled": "処理を中止しました",
+  "img.cancelledBody": (remaining: number) =>
+    `完了した画像は一覧に残ります。残り ${remaining} 枚は未処理で、いつでもやり直せます。`,
+  "img.done": (count: number) => `${count} 枚の画像を処理しました`,
+  "img.partial": (done: number, failed: number) =>
+    `${done} 枚完了、${failed} 枚失敗`,
+  "img.partialBody":
+    "失敗した画像は一覧に残るため、設定を調整して再処理できます。読み込んだ画像が失われることはありません。",
+  "img.clearTitle": "すべての画像を消去しますか？",
+  "img.clearDescription": (count: number) =>
+    `${count} 枚すべてを削除し、処理結果も消去します。`,
+  "img.clearConfirm": "消去する",
+  "img.clearTrigger": "画像を消去",
+  "img.eyebrow": "ブラウザ内での画像処理",
+  "img.titleCompress": "画像圧縮",
+  "img.titleWatermark": "画像に透かしを追加",
+  "img.leadCompress":
+    "圧縮と色数削減はこのブラウザ内で行います。画像はアップロードされません。",
+  "img.leadWatermark":
+    "このブラウザ内でテキストの透かしを一括追加します。画像はアップロードされません。",
+  "img.dropIdle": "ここに画像をドロップ",
+  "img.dropHint": "またはクリックして複数まとめて選択",
+  "img.selectImages": "画像を選択",
+  "img.acceptedFormats": "PNG・JPG・WebP に対応 · 1 枚あたり 6000 万画素まで",
+  "img.listTitle": "処理する画像",
+  "img.itemCount": (count: number) => `${count} 枚`,
+  "img.add": "追加",
+  "img.remove": "削除",
+  "img.previewOriginal": "元画像プレビュー",
+  "img.previewWatermark": "透かしプレビュー",
+  "img.noneSelected": "未選択",
+  "img.previewLabel": "画像の透かしプレビュー",
+  "img.processing": "処理中",
+  "img.compressSettings": "圧縮設定",
+  "img.watermarkText": "テキスト透かし",
+  "img.watermarkTextLabel": "透かしの文字",
+  "img.compressQuality": "圧縮品質",
+  "img.outputQuality": "出力品質",
+  "img.fontSize": "文字サイズ",
+  "img.watermarkStrength": "透かしの強さ",
+  "img.angle": "傾き",
+  "img.compressNote":
+    "PNG は色数削減か可逆方式を自動で選びます。JPG/WebP は大きくなりません。",
+  "img.watermarkNote":
+    "元のサイズと形式を保ちます。PNG の透過が白く塗られることはありません。",
+  "img.stop": (current: number, total: number) => `処理を停止（${current}/${total}）`,
+  "img.processAll": (count: number) => `${count} 枚をすべて処理`,
+  "img.doneCount": (count: number) => `${count} 枚完了`,
+  "img.retryCount": (count: number) => `${count} 枚を再試行`,
+  "img.savedBytes": (size: string) => `合計 ${size} 削減`,
+  "img.outputBytes": (size: string) => `出力 ${size}`,
+  "img.downloadAll": "すべてダウンロード",
+  "img.downloadCurrent": "現在の画像をダウンロード",
+
+  "idPhoto.clearTitle": "すべての画像を消去しますか？",
+  "idPhoto.clearDescription": (count: number) =>
+    `${count} 枚すべてを、構図と処理結果ごと削除します。`,
+  "idPhoto.clearTrigger": "画像を消去",
+  "idPhoto.editorLabel": "証明写真エディター",
+  "idPhoto.title": "証明写真",
+  "idPhoto.lead":
+    "定番サイズでのトリミング、または任意サイズへの等比縮小。",
+  "idPhoto.emptyTitle": "処理する写真を選んでください",
+  "idPhoto.emptyHint":
+    "PNG・JPG・WebP に対応。まとめて読み込めます。",
+  "idPhoto.importing": "画像を読み込み中…",
+  "idPhoto.selectImages": "画像を選択",
+  "idPhoto.listTitle": (count: number) => `画像 · ${count}`,
+  "idPhoto.append": "画像を追加",
+  "idPhoto.doneSuffix": " · 完了",
+  "idPhoto.remove": (name: string) => `${name} を削除`,
+  "idPhoto.previewCrop": "トリミングプレビュー",
+  "idPhoto.previewFull": "全体プレビュー",
+  "idPhoto.cropHelp":
+    "画像をドラッグして位置を調整します。矢印キーで微調整、Shift + 矢印で速く移動できます。",
+  "idPhoto.fullHelp":
+    "画像全体を保ち、元の縦横比のまま縮小します。",
+  "idPhoto.settingsTitle": "サイズ設定",
+  "idPhoto.modeLabel": "サイズ処理モード",
+  "idPhoto.modeFixed": "定番サイズ",
+  "idPhoto.modeCustom": "任意の等比縮小",
+  "idPhoto.presetLabel": "証明写真のサイズ",
+  "idPhoto.ppiNote": (widthMm: number, heightMm: number) =>
+    `${widthMm} × ${heightMm} mm · 300 PPI で換算`,
+  "idPhoto.zoom": "画像の拡大率",
+  "idPhoto.resetPosition": "位置をリセット",
+  "idPhoto.zoomNote":
+    "画像は常に比率を保ち、トリミング枠を覆います。拡大すると鮮明さが落ちることがあります。",
+  "idPhoto.axisLabel": "指定する方向",
+  "idPhoto.axisWidthShort": "幅",
+  "idPhoto.axisWidth": "幅で指定",
+  "idPhoto.axisHeightShort": "高さ",
+  "idPhoto.axisHeight": "高さで指定",
+  "idPhoto.targetLabel": (axis: string) => `目標の${axis}（px）`,
+  "idPhoto.customNote":
+    "もう一方は元の比率から自動計算します。画面全体を保ち、拡大には対応しません。",
+  "idPhoto.progressHeld": "処理中。元画像と構図は保持",
+  "idPhoto.resultsReady": (count: number) => `${count} 枚がダウンロード可能`,
+  "idPhoto.outputNote": "出力は元の形式を保持",
+
+} satisfies Messages;

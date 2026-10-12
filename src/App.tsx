@@ -14,6 +14,7 @@ import { Card } from "@/components/ui/card";
 import { ToolHeader } from "@/components/tool-header";
 import { ToolSeoContent } from "@/components/tool-seo-content";
 import { ToolTabs } from "@/components/tool-tabs";
+import { useT } from "@/lib/i18n/locale-context";
 import { LicenseFooter } from "@/components/license-footer";
 import { Popconfirm } from "@/components/ui/popconfirm";
 import { toast } from "sonner";
@@ -96,6 +97,7 @@ function cleanBaseName(name: string) {
 }
 
 export function FrameExtractor() {
+  const t = useT();
   const inputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const objectUrlRef = useRef<string | null>(null);
@@ -153,8 +155,8 @@ export function FrameExtractor() {
     (file?: File) => {
       if (!file) return;
       if (!file.type.startsWith("video/")) {
-        toast.error("请选择浏览器支持的视频文件", {
-        description: "当前视频未改变，可重新选择 MP4、WebM 或 MOV 文件。",
+        toast.error(t("vf.errPickVideo"), {
+        description: t("vf.errPickVideoBody"),
       });
         return;
       }
@@ -170,7 +172,7 @@ export function FrameExtractor() {
       setDimensions({ width: 0, height: 0 });
       setExported(false);
     },
-    [releaseVideo],
+    [releaseVideo, t],
   );
 
   const onFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -232,7 +234,7 @@ export function FrameExtractor() {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       const context = canvas.getContext("2d");
-      if (!context) throw new Error("无法创建画布");
+      if (!context) throw new Error(t("vf.errCanvas"));
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
       if (shouldBurnOverlay(textEnabled, overlayText)) {
@@ -252,7 +254,7 @@ export function FrameExtractor() {
       const blob = await new Promise<Blob | null>((resolve) =>
         canvas.toBlob(resolve, mime, format === "png" ? undefined : quality),
       );
-      if (!blob) throw new Error("图片编码失败");
+      if (!blob) throw new Error(t("vf.errEncode"));
 
       const frameLabel = timecode.replaceAll(":", "-");
       const extension = format === "jpeg" ? "jpg" : format;
@@ -267,9 +269,8 @@ export function FrameExtractor() {
       trackFrameExported({ format });
     } catch {
       trackFrameExportFailed();
-      toast.error("当前帧导出失败", {
-        description:
-          "未产生文件，视频与播放位置保持原样。可尝试其他图片格式后重试。",
+      toast.error(t("vf.errExportFailed"), {
+        description: t("vf.errExportFailedBody"),
       });
     } finally {
       setExporting(false);
@@ -294,7 +295,7 @@ export function FrameExtractor() {
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     const context = canvas.getContext("2d");
-    if (!context) throw new Error("无法创建画布");
+    if (!context) throw new Error(t("vf.errCanvas"));
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
     if (shouldBurnOverlay(textEnabled, overlayText)) {
@@ -353,7 +354,7 @@ export function FrameExtractor() {
         // yield before moving on so peak memory stays near a single frame.
         const blob = await captureFrameAt(captureVideo, times[i]);
         setBatchProgress({ current: i + 1, total: times.length });
-        if (!blob) throw new Error("图片编码失败");
+        if (!blob) throw new Error(t("vf.errEncode"));
         const buffer = await blob.arrayBuffer();
         yield { name: frameFileName(base, i, extension), data: new Uint8Array(buffer) };
       }
@@ -363,9 +364,8 @@ export function FrameExtractor() {
       const zipBlob = await createFrameZipArchive(frameEntries());
       if (cancelBatchRef.current) {
         trackBatchFrameExportCancelled();
-        toast.info("已取消导出", {
-          description:
-            "未产生 ZIP 文件，视频与已选参数保持原样，可随时重新导出。",
+        toast.info(t("vf.cancelled"), {
+          description: t("vf.cancelledBody"),
         });
         return;
       }
@@ -382,14 +382,13 @@ export function FrameExtractor() {
         format,
         samplingMode,
       });
-      toast.success(`已导出 ${times.length} 张帧（ZIP）`, {
-        description: "文件已保存到浏览器的下载目录。",
+      toast.success(t("vf.batchExported", times.length), {
+        description: t("vf.batchExportedBody"),
       });
     } catch {
       trackBatchFrameExportFailed();
-      toast.error("批量抽帧失败", {
-        description:
-          "未产生 ZIP 文件，已抽出的帧不保留，视频与已选参数保持原样。可缩短范围或减少帧数后重试。",
+      toast.error(t("vf.errBatchFailed"), {
+        description: t("vf.errBatchFailedBody"),
       });
     } finally {
       setBatchExporting(false);
@@ -434,16 +433,16 @@ export function FrameExtractor() {
         trailing={
           videoUrl ? (
             <Popconfirm
-              title="确认重新选择视频？"
-              description="当前导入的视频与预览进度将被清除。"
-              confirmLabel="重新选择"
+              title={t("vf.resetTitle")}
+              description={t("vf.resetDescription")}
+              confirmLabel={t("vf.resetConfirm")}
               onConfirm={reset}
               trigger={
                 <Button
                   variant="outline"
                   type="button"
                 >
-                  重新选择
+                  {t("vf.resetTrigger")}
                 </Button>
               }
             />
@@ -456,21 +455,21 @@ export function FrameExtractor() {
       {!videoUrl ? (
         <section className="welcome">
           <div className="welcome-copy">
-            <p className="eyebrow">在线视频取帧工具</p>
+            <p className="eyebrow">{t("vf.eyebrow")}</p>
             <h1>
-              视频取帧，
+              {t("vf.titleLine1")}
               <br />
-              <span>定格这一帧。</span>
+              <span>{t("vf.titleLine2")}</span>
             </h1>
             <p className="lead">
-              导入一段视频，精准移动到你想要的画面，
+              {t("vf.leadLine1")}
               <br className="desktop-break" />
-              然后以原始分辨率导出成图片。
+              {t("vf.leadLine2")}
             </p>
-            <div className="feature-row" aria-label="产品特点">
-              <span>原画质导出</span>
-              <span>逐帧微调</span>
-              <span>完全离线</span>
+            <div className="feature-row" aria-label={t("vf.featuresLabel")}>
+              <span>{t("vf.featureQuality")}</span>
+              <span>{t("vf.featureStep")}</span>
+              <span>{t("vf.featureOffline")}</span>
             </div>
           </div>
 
@@ -493,17 +492,17 @@ export function FrameExtractor() {
               <div className="scan-line" />
             </div>
             <div className="drop-copy">
-              <strong>{isDragging ? "松开即可导入" : "把视频放到这里"}</strong>
-              <span>或点击选择本地文件</span>
+              <strong>{isDragging ? t("vf.dropActive") : t("vf.dropIdle")}</strong>
+              <span>{t("vf.dropHint")}</span>
             </div>
             <Button
               type="button"
               size="lg"
               onClick={() => inputRef.current?.click()}
             >
-              选择视频
+              {t("vf.selectVideo")}
             </Button>
-            <small>支持 MP4、WebM、MOV 等浏览器可播放格式</small>
+            <small>{t("vf.formats")}</small>
           </div>
 
           <div className="privacy-strip">
@@ -511,17 +510,17 @@ export function FrameExtractor() {
               ◉
             </span>
             <div>
-              <strong>你的文件不会离开设备</strong>
-              <p>视频解码和图片生成均在当前浏览器标签页内完成。</p>
+              <strong>{t("vf.privacyTitle")}</strong>
+              <p>{t("vf.privacyBody")}</p>
             </div>
           </div>
         </section>
       ) : (
-        <section className="editor" aria-label="视频取帧工作台">
+        <section className="editor" aria-label={t("vf.editorLabel")}>
           <div className="editor-heading">
             <div>
-              <p className="eyebrow">视频画面</p>
-              <h1>选取画面</h1>
+              <p className="eyebrow">{t("vf.previewEyebrow")}</p>
+              <h1>{t("vf.editorTitle")}</h1>
             </div>
             <div className="file-meta" title={fileName}>
               <span>{fileName}</span>
@@ -578,10 +577,10 @@ export function FrameExtractor() {
                     onEnded={() => setIsPlaying(false)}
                     onError={() =>
                       toast.error(
-                        "浏览器无法播放这个视频，请换一种编码或格式。",
+                        t("vf.errPlayback"),
                       )
                     }
-                    aria-label="视频画面预览"
+                    aria-label={t("vf.previewLabel")}
                   />
                   {shouldBurnOverlay(textEnabled, overlayText) && (
                     <div
@@ -596,7 +595,7 @@ export function FrameExtractor() {
                   <span className="resolution-badge">
                     {dimensions.width > 0
                       ? `${dimensions.width} × ${dimensions.height}`
-                      : "正在读取"}
+                      : t("vf.resolutionReading")}
                   </span>
                   <span className="timecode-badge">{timecode}</span>
                 </div>
@@ -617,7 +616,7 @@ export function FrameExtractor() {
                     value={[Math.min(currentTime, duration || 0)]}
                     onValueChange={([value]) => seekTo(value)}
                     disabled={!duration}
-                    aria-label="视频时间轴"
+                    aria-label={t("vf.timelineLabel")}
                   />
                 </div>
                 <div className="transport">
@@ -627,8 +626,8 @@ export function FrameExtractor() {
                     size="icon"
                     className="transport-button"
                     onClick={() => stepFrame(-1)}
-                    aria-label="后退一帧"
-                    title="后退一帧（←）"
+                    aria-label={t("vf.prevFrame")}
+                    title={t("vf.prevFrameTitle")}
                   >
                     <span aria-hidden="true">|‹</span>
                   </Button>
@@ -637,8 +636,8 @@ export function FrameExtractor() {
                     size="icon"
                     className="play-button"
                     onClick={() => void togglePlayback()}
-                    aria-label={isPlaying ? "暂停" : "播放"}
-                    title="播放/暂停（空格）"
+                    aria-label={isPlaying ? t("vf.pause") : t("vf.play")}
+                    title={t("vf.playPauseTitle")}
                   >
                     <span aria-hidden="true">{isPlaying ? "Ⅱ" : "▶"}</span>
                   </Button>
@@ -648,20 +647,20 @@ export function FrameExtractor() {
                     size="icon"
                     className="transport-button"
                     onClick={() => stepFrame(1)}
-                    aria-label="前进一帧"
-                    title="前进一帧（→）"
+                    aria-label={t("vf.nextFrame")}
+                    title={t("vf.nextFrameTitle")}
                   >
                     <span aria-hidden="true">›|</span>
                   </Button>
                   <div className="fps-control">
-                    <span>帧率参考</span>
+                    <span>{t("vf.fps")}</span>
                     <Select
                       value={String(fps)}
                       onValueChange={(value) => setFps(Number(value))}
                     >
                       <SelectTrigger
                         className="fps-select"
-                        aria-label="帧率参考"
+                        aria-label={t("vf.fps")}
                       >
                         <SelectValue />
                       </SelectTrigger>
@@ -681,23 +680,23 @@ export function FrameExtractor() {
             <Card className="export-panel" role="complementary">
               <div>
                 <p className="panel-number">01</p>
-                <h2>当前帧</h2>
+                <h2>{t("vf.panelCurrent")}</h2>
                 <div className="time-readout">
                   <span>{timecode}</span>
-                  <small>时 : 分 : 秒 : 帧</small>
+                  <small>{t("vf.timecodeHint")}</small>
                 </div>
               </div>
 
               <div className="control-group">
                 <p className="panel-number">02</p>
-                <span>图片格式</span>
+                <span>{t("vf.format")}</span>
                 <ToggleGroup
                   type="single"
                   value={format}
                   onValueChange={(next) => {
                     if (next) setFormat(next as ImageFormat);
                   }}
-                  aria-label="图片格式"
+                  aria-label={t("vf.formatLabel")}
                   className="w-full"
                 >
                   {(["png", "jpeg", "webp"] as ImageFormat[]).map((item) => (
@@ -715,7 +714,7 @@ export function FrameExtractor() {
               {format !== "png" && (
                 <div className="control-group quality-group">
                   <div className="quality-label">
-                    <label htmlFor="quality">图片质量</label>
+                    <label htmlFor="quality">{t("vf.quality")}</label>
                     <span>{Math.round(quality * 100)}%</span>
                   </div>
                   <Slider
@@ -725,7 +724,7 @@ export function FrameExtractor() {
                     step={0.01}
                     value={[quality]}
                     onValueChange={([value]) => setQuality(value)}
-                    aria-label="图片质量"
+                    aria-label={t("vf.qualityLabel")}
                   />
                 </div>
               )}
@@ -747,7 +746,7 @@ export function FrameExtractor() {
               <div className="control-group batch-group">
                 <p className="panel-number">04</p>
                 <div className="quality-label">
-                  <label htmlFor="batch-mode">批量抽帧</label>
+                  <label htmlFor="batch-mode">{t("vf.batch")}</label>
                   <Toggle
                     id="batch-mode"
                     variant="outline"
@@ -756,7 +755,7 @@ export function FrameExtractor() {
                     onPressedChange={setBatchMode}
                     className="font-mono text-xs"
                   >
-                    {batchMode ? "已开启" : "关闭"}
+                    {batchMode ? t("vf.batchOn") : t("vf.batchOff")}
                   </Toggle>
                 </div>
 
@@ -772,7 +771,7 @@ export function FrameExtractor() {
                     {samplingMode === "interval" && (
                       <div className="quality-group">
                         <div className="quality-label">
-                          <label htmlFor="batch-interval">间隔（秒）</label>
+                          <label htmlFor="batch-interval">{t("vf.interval")}</label>
                           <span>{batchInterval}s</span>
                         </div>
                         <Slider
@@ -782,7 +781,7 @@ export function FrameExtractor() {
                           step={0.1}
                           value={[Math.min(batchInterval, duration || 1)]}
                           onValueChange={([value]) => setBatchInterval(value)}
-                          aria-label="抽帧间隔秒数"
+                          aria-label={t("vf.intervalAria")}
                         />
                       </div>
                     )}
@@ -790,7 +789,7 @@ export function FrameExtractor() {
                     {samplingMode === "step" && (
                       <div className="quality-group">
                         <div className="quality-label">
-                          <label htmlFor="batch-step">每 N 帧</label>
+                          <label htmlFor="batch-step">{t("vf.step")}</label>
                           <span>{batchStep}</span>
                         </div>
                         <Slider
@@ -800,7 +799,7 @@ export function FrameExtractor() {
                           step={1}
                           value={[batchStep]}
                           onValueChange={([value]) => setBatchStep(Math.round(value))}
-                          aria-label="抽帧帧数步长"
+                          aria-label={t("vf.stepAria")}
                         />
                       </div>
                     )}
@@ -808,7 +807,7 @@ export function FrameExtractor() {
                     {samplingMode === "evenly" && (
                       <div className="quality-group">
                         <div className="quality-label">
-                          <label htmlFor="batch-count">张数</label>
+                          <label htmlFor="batch-count">{t("vf.count")}</label>
                           <span>{batchCount}</span>
                         </div>
                         <Slider
@@ -818,7 +817,7 @@ export function FrameExtractor() {
                           step={1}
                           value={[Math.min(batchCount, 500)]}
                           onValueChange={([value]) => setBatchCount(Math.round(value))}
-                          aria-label="均匀抽帧张数"
+                          aria-label={t("vf.countAria")}
                         />
                       </div>
                     )}
@@ -838,7 +837,7 @@ export function FrameExtractor() {
                     }}
                   >
                     <span aria-hidden="true">×</span>
-                    停止导出（{batchProgress.current}/{batchProgress.total}）
+                    {t("vf.stopExport", batchProgress.current, batchProgress.total)}
                   </Button>
                 ) : (
                   <Button
@@ -848,7 +847,7 @@ export function FrameExtractor() {
                     disabled={!dimensions.width || !duration}
                   >
                     <span aria-hidden="true">{exported ? "✓" : "↓"}</span>
-                    {exported ? "已保存到下载" : "导出批量帧 (ZIP)"}
+                    {exported ? t("vf.exported") : t("vf.exportBatch")}
                   </Button>
                 )
               ) : (
@@ -860,16 +859,16 @@ export function FrameExtractor() {
                 >
                   <span aria-hidden="true">{exported ? "✓" : "↓"}</span>
                   {exporting
-                    ? "正在生成…"
+                    ? t("vf.generating")
                     : exported
-                      ? "已保存到下载"
-                      : "导出当前帧"}
+                      ? t("vf.exported")
+                      : t("vf.exportFrame")}
                 </Button>
               )}
               <p className="export-note">
                 {batchMode
-                  ? "按所选规则逐帧抽取并打包为 ZIP，每帧按原始分辨率导出。"
-                  : "按视频原始分辨率导出，不做缩放或裁剪。"}
+                  ? t("vf.exportNoteBatch")
+                  : t("vf.exportNoteSingle")}
               </p>
             </Card>
           </div>
@@ -877,10 +876,10 @@ export function FrameExtractor() {
           <div className="shortcut-hint">
             <span>
               <kbd>←</kbd>
-              <kbd>→</kbd> 逐帧
+              <kbd>→</kbd> {t("vf.shortcutFrame")}
             </span>
             <span>
-              <kbd>空格</kbd> 播放 / 暂停
+              <kbd>{t("vf.shortcutSpace")}</kbd> {t("vf.shortcutPlay")}
             </span>
           </div>
         </section>

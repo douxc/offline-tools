@@ -1,6 +1,7 @@
 import * as React from "react";
 import * as PopoverPrimitive from "@radix-ui/react-popover";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n/locale-context";
 import { cn } from "@/lib/utils";
 
 function PopoverContent({
@@ -46,12 +47,16 @@ export function Popconfirm({
   trigger,
   title,
   description,
-  confirmLabel = "确认",
-  cancelLabel = "取消",
+  confirmLabel,
+  cancelLabel,
   confirmVariant = "destructive",
   onConfirm,
   onOpenChange,
 }: PopconfirmProps) {
+  // 默认按钮文案走词条；调用方仍可显式覆盖（如「重新选择」这类动作名）
+  const t = useT();
+  const resolvedConfirmLabel = confirmLabel ?? t("common.confirm");
+  const resolvedCancelLabel = cancelLabel ?? t("common.cancel");
   const [open, setOpen] = React.useState(false);
   /**
    * 初始焦点落在取消键。
@@ -97,7 +102,7 @@ export function Popconfirm({
             size="sm"
             onClick={close}
           >
-            {cancelLabel}
+            {resolvedCancelLabel}
           </Button>
           <Button
             type="button"
@@ -105,7 +110,7 @@ export function Popconfirm({
             size="sm"
             onClick={handleConfirm}
           >
-            {confirmLabel}
+            {resolvedConfirmLabel}
           </Button>
         </div>
       </PopoverContent>

@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="浏览器本地证件照尺寸处理：一寸、二寸照片等比缩放与拖动定位裁切，自定义宽度或高度缩小完整图片，支持批量 PNG、JPG、WebP，无需上传。"
+    />
+    <meta
+      name="keywords"
+      content="证件照,一寸照片,二寸照片,证件照尺寸,照片裁切,等比缩放,本地处理"
+    />
+    <meta
+      name="robots"
+      content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
+    />
+    <meta name="application-name" content="离线工具" />
+    <!-- 百度统计站点标识：构建期由 vite.config.ts 注入最终值；空值表示关闭统计。 -->
+    <meta name="baidu-tongji-site-id" content="__ANALYTICS_ID__" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:site_name" content="离线工具" />
+    <meta
+      property="og:url"
+      content="__SITE_URL__/id-photo/"
+    />
+    <meta
+      property="og:title"
+      content="证件照｜一寸二寸裁切与自定义等比缩放 - 离线工具"
+    />
+    <meta
+      property="og:description"
+      content="一寸二寸定位裁切与自定义等比缩小，图片在浏览器本地处理。"
+    />
+    <meta
+      property="og:image"
+      content="__SITE_URL__/og.png"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="证件照尺寸处理工具" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="证件照｜一寸二寸裁切与自定义等比缩放"
+    />
+    <meta
+      name="twitter:description"
+      content="无需上传，完成证件照尺寸处理和等比缩小。"
+    />
+    <meta
+      name="twitter:image"
+      content="__SITE_URL__/og.png"
+    />
+    <meta name="twitter:image:alt" content="证件照尺寸处理工具" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <link rel="apple-touch-icon" href="/pwa-192.png" />
+    <link
+      rel="canonical"
+      href="__SITE_URL__/id-photo/"
+    />
+    <link rel="alternate" hreflang="en" href="__SITE_URL__/id-photo/" />
+    <link rel="alternate" hreflang="zh-CN" href="__SITE_URL__/id-photo/" />
+    <link rel="alternate" hreflang="ja" href="__SITE_URL__/ja/id-photo/" />
+    <link rel="alternate" hreflang="x-default" href="__SITE_URL__/id-photo/" />
+    <script id="structured-data" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "离线工具",
+          "item": "__SITE_URL__/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "证件照",
+          "item": "__SITE_URL__/id-photo/"
+        }
+      ]
+    },
+    {
+      "@type": "WebApplication",
+      "name": "证件照",
+      "url": "__SITE_URL__/id-photo/",
+      "description": "一寸二寸定位裁切与自定义等比缩小，图片在浏览器本地处理。",
+      "applicationCategory": "DesignApplication",
+      "applicationSubCategory": "Browser-based utility",
+      "operatingSystem": "Windows, macOS, Linux, Android, iOS",
+      "browserRequirements": "Requires JavaScript and an HTML5-compatible browser",
+      "inLanguage": "zh-CN",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "CNY"
+      },
+      "featureList": [
+        "一寸二寸尺寸预设",
+        "拖动定位与等比裁切",
+        "自定义等比缩小",
+        "PNG、JPG、WebP 本地处理"
+      ],
+      "image": "__SITE_URL__/og.png"
+    }
+  ]
+}
+    </script>
+    <title>证件照｜一寸二寸裁切与自定义等比缩放 - 离线工具</title>
+    <script>
+      // 首帧前应用已保存的主题,避免 next-themes 挂载前出现主题闪烁。
+      // 存储键与取值必须与 src/lib/theme.tsx 一致(由 tests/theme-script-embed.test.mjs 守卫)。
+      (function () {
+        try {
+          var stored = localStorage.getItem("offline-tools-theme");
+          if (stored === "light") document.documentElement.classList.add("light");
+          else document.documentElement.classList.add("dark");
+        } catch (error) {
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <h1>证件照</h1>
+      <p>选择一寸、二寸预设定位裁切，或自定义尺寸等比缩小；文件不会上传。</p>
+      <a href="/">返回离线工具首页</a>
+    </noscript>
+    <script type="module" src="__ENTRY_MODULE__"></script>
+  </body>
+</html>

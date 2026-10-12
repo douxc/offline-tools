@@ -5,28 +5,33 @@ import test from "node:test";
 /**
  * 首帧主题脚本契约。
  *
- * 六个入口在 `</head>` 前内联一段脚本,在样式表与模块脚本加载之前把已保存的
+ * 21 个语言入口在 `</head>` 前内联一段脚本,在样式表与模块脚本加载之前把已保存的
  * 主题类挂到根元素,避免 next-themes 挂载前出现亮暗闪烁。该脚本独立于 React,
  * 因此存储键与取值会与 `src/lib/theme.tsx` 形成隐式耦合 —— 任何一侧漂移都会
  * 静默退回"闪烁",本文件把这份契约钉住。
  */
 
 const root = new URL("../", import.meta.url);
+const distRoot = new URL("../dist/", import.meta.url);
 
-const ENTRIES = [
-  "index.html",
-  "video-frame/index.html",
-  "video-compress/index.html",
-  "image-compress/index.html",
-  "image-watermark/index.html",
-  "image-a4-layout/index.html",
-];
+import { allEntryCombinations } from "../src/lib/i18n/entry-html.ts";
 
+/** dist 中的入口 HTML 路径：URL 路径 -> `<路径>/index.html`。 */
+const distEntry = (urlPath) =>
+  `${[...urlPath.split("/").filter(Boolean), "index.html"].join("/")}`;
+
+/** 全部 21 个「语言 × 工具」入口，由语言数据源驱动。 */
+const ENTRY_FILES = allEntryCombinations().map(({ path }) => distEntry(path));
+
+const ENTRIES = ENTRY_FILES;
+
+/** 产物读 dist；theme.tsx 仍读源码。 */
 const read = (path) => readFile(new URL(path, root), "utf8");
+const readEntry = (path) => readFile(new URL(path, distRoot), "utf8");
 
-test("六个入口均在 </head> 前内联首帧主题脚本", async () => {
+test("21 个语言入口均在 </head> 前内联首帧主题脚本", async () => {
   for (const entry of ENTRIES) {
-    const html = await read(entry);
+    const html = await readEntry(entry);
     const scriptAt = html.indexOf("offline-tools-theme");
     const headEnd = html.indexOf("</head>");
     assert.ok(scriptAt > 0, `${entry} 缺少首帧主题脚本`);
@@ -52,7 +57,7 @@ test("内联脚本的存储键与取值和 theme.tsx 一致", async () => {
   const key = theme.match(/THEME_STORAGE_KEY\s*=\s*"([^"]+)"/)?.[1];
   assert.ok(key, "theme.tsx 应定义 THEME_STORAGE_KEY");
   for (const entry of ENTRIES) {
-    const html = await read(entry);
+    const html = await readEntry(entry);
     assert.ok(
       html.includes(`localStorage.getItem("${key}")`),
       `${entry} 的存储键应为 "${key}",与 theme.tsx 保持一致`,

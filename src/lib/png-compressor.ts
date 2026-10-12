@@ -1,3 +1,4 @@
+import { LocalizedError, type LocalizedErrorCode } from "./i18n/localized-error";
 export type PngCompressionStrategy =
   | "original"
   | "oxipng"
@@ -56,7 +57,7 @@ export class PngCompressor {
       else pending.reject(new Error(event.data.error));
     };
     worker.onerror = () => {
-      this.rejectAll("PNG 压缩组件加载失败");
+      this.rejectAll("err.png.loadFailed");
       worker.terminate();
       this.worker = null;
     };
@@ -70,7 +71,7 @@ export class PngCompressor {
       const id = ++this.requestId;
       const timer = window.setTimeout(() => {
         this.requests.delete(id);
-        reject(new Error("PNG 压缩超时"));
+        reject(new LocalizedError("err.png.timeout"));
       }, 120_000);
       this.requests.set(id, { resolve, reject, timer });
       this.getWorker().postMessage(
@@ -81,15 +82,16 @@ export class PngCompressor {
   }
 
   dispose() {
-    this.rejectAll("PNG 压缩已取消");
+    this.rejectAll("err.png.cancelled");
     this.worker?.terminate();
     this.worker = null;
   }
 
-  private rejectAll(message: string) {
+  /** 用**带码的**错误拒绝全部在途请求，使界面层能翻译成当前语言。 */
+  private rejectAll(code: LocalizedErrorCode) {
     for (const pending of this.requests.values()) {
       window.clearTimeout(pending.timer);
-      pending.reject(new Error(message));
+      pending.reject(new LocalizedError(code));
     }
     this.requests.clear();
   }

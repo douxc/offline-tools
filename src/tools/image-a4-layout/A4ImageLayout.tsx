@@ -24,6 +24,7 @@ import {
 import { toast } from "sonner";
 import { ToolHeader } from "@/components/tool-header";
 import { ToolSeoContent } from "@/components/tool-seo-content";
+import { useT } from "@/lib/i18n/locale-context";
 import { ToolTabs } from "@/components/tool-tabs";
 import { LicenseFooter } from "@/components/license-footer";
 import { Button } from "@/components/ui/button";
@@ -109,12 +110,13 @@ export function A4Sheet({
   onImageError,
   index,
 }: A4SheetProps) {
+  const t = useT();
   return (
     <section
       className={`a4-sheet ${hiddenOnScreen ? "a4-sheet-hidden" : ""}`}
       style={{ padding: `${marginMm}mm` }}
       data-page={index + 1}
-      aria-label={`第 ${index + 1} 页 A4 版面`}
+      aria-label={t("a4.pageLabel", index + 1)}
     >
       {rows.map((row, rowIndex) => (
         <div
@@ -151,6 +153,7 @@ export function A4ImageList({
   onMove,
   onRemove,
 }: A4ImageListProps) {
+  const t = useT();
   return (
     <div className="image-list a4-image-list">
       {items.map((item, index) => (
@@ -160,7 +163,7 @@ export function A4ImageList({
             <span className="image-list-meta">
               <strong>{item.name}</strong>
               <small>
-                第 {String(index + 1).padStart(2, "0")} 张 ·{" "}
+                {t("a4.itemIndex", String(index + 1).padStart(2, "0"))}
                 {item.fileSizeLabel}
               </small>
             </span>
@@ -168,7 +171,7 @@ export function A4ImageList({
           <Button
             variant="ghost"
             size="icon"
-            aria-label={`上移 ${item.name}`}
+            aria-label={t("a4.moveUp", item.name)}
             disabled={index === 0}
             onClick={() => onMove(index, -1)}
           >
@@ -177,7 +180,7 @@ export function A4ImageList({
           <Button
             variant="ghost"
             size="icon"
-            aria-label={`下移 ${item.name}`}
+            aria-label={t("a4.moveDown", item.name)}
             disabled={index === items.length - 1}
             onClick={() => onMove(index, 1)}
           >
@@ -187,7 +190,7 @@ export function A4ImageList({
             variant="ghost"
             size="icon"
             className="text-muted-foreground hover:text-destructive"
-            aria-label={`移除 ${item.name}`}
+            aria-label={t("a4.remove", item.name)}
             onClick={() => onRemove(item)}
           >
             <Trash2 />
@@ -212,24 +215,25 @@ export function A4PaginationBar({
   onPrev,
   onNext,
 }: A4PaginationBarProps) {
+  const t = useT();
   return (
     <div className="a4-pager">
       <Button
         variant="ghost"
         size="icon"
-        aria-label="上一页"
+        aria-label={t("a4.prevPage")}
         disabled={pageIndex <= 0}
         onClick={onPrev}
       >
         <ChevronLeft />
       </Button>
       <span aria-live="polite">
-        第 {pageIndex + 1} / {pageCount} 页
+        {t("a4.pageOf", pageIndex + 1, pageCount)}
       </span>
       <Button
         variant="ghost"
         size="icon"
-        aria-label="下一页"
+        aria-label={t("a4.nextPage")}
         disabled={pageIndex >= pageCount - 1}
         onClick={onNext}
       >
@@ -246,6 +250,7 @@ type A4ColsPickerProps = {
 
 /** 每行张数选择：1–6（横向列数）。 */
 export function A4ColsPicker({ value, onChange }: A4ColsPickerProps) {
+  const t = useT();
   return (
     <ToggleGroup
       type="single"
@@ -254,7 +259,7 @@ export function A4ColsPicker({ value, onChange }: A4ColsPickerProps) {
         // 单选 ToggleGroup 再次点击已选项时给出空值,保持原选择
         if (next) onChange(Number(next));
       }}
-      aria-label="每行张数"
+      aria-label={t("a4.colsPerRow")}
     >
       {Array.from(
         { length: COLS_PER_ROW.max - COLS_PER_ROW.min + 1 },
@@ -263,10 +268,10 @@ export function A4ColsPicker({ value, onChange }: A4ColsPickerProps) {
         <ToggleGroupItem
           key={cols}
           value={String(cols)}
-          aria-label={`每行 ${cols} 张`}
+          aria-label={t("a4.colsOptionLabel", cols)}
           className="flex-1 text-xs"
         >
-          {cols} 张
+          {t("a4.colsOptionText", cols)}
         </ToggleGroupItem>
       ))}
     </ToggleGroup>
@@ -278,6 +283,7 @@ export function A4ColsPicker({ value, onChange }: A4ColsPickerProps) {
 /* ------------------------------------------------------------------ */
 
 export function A4ImageLayout() {
+  const t = useT();
   const inputRef = useRef<HTMLInputElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const itemsRef = useRef<A4Item[]>([]);
@@ -353,14 +359,14 @@ export function A4ImageLayout() {
     const next = loaded.filter((item): item is A4Item => item !== null);
     const failedCount = loaded.length - next.length;
     if (failedCount > 0) {
-      toast.error(`${failedCount} 张图片无法解码，已跳过`, {
+      toast.error(t("a4.decodeFailed", failedCount), {
         id: "a4-decode-failed",
       });
     }
     if (next.length > 0) {
       setItems((current) => [...current, ...next]);
     }
-  }, []);
+  }, [t]);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) void addFiles(event.target.files);
@@ -388,7 +394,7 @@ export function A4ImageLayout() {
   const handleImageError = (item: A4SheetItem) => {
     URL.revokeObjectURL(item.url);
     setItems((current) => current.filter((entry) => entry.id !== item.id));
-    toast.error(`无法解码，已跳过：${item.name}`, { id: "a4-decode-failed" });
+    toast.error(t("a4.decodeFailedOne", item.name), { id: "a4-decode-failed" });
   };
 
   const handlePrint = () => {
@@ -431,15 +437,15 @@ export function A4ImageLayout() {
             type="button"
             onClick={handlePrint}
             disabled={items.length === 0}
-            title={items.length === 0 ? "先导入图片" : undefined}
+            title={items.length === 0 ? t("a4.printDisabledTitle") : undefined}
           >
             <Printer />
-            打印 A4 版面（{pages.length} 页）
+            {t("a4.print", pages.length)}
           </Button>
           <Popconfirm
-            title="确认清空全部图片？"
-            description={`将移除全部 ${items.length} 张图片。`}
-            confirmLabel="确认清空"
+            title={t("a4.clearTitle")}
+            description={t("a4.clearDescription", items.length)}
+            confirmLabel={t("a4.clearConfirm")}
             onConfirm={clearAll}
             trigger={
               <Button
@@ -447,7 +453,7 @@ export function A4ImageLayout() {
                 type="button"
                 disabled={items.length === 0}
               >
-                清空图片
+                {t("a4.clearTrigger")}
               </Button>
             }
           />
@@ -468,24 +474,24 @@ export function A4ImageLayout() {
               <ImageIcon />
               <Sparkles />
             </div>
-            <strong>先导入图片</strong>
-            <span>拖放图片到这里，或点击选择，可一次导入多张</span>
+            <strong>{t("a4.emptyTitle")}</strong>
+            <span>{t("a4.emptyHint")}</span>
             <Button
               type="button"
               size="lg"
               onClick={() => inputRef.current?.click()}
             >
-              选择图片
+              {t("a4.selectImages")}
             </Button>
-            <small>浏览器可解码的图片格式 · 图片保持在本地</small>
+            <small>{t("a4.emptyNote")}</small>
           </div>
         ) : (
           <div className="image-workspace">
             <Card className="image-list-panel">
               <div className="image-panel-title">
                 <div>
-                  <span>待排版图片</span>
-                  <small>{items.length} 张</small>
+                  <span>{t("a4.listTitle")}</span>
+                  <small>{t("a4.itemCount", items.length)}</small>
                 </div>
                 <Button
                   type="button"
@@ -493,7 +499,7 @@ export function A4ImageLayout() {
                   size="sm"
                   onClick={() => inputRef.current?.click()}
                 >
-                  <Plus /> 添加
+                  <Plus /> {t("a4.add")}
                 </Button>
               </div>
               <A4ImageList
@@ -513,10 +519,9 @@ export function A4ImageLayout() {
             <Card className="image-preview-panel a4-preview-panel">
               <div className="image-panel-title">
                 <div>
-                  <span>A4 页面预览</span>
+                  <span>{t("a4.previewTitle")}</span>
                   <small>
-                    A4 · {marginMm}mm 边距 · 每行 {colsPerRow} 张 ·{" "}
-                    {flow.rows.length} 行
+                    {t("a4.previewMeta", marginMm, colsPerRow, flow.rows.length)}
                   </small>
                 </div>
                 <A4PaginationBar
@@ -556,19 +561,19 @@ export function A4ImageLayout() {
 
             <Card className="image-settings-panel a4-settings-panel">
               <p className="panel-number">01</p>
-              <h2>打印设置</h2>
+              <h2>{t("a4.settingsTitle")}</h2>
 
               <div className="a4-setting">
-                <label htmlFor="a4-cols">每行张数</label>
+                <label htmlFor="a4-cols">{t("a4.colsLabel")}</label>
                 <A4ColsPicker value={colsPerRow} onChange={setColsPerRow} />
                 <p className="a4-hint">
-                  只设置横向每行几张，图片按各自宽高比依次流动排入，行高由该行最高的图片决定。
+                  {t("a4.colsHint")}
                 </p>
               </div>
 
               <div className="a4-setting">
                 <div className="a4-setting-label">
-                  <label htmlFor="a4-margin">页边距</label>
+                  <label htmlFor="a4-margin">{t("a4.margin")}</label>
                   <span>{marginMm} mm</span>
                 </div>
                 <Slider

@@ -1,15 +1,17 @@
 import type { SamplingMode } from "@/lib/frame-sampling";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useT } from "@/lib/i18n/locale-context";
+import type { MessageKey } from "@/lib/i18n/message-keys";
 
 interface BatchSamplingControlsProps {
   mode: SamplingMode;
   onModeChange: (mode: SamplingMode) => void;
 }
 
-const OPTIONS: ReadonlyArray<{ mode: SamplingMode; label: string }> = [
-  { mode: "interval", label: "按时间间隔" },
-  { mode: "step", label: "按帧数间隔" },
-  { mode: "evenly", label: "均匀取张数" },
+const OPTIONS: ReadonlyArray<{ mode: SamplingMode; labelKey: MessageKey }> = [
+  { mode: "interval", labelKey: "sampling.byInterval" },
+  { mode: "step", labelKey: "sampling.byStep" },
+  { mode: "evenly", labelKey: "sampling.byCount" },
 ];
 
 /**
@@ -22,6 +24,7 @@ export function BatchSamplingControls({
   mode,
   onModeChange,
 }: BatchSamplingControlsProps) {
+  const t = useT();
   return (
     <ToggleGroup
       type="single"
@@ -30,7 +33,7 @@ export function BatchSamplingControls({
         // 单选 ToggleGroup 在再次点击已选项时会给出空值,此处保持原选择
         if (next) onModeChange(next as SamplingMode);
       }}
-      aria-label="抽取模式"
+      aria-label={t("sampling.mode")}
       className="w-full"
     >
       {OPTIONS.map((option) => (
@@ -39,7 +42,7 @@ export function BatchSamplingControls({
           value={option.mode}
           className="flex-1 text-xs"
         >
-          {option.label}
+          {t(option.labelKey)}
         </ToggleGroupItem>
       ))}
     </ToggleGroup>
