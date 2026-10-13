@@ -26,6 +26,7 @@
 - [x] 4.1 新增 `tests/analytics-embed.test.mjs`：断言 6 个 HTML 入口含统计标识与统计端点、不含未替换占位符，且 `dist/sw.js` 与预缓存清单中不出现 `hm.baidu.com` 或 `hm.js`；接入 `package.json` 的 `test` 脚本并确认 `pnpm test` 通过。
 - [x] 4.2 修订 `tests/site-url-embed.test.mjs`：在「站点地址产物的 host 唯一」断言中显式放行 `hm.baidu.com`（与既有 `schema.org`/`www.sitemaps.org` 白名单同处），并新增「除白名单外无其他第三方 host」的否定断言，验证方式为 `pnpm test` 中该文件全绿。
 - [x] 4.3 在 `tests/build-output.test.mjs` 的六个入口断言中补充统计标识存在性断言，验证方式为 `pnpm test` 通过。
+  - 注（三语化后追加）：此处「六个入口」是当时的入口数。`add-trilingual-i18n` 后入口改为构建期生成的 21 个（7 工具 × 3 语言），该断言已由「六个入口」改为表驱动覆盖全部语言入口；本条描述保留为当时的历史记录，未改写。
 - [x] 4.4 运行 `pnpm test` 与 `pnpm lint` 全绿，确认 `tests/theme-script-embed.test.mjs`、`tests/stable-anchors-embed.test.mjs`、`tests/contrast-embed.test.mjs` 等既有契约测试未因新增调用点而失效。
 
 ## 5. 文档与上线核对
@@ -33,4 +34,4 @@
 - [x] 5.1 在 `project-map.md` 补充统计接入段（统计通道、标识单一来源、加载门、事件口径、不上报清单），并核对 `README.md` 与页面文案中「不上传」的表述在新披露下不产生歧义，验证方式为人工复查两份文档与页脚文案一致。
 - [x] 5.2 本地验证不加载：`pnpm dev` 打开任一入口，确认 Network 中无 `hm.baidu.com` 请求、控制台无统计相关报错，验证方式为人工核对（可留证截图或 Network 导出）。
 - [ ] 5.3 生产构建与部署验证：`pnpm build` 后检查 `dist/index.html` 的标识、部署到生产后在浏览器 Network 确认 `hm.js` 与上报请求出现、切换工具页时收到新路径 PV。**本地部分已完成**：`dist/index.html` 的统计标识为 `49b103455f3a286d39f1c63602f08f8a`、无残留占位符、`dist/sw.js` 不含统计端点，且 `index.html` 的预缓存修订号与产物 md5 一致（`455a52506486d737267798430ddbb058`）；**待线上核对**：部署后 `hm.js` 与上报请求出现、切换工具页收到新路径 PV。
-- [ ] 5.4 百度统计后台核对（上线后人工跟进，需站点管理员在部署后执行）：实时访客可见、受访页面出现 6 条规范路径、事件跟踪出现工具完成/失败/取消事件，并确认**未**开启「单页应用数据统计」开关（开启会与前端 `_trackPageview` 重复上报）。
+- [ ] 5.4 百度统计后台核对（上线后人工跟进，需站点管理员在部署后执行）：实时访客可见、受访页面出现**语言无关的 7 条工具路径**（三语访问应聚合到同一路径，不因语言拆成 21 条）、事件跟踪出现工具完成/失败/取消事件，并确认**未**开启「单页应用数据统计」开关（开启会与前端 `_trackPageview` 重复上报）。
