@@ -487,7 +487,8 @@ const main = async () => {
    */
 
   // 自定义等比缩小：2048×1536 按宽 600 → 600×450
-  await clickByText(cdp, "Custom proportional scaling");
+  const switchedToCustom = await clickByText(cdp, "Custom scaling");
+  check("可切到自定义模式", switchedToCustom === true);
   await sleep(600);
   const inputOk = await cdp.evaluate(`
     (() => {
@@ -513,7 +514,8 @@ const main = async () => {
   const two = await cdp.evaluate(`document.querySelectorAll('.id-photo-list-item').length`);
   check("可导入第二张", two === 2, `实际 ${two}`);
 
-  await clickByText(cdp, "Standard sizes");
+  const backToFixed = await clickByText(cdp, "Standard sizes");
+  check("可切回常用尺寸模式", backToFixed === true);
   await sleep(500);
   await clickByText(cdp, "Process all");
   await sleep(3000);

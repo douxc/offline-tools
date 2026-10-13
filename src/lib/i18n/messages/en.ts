@@ -407,7 +407,7 @@ export const en = {
   "idPhoto.settingsTitle": "Size settings",
   "idPhoto.modeLabel": "Size mode",
   "idPhoto.modeFixed": "Standard sizes",
-  "idPhoto.modeCustom": "Custom proportional scaling",
+  "idPhoto.modeCustom": "Custom scaling",
   "idPhoto.presetLabel": "ID photo size",
   "idPhoto.ppiNote": (widthMm: number, heightMm: number) =>
     `${widthMm} × ${heightMm} mm · converted at 300 PPI`,
