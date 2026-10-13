@@ -25,22 +25,22 @@ const fakeStorage = (initial: Record<string, string> = {}) => {
 describe("语言偏好的保存（6.2 / i18n spec）", () => {
   it("路径显式带语言前缀时写入偏好", () => {
     const { storage, writes } = fakeStorage();
-    resolveInitialLocale("/ja/video-compress/", null, null, storage);
+    resolveInitialLocale("/ja/video-compress/", storage);
     assert.deepEqual(writes, [[LOCALE_STORAGE_KEY, "ja"]]);
   });
 
   it("无前缀路径不写入偏好（否则默认语言会刷掉所有人的偏好）", () => {
     const { storage, writes } = fakeStorage();
-    resolveInitialLocale("/", "ja", null, storage);
-    resolveInitialLocale("/video-frame/", "zh-CN", null, storage);
-    assert.deepEqual(writes, [], "隐式路径不得改写偏好");
+    resolveInitialLocale("/", storage);
+    resolveInitialLocale("/video-frame/", storage);
+    assert.deepEqual(writes, [], "无前缀路径不得改写偏好");
   });
 
   it("外部直链的语言被写入偏好（链接即选择）", () => {
     const { storage, writes } = fakeStorage();
-    // 已保存偏好是英语，但链接指向 /ja/ → 偏好应更新为日语
-    const resolved = resolveInitialLocale("/ja/", "en", "en-US", storage);
-    assert.equal(resolved, "ja", "路径优先于已保存偏好");
+    // 既有偏好是英语，但链接指向 /ja/ → 偏好应更新为日语
+    const resolved = resolveInitialLocale("/ja/", storage);
+    assert.equal(resolved, "ja", "路径即语言");
     assert.deepEqual(writes, [[LOCALE_STORAGE_KEY, "ja"]]);
   });
 
@@ -68,15 +68,13 @@ describe("语言偏好的保存（6.2 / i18n spec）", () => {
     };
     assert.equal(readStoredLocale(throwing), null);
     assert.doesNotThrow(() => writeStoredLocale("ja", throwing));
-    assert.doesNotThrow(() =>
-      resolveInitialLocale("/ja/", null, null, throwing),
-    );
+    assert.doesNotThrow(() => resolveInitialLocale("/ja/", throwing));
   });
 
   it("传 null 存储（SSR）时不抛错", () => {
     assert.equal(readStoredLocale(null), null);
     assert.doesNotThrow(() => writeStoredLocale("ja", null));
-    assert.equal(resolveInitialLocale("/zh/", null, null, null), "zh-CN");
+    assert.equal(resolveInitialLocale("/zh/", null), "zh-CN");
   });
 
   it("偏好键与主题键不同（互不覆盖）", () => {

@@ -80,11 +80,11 @@ function defaultStorage(): LocaleStorage | null {
  */
 export const resolveInitialLocale = (
   pathname: string,
-  stored: string | null,
-  navigatorLanguage: string | null,
   storage: LocaleStorage | null = defaultStorage(),
 ): LocaleCode => {
-  const resolved = resolveLocale({ pathname, stored, navigatorLanguage });
+  const resolved = resolveLocale({ pathname });
+  // 只有显式带前缀的路径才写偏好：那代表用户明确选择了语言。
+  // 无前缀路径永远英语，写偏好会把所有人的偏好刷成英语。
   if (localeExplicitInPath(pathname)) writeStoredLocale(resolved, storage);
   return resolved;
 };
@@ -116,23 +116,13 @@ export function LocaleProvider({ children, initialLocale }: LocaleProviderProps)
   const [locale, setLocaleState] = useState<LocaleCode>(() => {
     if (initialLocale) return initialLocale;
     if (typeof window === "undefined") return DEFAULT_LOCALE;
-    return resolveInitialLocale(
-      window.location.pathname,
-      readStoredLocale(),
-      window.navigator?.language ?? null,
-    );
+    return resolveInitialLocale(window.location.pathname);
   });
 
   // 浏览器前进/后退可能落在另一种语言的路径上，需同步语言
   useEffect(() => {
     const onPopState = () => {
-      setLocaleState(
-        resolveInitialLocale(
-          window.location.pathname,
-          readStoredLocale(),
-          window.navigator?.language ?? null,
-        ),
-      );
+      setLocaleState(resolveInitialLocale(window.location.pathname));
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);

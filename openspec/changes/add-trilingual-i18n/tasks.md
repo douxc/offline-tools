@@ -3,7 +3,8 @@
 ## 1. 语言数据源与语言化路由（地基）
 
 - [x] 1.1 新建 `src/lib/i18n/locales.ts`：定义三种语言的权威数据 —— `code`（`en`/`zh-CN`/`ja`）、路径前缀（``/`/zh`/`/ja`）、`displayName`、`htmlLang`、`ogLocale`、`hreflang`、是否默认语言、本地存储键名。该模块**不得 import React 或任何浏览器全局**，以便 `vite.config.ts` 在构建期直接 import。验证：新增 `src/lib/i18n/locales.test.ts` 断言三种语言齐备、恰好一个默认语言、前缀互不重复且英语前缀为空串。
-- [x] 1.2 实现 `resolveLocale({ pathname, stored, navigator })` 纯函数，按「路径前缀 > 已保存偏好 > `navigator.language` > 英语」返回语言码；路径前缀必须是完整的首段匹配，`/fr/video-frame/` 不得被识别为语言前缀。验证：单测穷举优先级四种来源、`/zh`/`/ja` 前缀命中、`/fr` 与 `zh` 类近似值不命中、全部缺失时回退英语（对应 `i18n` 的「语言解析优先级」与「语言前缀不干扰工具路由判定」）。
+- [x] 1.2 实现 `resolveLocale({ pathname, stored, navigator })` 纯函数，按「路径前缀 > 已保存偏好 > `navigator.language` > 英语」返回语言码；路径前缀必须是完整的首段匹配，`/fr/video-frame/` 不得被识别为语言前缀。验证：单测穷举优先级四种来源、`/zh`/`/ja` 前缀命中、`/fr` 与 `zh` 类近似值不命中、全部缺失时回退英语（对应 `i18n` 的「语言解析」与「语言前缀不干扰工具路由判定」）。
+  - **实施后收紧**：原按四级优先级实现（路径 > 偏好 > `navigator.language` > 英语），后经确认改为**路径即语言** —— 无前缀一律英语，不再读偏好与浏览器语言。理由是同一 URL 依访客本地状态返回不同语言，与 `hreflang`/`sitemap` 的「一个 URL 一种语言」声明矛盾。`resolveLocale({ pathname })` 现为一行 `localeForPrefix(前缀段) ?? DEFAULT_LOCALE`；相关测试与 spec 已同步改写。
 - [x] 1.3 在 `src/lib/tool-navigation.ts` 中实现前缀剥除后再匹配工具路径，使 `readToolRoute()` 对 `/ja/image-watermark/`、`/zh/id-photo/` 返回正确工具。验证：扩展 `src/lib/tool-navigation.test.ts`，覆盖三种语言 × 7 个工具的完整矩阵，并保留既有中文根路径用例不变。
 - [x] 1.4 新建 `src/lib/i18n/routes.ts`，提供「语言 + 工具 → 规范路径」与「语言 + 工具 → 语言化链接」的唯一实现，供导航、tab、相关工具、canonical、hreflang、sitemap 共用。验证：单测断言 21 组「语言 × 工具」路径全部正确，且英语无前缀、中文带 `/zh`、日语带 `/ja`；再断言没有任何调用点直接拼写裸路径（用源码扫描断言 `TOOL_PATHS` 不被直接用于生成 `href`）。
 

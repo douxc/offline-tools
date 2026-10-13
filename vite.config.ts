@@ -191,7 +191,17 @@ export default defineConfig({
       workbox: {
         cleanupOutdatedCaches: true,
         navigateFallback: "/index.html",
-        navigateFallbackDenylist: [/^\/legal\//],
+        /*
+         * 离线兜底只服务「无前缀」路径。
+         *
+         * `navigateFallback` 会把所有未匹配的导航交给 `/index.html`（英语首页）。
+         * 对 `/ja/does-not-exist/` 这类路径，那等于把日语用户无声地送到英语页，
+         * 而地址栏还停在 `/ja/…` —— 与「路径前缀决定语言」直接冲突。
+         *
+         * 因此排除两种语言前缀下的路径：它们要么命中真实页面，要么按站点 404
+         * 处理，绝不被交付成另一种语言的页面。`/legal/` 原本就排除（静态文档）。
+         */
+        navigateFallbackDenylist: [/^\/legal\//, /^\/zh\//, /^\/ja\//],
         globPatterns: ["**/*.{js,css,html,png,svg,webp,ico,md,txt}"],
       },
     }),

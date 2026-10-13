@@ -103,55 +103,38 @@ const prefixFromPathname = (pathname: string): string => {
   return firstSegment === "" ? "" : `/${firstSegment}`;
 };
 
-/**
- * navigator.language 的**主语言子标签**到站点语言的映射。
- *
- * 故意不区分 `zh-Hans`/`zh-Hant` 之外的地区变体：站点只有一种中文，
- * 因此 `zh` 开头且非繁体取向的一律落到 `zh-CN`。
- */
-const PRIMARY_LANGUAGE: Record<string, LocaleCode | undefined> = {
-  en: "en",
-  zh: "zh-CN",
-  ja: "ja",
-};
-
-const localeForNavigatorLanguage = (language: string): LocaleCode | null => {
-  const [primary] = language.toLowerCase().split("-");
-  return PRIMARY_LANGUAGE[primary] ?? null;
-};
-
 export type ResolveLocaleInput = {
   /** 当前地址的 pathname。 */
   readonly pathname: string;
-  /** 已保存的语言偏好（未保存时传 null）。 */
-  readonly stored?: string | null;
-  /** `navigator.language`；不可用时传空串或省略。 */
-  readonly navigatorLanguage?: string | null;
 };
 
 /**
- * 按固定优先级解析当前语言：**路径前缀 > 已保存偏好 > navigator.language > 英语**。
+ * 解析当前语言：**有前缀取前缀语言，无前缀一律英语**。
  *
- * 路径前缀属于「URL 明确指定」，因此压过历史偏好 —— 外部站点直链
- * `/zh/video-frame/` 时，接收者既有的偏好不得把页面改回其他语言。
- * 本函数是纯函数，不读写存储、不触碰浏览器全局。
+ * 规则统一到这一条，不再有「无前缀时让位给偏好」的特例：`/video-frame/` 与 `/`
+ * 永远渲染英语，`/zh/…` 永远渲染中文，`/ja/…` 永远渲染日语。
+ *
+ * **为什么不再读偏好与 `navigator.language`**：
+ *  - 站点产出 21 个独立规范 URL，sitemap 与 `hreflang` 都按「一个 URL 一种语言」
+ *    声明。若同一个 URL 依访客本地状态返回不同语言，声明与实际就互相矛盾，
+ *    搜索引擎收录的页面也可能与语言声明不符。
+ *  - 路径是唯一权威后，服务端静态产物与客户端解析结果必然一致，不存在
+ *    「先渲染一种语言、再由脚本改成另一种」的窗口。
+ *
+ * 因此语言偏好不再参与语言决定（`/openspec-update-change` 已把这条写回 spec）。
+ * 偏好仅用于记住用户在切换器里的选择，供切换器显示与回访时提示。
+ *
+ * 本函数是纯函数：不读写存储、不触碰浏览器全局。
  */
-export const resolveLocale = ({
-  pathname,
-  stored,
-  navigatorLanguage,
-}: ResolveLocaleInput): LocaleCode => {
-  const fromPath = localeForPrefix(prefixFromPathname(pathname));
-  if (fromPath) return fromPath;
+export const resolveLocale = ({ pathname }: ResolveLocaleInput): LocaleCode =>
+  localeForPrefix(prefixFromPathname(pathname)) ?? DEFAULT_LOCALE;
 
-  if (isLocaleCode(stored)) return stored;
-
-  const fromNavigator = localeForNavigatorLanguage(navigatorLanguage ?? "");
-  if (fromNavigator) return fromNavigator;
-
-  return DEFAULT_LOCALE;
-};
-
-/** 路径是否显式指定了语言（用于判断「是否需要把偏好更新为路径语言」）。 */
+/**
+ * 路径是否显式指定了语言。
+ *
+ * 与「是否带前缀」等价，因此也是**唯一需要写入偏好的时机**：显式路径代表用户
+ * 明确选择了语言（外部直链即属此列）。无前缀路径不写偏好，避免默认语言把
+ * 所有人的偏好刷成英语。
+ */
 export const localeExplicitInPath = (pathname: string): boolean =>
   localeForPrefix(prefixFromPathname(pathname)) !== null;

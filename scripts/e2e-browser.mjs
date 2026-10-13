@@ -266,8 +266,7 @@ const main = async () => {
   });
 
   console.log("A. 21 条 URL 在真实浏览器中的渲染语言");
-  // 先清空偏好，使「无前缀路径」走默认语言（英语）分支；
-  // 否则解析链会落到 navigator.language（本机为 zh-CN）
+  // 无前缀路径一律英语，因此恒为英语，不需要清偏好
   await gotoAndSettle(cdp, `${origin}/`);
   await clearLocalePreference(cdp);
   for (const entry of ENTRIES) {
@@ -363,17 +362,144 @@ const main = async () => {
     `localStorage.getItem('offline-tools-locale')`,
   );
   check("显式语言路径会更新偏好", zhStored === "zh-CN", `实际 ${zhStored}`);
-  const reopened = await gotoAndSettle(cdp, `${origin}/`);
-  const langAfterReopen = reopened
+  /*
+   * 规则收紧后：`/` 恒为英语，不再遵循偏好。
+   * 「跨会话保持」现在体现为：偏好被记住（切换器据此显示），而**语言由路径决定** ——
+   * 带前缀的地址重开后仍是该语言，无前缀地址重开后是英语。
+   */
+  const reopenedHome = await gotoAndSettle(cdp, `${origin}/`);
+  const langHome = reopenedHome
     ? await cdp.evaluate(`document.documentElement.lang`)
     : "n/a";
+  check("无前缀 / 重开后为英语（路径即语言）", langHome === "en", `实际 ${langHome}`);
+  await gotoAndSettle(cdp, `${origin}/zh/image-compress/`);
+  const langZh = await cdp.evaluate(`document.documentElement.lang`);
+  check("带前缀地址重开后仍是该语言", langZh === "zh-CN", `实际 ${langZh}`);
+  const storedStill = await cdp.evaluate(
+    `localStorage.getItem('offline-tools-locale')`,
+  );
+  check("偏好仍被记住（供切换器显示）", storedStill === "zh-CN", `实际 ${storedStill}`);
+
+  console.log("\nE. 站内链接点击后仍带语言前缀（真实点击，不是直接输 URL）");
+  /*
+   * 这一组回答的是「只有首页带 /ja 吗」：直接输 URL 到达 /ja/ 之后，
+   * **点站内链接**是否还在 /ja/ 下。页头一级分组、二级 tab、品牌回首页、
+   * 首页工具卡片、相关工具链接都必须保留前缀。
+   */
+  const clickAndSettle = async (selector) => {
+    const clicked = await clickElement(cdp, `document.querySelector(${JSON.stringify(selector)})`);
+    if (!clicked) return { clicked: false, path: null };
+    const deadline = Date.now() + 8000;
+    let path = null;
+    while (Date.now() < deadline) {
+      path = await cdp.evaluate(`location.pathname`).catch(() => null);
+      if (path && !path.includes("__")) break;
+      await sleep(150);
+    }
+    await gotoAndSettle(cdp, `${origin}${path}`).catch(() => {});
+    return { clicked: true, path: await cdp.evaluate(`location.pathname`) };
+  };
+
+  // E.1 从日语首页点页头「视频」分组
+  await gotoAndSettle(cdp, `${origin}/ja/`);
+  let r = await clickAndSettle("nav.tool-nav a");
+  check("日语首页点页头分组后仍在 /ja/ 下", r.path?.startsWith("/ja/"), `实际 ${r.path}`);
+
+  // E.2 在日语工具页点二级 tab
+  const tabs = await cdp.evaluate(
+    `JSON.stringify([...document.querySelectorAll('.tool-tabs a')].map(a=>a.getAttribute('href')))`,
+  );
+  const tabHrefs = JSON.parse(tabs);
   check(
-    "重开无前缀 / 时沿用已保存偏好（zh-CN）",
-    langAfterReopen === "zh-CN",
-    `实际 ${langAfterReopen}`,
+    "日语工具页的二级 tab 全部带 /ja 前缀",
+    tabHrefs.length > 0 && tabHrefs.every((h) => h.startsWith("/ja/")),
+    JSON.stringify(tabHrefs),
+  );
+  if (tabHrefs.length > 1) {
+    const secondTab = await cdp.evaluate(
+      `JSON.stringify((()=>{const a=[...document.querySelectorAll('.tool-tabs a')][1]; const r=a.getBoundingClientRect(); return {x:r.x+r.width/2,y:r.y+r.height/2, href:a.getAttribute('href')};})())`,
+    );
+    const t = JSON.parse(secondTab);
+    for (const type of ["mousePressed", "mouseReleased"]) {
+      await cdp.send("Input.dispatchMouseEvent", { type, x: t.x, y: t.y, button: "left", clickCount: 1 });
+    }
+    await sleep(900);
+    const path = await cdp.evaluate(`location.pathname`);
+    check("点二级 tab 后仍在 /ja/ 下", path.startsWith("/ja/"), `实际 ${path}（期望 ${t.href}）`);
+  }
+
+  // E.3 日语工具页点品牌回首页
+  await gotoAndSettle(cdp, `${origin}/ja/id-photo/`);
+  const brandHref = await cdp.evaluate(`document.querySelector('a.brand').getAttribute('href')`);
+  check("日语页品牌链接指向 /ja/", brandHref === "/ja/", `实际 ${brandHref}`);
+
+  // E.4 日语首页的工具卡片
+  await gotoAndSettle(cdp, `${origin}/ja/`);
+  const cards = await cdp.evaluate(
+    `JSON.stringify([...document.querySelectorAll('a[href]')].map(a=>a.getAttribute('href')).filter(h=>h && h.startsWith('/') && !h.startsWith('/ja') && !h.startsWith('/legal')))`,
+  );
+  const leaked = JSON.parse(cards);
+  check(
+    "日语页不存在指向无前缀工具路径的链接",
+    leaked.length === 0,
+    `泄漏 ${JSON.stringify(leaked)}`,
   );
 
-  console.log("\nD. 控制台错误");
+  // E.5 中文页同样检查
+  await gotoAndSettle(cdp, `${origin}/zh/video-compress/`);
+  const zhLeak = await cdp.evaluate(
+    `JSON.stringify([...document.querySelectorAll('a[href]')].map(a=>a.getAttribute('href')).filter(h=>h && h.startsWith('/') && !h.startsWith('/zh') && !h.startsWith('/legal')))`,
+  );
+  check(
+    "中文页不存在指向无前缀工具路径的链接",
+    JSON.parse(zhLeak).length === 0,
+    `泄漏 ${zhLeak}`,
+  );
+
+  /*
+   * E.6 反向守卫：**在无已保存偏好时**，英语页不应出现带语言前缀的站内链接。
+   *
+   * 必须先清偏好：解析链里「无前缀路径」会让位给已保存偏好，而前一节刚把偏好
+   * 设成了 zh-CN。不清就会把「偏好生效」误判成「链接泄漏」。
+   */
+  await gotoAndSettle(cdp, `${origin}/video-compress/`);
+  await clearLocalePreference(cdp);
+  await gotoAndSettle(cdp, `${origin}/video-compress/`);
+  const enLeak = await cdp.evaluate(
+    `JSON.stringify([...document.querySelectorAll('a[href]')].map(a=>a.getAttribute('href')).filter(h=>h && (h.startsWith('/zh/')||h.startsWith('/ja/'))))`,
+  );
+  check(
+    "无偏好时英语页不存在带语言前缀的工具链接",
+    JSON.parse(enLeak).length === 0,
+    `泄漏 ${enLeak}`,
+  );
+
+  /*
+   * E.7 英语规范 URL 恒为英语（本次收紧的核心断言）。
+   *
+   * 收紧前：偏好为中文时 `/video-frame/` 会渲染中文，同一个 URL 依访客本地
+   * 状态返回不同语言，与 hreflang/sitemap 声明为英语相矛盾。
+   * 收紧后：无前缀路径一律英语，路径是唯一权威。
+   */
+  await gotoAndSettle(cdp, `${origin}/zh/`);
+  await gotoAndSettle(cdp, `${origin}/video-frame/`);
+  const strict = JSON.parse(
+    await cdp.evaluate(
+      `JSON.stringify({ lang: document.documentElement.lang, hrefs: [...document.querySelectorAll('a[href^="/"]')].map(a=>a.getAttribute('href')) })`,
+    ),
+  );
+  check(
+    "偏好为中文时英语规范 URL 仍渲染英语",
+    strict.lang === "en",
+    `实际 ${strict.lang}`,
+  );
+  check(
+    "该页站内链接全部指向无前缀（英语）路径",
+    strict.hrefs.every((h) => !h.startsWith("/zh/") && !h.startsWith("/ja/")),
+    JSON.stringify(strict.hrefs.slice(0, 5)),
+  );
+
+console.log("\nD. 控制台错误");
   const realErrors = cdp.consoleErrors.filter(
     (e) => !/favicon|hm\.js|baidu|net::ERR/i.test(e),
   );

@@ -115,49 +115,20 @@ describe("locales 权威数据", () => {
   });
 });
 
-describe("resolveLocale 解析优先级", () => {
-  it("路径前缀优先于已保存偏好", () => {
-    assert.equal(
-      resolveLocale({ pathname: "/zh/video-frame/", stored: "ja" }),
-      "zh-CN",
-    );
-    assert.equal(
-      resolveLocale({ pathname: "/ja/video-frame/", stored: "zh-CN" }),
-      "ja",
-    );
-    assert.equal(
-      resolveLocale({ pathname: "/zh/id-photo/", stored: "en" }),
-      "zh-CN",
-    );
+describe("resolveLocale 语言解析（前缀即语言，无前缀即英语）", () => {
+  it("带前缀的路径 -> 该前缀语言", () => {
+    assert.equal(resolveLocale({ pathname: "/zh/video-frame/" }), "zh-CN");
+    assert.equal(resolveLocale({ pathname: "/ja/video-frame/" }), "ja");
+    assert.equal(resolveLocale({ pathname: "/zh/id-photo/" }), "zh-CN");
   });
 
-  it("根路径不是显式语言指定，已保存偏好仍然生效", () => {
-    // 关键区分：`/zh`、`/ja` 是「路径明确指定」；`/` 是**隐式**的默认落点。
-    // 因此访问 `/` 时已保存偏好优先 —— 否则「切换到日语后重新打开站点
-    // 仍是日语」无法成立（i18n spec 的「语言在跳转与再次访问间保持」）。
-    assert.equal(resolveLocale({ pathname: "/", stored: "ja" }), "ja");
-    assert.equal(resolveLocale({ pathname: "/", stored: "zh-CN" }), "zh-CN");
-    assert.equal(resolveLocale({ pathname: "/", stored: "en" }), "en");
-    assert.equal(localeExplicitInPath("/"), false);
-  });
-
-  it("无路径前缀且无偏好时按 navigator.language 匹配", () => {
-    assert.equal(
-      resolveLocale({ pathname: "/", navigatorLanguage: "ja" }),
-      "ja",
-    );
-    assert.equal(
-      resolveLocale({ pathname: "/", navigatorLanguage: "en-US" }),
-      "en",
-    );
-    assert.equal(
-      resolveLocale({ pathname: "/", navigatorLanguage: "zh-CN" }),
-      "zh-CN",
-    );
-    assert.equal(
-      resolveLocale({ pathname: "/", navigatorLanguage: "zh-TW" }),
-      "zh-CN",
-    );
+  it("无前缀的路径 -> 一律英语（规则统一，不读任何本地状态）", () => {
+    // 这是本次收紧的核心：`/` 与 `/video-frame/` 同属「无前缀」，行为必须一致。
+    // 英语规范 URL 永远渲染英语，与 hreflang/sitemap 的声明一致。
+    assert.equal(resolveLocale({ pathname: "/" }), "en");
+    assert.equal(resolveLocale({ pathname: "/video-frame/" }), "en");
+    assert.equal(resolveLocale({ pathname: "/id-photo/" }), "en");
+    assert.equal(resolveLocale({ pathname: "/image-a4-layout/" }), "en");
   });
 
   it("路径命中前缀时带或不带尾部斜杠都识别", () => {
@@ -168,65 +139,17 @@ describe("resolveLocale 解析优先级", () => {
     assert.equal(resolveLocale({ pathname: "/ja/id-photo/" }), "ja");
   });
 
-  it("形似前缀与不支持的语言不被当作语言前缀", () => {
-    // /zhx 不是 /zh：整段匹配，不得吞掉
-    assert.equal(
-      resolveLocale({ pathname: "/zhx/video-frame/", stored: "ja" }),
-      "ja",
-    );
-    assert.equal(
-      resolveLocale({ pathname: "/fr/video-frame/", stored: "ja" }),
-      "ja",
-    );
-    assert.equal(
-      resolveLocale({ pathname: "/en/video-frame/", stored: "ja" }),
-      "ja",
-    );
+  it("形似前缀与不支持的语言不被当作语言前缀 -> 回退英语", () => {
+    // /zhx 不是 /zh：整段匹配，不得吞掉；这类路径不属于任何语言，按无前缀处理
+    assert.equal(resolveLocale({ pathname: "/zhx/video-frame/" }), "en");
+    assert.equal(resolveLocale({ pathname: "/fr/video-frame/" }), "en");
+    // 不产出 /en 前缀，因此它也不是语言指定
+    assert.equal(resolveLocale({ pathname: "/en/video-frame/" }), "en");
   });
 
-  it("navigator 语言不在支持集合内时回退英语", () => {
-    assert.equal(
-      resolveLocale({ pathname: "/", navigatorLanguage: "fr-FR" }),
-      "en",
-    );
-    assert.equal(resolveLocale({ pathname: "/", navigatorLanguage: "" }), "en");
-  });
-
-  it("全部来源缺失时回退英语（默认语言）", () => {
-    assert.equal(resolveLocale({ pathname: "/" }), "en");
-    assert.equal(
-      resolveLocale({ pathname: "/", stored: null, navigatorLanguage: null }),
-      "en",
-    );
-    assert.equal(
-      resolveLocale({ pathname: "/", stored: "fr", navigatorLanguage: "de" }),
-      "en",
-    );
-  });
-
-  it("非法的已保存偏好被忽略，不抛错", () => {
-    assert.equal(resolveLocale({ pathname: "/", stored: "fr" }), "en");
-    assert.equal(resolveLocale({ pathname: "/", stored: "" }), "en");
-    assert.equal(resolveLocale({ pathname: "/", stored: "zh" }), "en");
-  });
-
-  it("路径优先级高于 navigator", () => {
-    assert.equal(
-      resolveLocale({ pathname: "/zh/", navigatorLanguage: "ja" }),
-      "zh-CN",
-    );
-    assert.equal(
-      resolveLocale({ pathname: "/ja/", navigatorLanguage: "en-US" }),
-      "ja",
-    );
-  });
-
-  it("localeExplicitInPath 只在路径真的带语言前缀时为真", () => {
-    assert.equal(localeExplicitInPath("/zh/"), true);
-    assert.equal(localeExplicitInPath("/ja/video-frame/"), true);
-    assert.equal(localeExplicitInPath("/"), false);
-    assert.equal(localeExplicitInPath("/video-frame/"), false);
-    assert.equal(localeExplicitInPath("/fr/video-frame/"), false);
+  it("未知前缀下的首页同样回退英语", () => {
+    assert.equal(resolveLocale({ pathname: "/fr/" }), "en");
+    assert.equal(resolveLocale({ pathname: "/zhx/" }), "en");
   });
 });
 

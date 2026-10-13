@@ -156,3 +156,29 @@ test("build emits a static offline multi-page app", async () => {
     assert.rejects(access(new URL("dist/.openai/hosting.json", root))),
   ]);
 });
+/**
+ * 离线兜底的边界：语言前缀下的路径不得被交付为另一种语言。
+ *
+ * `navigateFallback: "/index.html"` 会把未匹配的导航交给**英语首页**。若不排除
+ * `/zh/` 与 `/ja/`，访问 `/ja/does-not-exist/` 会得到英语页面、地址栏却停在
+ * `/ja/…` —— 与「路径前缀决定语言」冲突（spec: 语言解析）。
+ */
+test("service worker 的离线兜底排除语言前缀路径", async () => {
+  const sw = await readFile(new URL("dist/sw.js", root), "utf8");
+
+  // 兜底目标仍是英语首页（无前缀路径的预期行为）
+  assert.ok(
+    sw.includes('createHandlerBoundToURL("/index.html")'),
+    "无前缀路径仍应有离线兜底",
+  );
+
+  // 两种语言前缀都必须出现在 denylist 里（workbox 序列化为 ^\/zh\/ 这种字面量）
+  for (const prefix of ["zh", "ja"]) {
+    assert.ok(
+      sw.includes(`^\\/${prefix}\\/`),
+      `离线兜底应排除 /${prefix}/ 下的路径（实际未见 ^\\/${prefix}\\/ ）`,
+    );
+  }
+  // /legal/ 的既有排除不能被移除
+  assert.ok(sw.includes("^\\/legal\\/"), "既有的 /legal/ 排除应保留");
+});

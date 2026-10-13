@@ -76,6 +76,19 @@ export const readToolRoute = (pathname?: string): ToolRoute => {
   return "home";
 };
 
+/**
+ * 站内无刷新导航。
+ *
+ * **导航目标取自锚点自身的 `href`，而不是重新拼一遍路径。**
+ *
+ * 这一点是本模块最容易出错的地方：链接的 `href` 由 `toolHref(locale, route)`
+ * 生成（可能带 `/zh`、`/ja` 前缀），如果这里改用与语言无关的 `TOOL_PATHS[route]`
+ * 去 `pushState`，就会**把用户从 `/ja/…` 打回英语页** —— 渲染出来的 href 是对的，
+ * 只有点击后跳错，静态检查与「断言 href」类测试都发现不了。
+ *
+ * 以 `href` 为准使两者在构造上不可能不一致：页面显示哪个地址，`pushState`
+ * 就写哪个地址。无 `href`（异常 DOM）时才回退到语言无关路径。
+ */
 export const navigateToTool = (
   event: MouseEvent<HTMLAnchorElement>,
   route: ToolRoute,
@@ -90,7 +103,8 @@ export const navigateToTool = (
     return;
   }
   event.preventDefault();
-  const nextPath = TOOL_PATHS[route];
+  const href = event.currentTarget?.getAttribute?.("href");
+  const nextPath = href && href.startsWith("/") ? href : TOOL_PATHS[route];
   if (window.location.pathname !== nextPath) {
     window.history.pushState({ tool: route }, "", nextPath);
     window.dispatchEvent(new PopStateEvent("popstate"));

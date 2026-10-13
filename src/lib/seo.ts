@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { buildJsonLd } from "@/lib/i18n/json-ld";
 import {
   LOCALES,
-  LOCALE_STORAGE_KEY,
   resolveLocale,
   type LocaleCode,
 } from "@/lib/i18n/locales";
@@ -61,15 +60,6 @@ export const SEO_PAGES: Record<ToolRoute, SeoPage> = {
 export const analyticsPathFor = (route: ToolRoute): string =>
   SEO_PAGES[route].path;
 
-/** 读取已保存的语言偏好（存储不可用时返回 null）。 */
-const readStoredLocale = (): string | null => {
-  try {
-    return window.localStorage.getItem(LOCALE_STORAGE_KEY);
-  } catch {
-    return null;
-  }
-};
-
 function setMeta(selector: string, content: string) {
   document.querySelector<HTMLMetaElement>(selector)?.setAttribute(
     "content",
@@ -87,12 +77,7 @@ function setMeta(selector: string, content: string) {
 export function useRouteSeo(route: ToolRoute, locale?: LocaleCode) {
   useEffect(() => {
     const resolved =
-      locale ??
-      resolveLocale({
-        pathname: window.location.pathname,
-        stored: readStoredLocale(),
-        navigatorLanguage: window.navigator?.language ?? null,
-      });
+      locale ?? resolveLocale({ pathname: window.location.pathname });
 
     const seo = seoPageFor(resolved, route);
     const canonicalUrl = `${SITE_URL}${seo.path}`;
