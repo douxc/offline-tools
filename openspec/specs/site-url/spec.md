@@ -21,12 +21,17 @@
 
 ### Requirement: 构建期注入绝对 URL
 
-站点绝对 URL SHALL 由打包流程在构建期注入，SHALL NOT 依赖人工在模板中填写最终值。注入 SHALL 覆盖：六个 HTML 入口的自指 `canonical`、`og:url`、`og:image`、`twitter:image` 与内联 JSON-LD 中的绝对 URL；`sitemap.xml` 的全部条目；`robots.txt` 的 Sitemap 声明。构建完成后的产物 SHALL NOT 残留任何未替换的占位符。
+站点绝对 URL SHALL 由打包流程在构建期注入，SHALL NOT 依赖人工在模板中填写最终值。注入 SHALL 覆盖：全部语言版本的全部 HTML 入口（7 个工具 × 支持的每种语言，中文入口位于根路径，其他语言位于各自语言前缀下）的自指 `canonical`、`og:url`、`og:image`、`twitter:image` 与内联 JSON-LD 中的绝对 URL；`sitemap.xml` 的全部条目；`robots.txt` 的 Sitemap 声明。构建完成后的产物 SHALL NOT 残留任何未替换的占位符。
 
 #### Scenario: 六个入口全部注入
 
 - **WHEN** 检查构建产物中首页与五个工具页的 HTML
-- **THEN** 每页的 canonical、og:url、og:image、twitter:image 与内联 JSON-LD 均使用配置的 host 与该页自身路径
+- **THEN** 这些入口的 canonical、og:url、og:image、twitter:image 与内联 JSON-LD 均使用配置的 host 与该页自身路径
+
+#### Scenario: 全部语言入口按语言注入
+
+- **WHEN** 检查构建产物中每个工具在每种语言下的 HTML
+- **THEN** 每页的 canonical、og:url、og:image、twitter:image 与内联 JSON-LD 均使用配置的 host 与该语言该页自身的路径
 
 #### Scenario: 静态资源同步注入
 
@@ -40,12 +45,17 @@
 
 ### Requirement: 产物绝对 URL 的 host 一致性
 
-构建产物中所有出现的站点绝对 URL SHALL 共享同一个 host，且该 host SHALL 等于单一来源定义（或环境变量覆盖）的值。产物 SHALL NOT 出现任何曾在生产使用过、现已废弃的 host。
+构建产物中所有出现的站点绝对 URL SHALL 共享同一个 host，且该 host SHALL 等于单一来源定义（或环境变量覆盖）的值。产物 SHALL NOT 出现任何曾在生产使用过、现已废弃的 host。语言维度 SHALL NOT 引入新的 host：多语言 SHALL 只体现在路径上，SHALL NOT 通过子域或独立域承载。
 
 #### Scenario: host 唯一
 
 - **WHEN** 扫描构建产物中的全部绝对 URL
 - **THEN** 其 host 集合只有一个元素，且等于配置值
+
+#### Scenario: 多语言不新增 host
+
+- **WHEN** 检查所有语言版本的绝对 URL
+- **THEN** 中文、英语、日语版本的 host 完全相同，差异只在路径前缀
 
 #### Scenario: 无废弃域名残留
 
@@ -54,7 +64,7 @@
 
 ### Requirement: 一致性约束可自动验证
 
-产物绝对 URL 的一致性 SHALL 由自动化测试在每次构建后校验；该测试 SHALL 依据单一来源定义进行断言，SHALL NOT 把 host 字面量拷贝进测试代码，使换域名时测试无需修改。
+产物绝对 URL 的一致性 SHALL 由自动化测试在每次构建后校验；该测试 SHALL 依据单一来源定义进行断言，SHALL NOT 把 host 字面量拷贝进测试代码，使换域名时测试无需修改。多语言路径与互指关系 SHALL 同样纳入自动校验，新增语言时 SHALL NOT 需要改写既有断言结构。
 
 #### Scenario: 测试随构建执行
 
@@ -65,3 +75,37 @@
 
 - **WHEN** 单一来源定义被修改为新 host 并重新构建
 - **THEN** 一致性校验依然通过，无需修改测试中的任何 host 字面量
+
+#### Scenario: 语言集合变更不需改断言结构
+
+- **WHEN** 支持语言集合发生变化并重新构建
+- **THEN** 校验按语言集合数据驱动地覆盖新集合，无需改动断言结构
+
+### Requirement: 多语言 canonical 与 hreflang 闭合
+
+每个语言版本的页面 SHALL 输出自指 `canonical`，并 SHALL 输出覆盖全部支持语言及 `x-default` 的 `hreflang` 互指。互指关系 SHALL 闭合：任一语言版本声明的每个语言 URL，其自身声明的互指集合 SHALL 与之一致。英语的 hreflang SHALL 指向根路径，中文 SHALL 指向 `/zh/`，`x-default` SHALL 与英语同指向根路径。
+
+#### Scenario: 每页自指 canonical
+
+- **WHEN** 检查 `/ja/video-frame/` 的产物 HTML
+- **THEN** canonical 为 `配置 host + /ja/video-frame/`，不指向英语或中文版本
+
+#### Scenario: 互指集合覆盖全部语言与 x-default
+
+- **WHEN** 检查任一工具在任一语言下的产物 HTML
+- **THEN** 页面声明 `zh-CN`、`en`、`ja` 与 `x-default` 四条 alternate，且英语一条指向根路径
+
+#### Scenario: 互指关系闭合
+
+- **WHEN** 从任一语言页面出发跟随其声明的全部 alternate URL
+- **THEN** 每个到达页面的互指集合与出发页一致，不存在单向或缺失的指向
+
+#### Scenario: 中文 alternate 指向 zh 路径
+
+- **WHEN** 检查中文 alternate 的 `hreflang` 取值与目标 URL
+- **THEN** 取值为 `zh-CN`，目标为 `/zh/…` 而非根路径
+
+#### Scenario: x-default 指向默认语言
+
+- **WHEN** 检查 `x-default` 的目标 URL
+- **THEN** 其指向根路径（英语），与英语 alternate 一致
