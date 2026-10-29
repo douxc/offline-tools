@@ -56,7 +56,7 @@ describe("ToolHome 随语言变化", () => {
 
   it("日语渲染日语首页文案与 /ja 前缀链接", () => {
     const html = render("ja");
-    assert.match(html, /ファイルは端末の中に。/);
+    assert.match(html, /ファイルは端\u2060?末の中に。/);
     assert.match(html, /フレーム抽出/);
     assert.match(html, /href="\/ja\/video-frame\//);
   });

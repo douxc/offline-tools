@@ -1,0 +1,12 @@
+{
+  "scanned": "2026-10-28",
+  "findings": {
+    "fonts": "system stack -apple-system/SF Pro/PingFang (src/index.css:129) + ui-monospace for timecode/measurements (src/index.css:232, 707)",
+    "palette": "OKLCH tokens, dark-first: :root,.dark (src/index.css:17-52), .light (56-81); blue primary oklch(0.571 0.206 255.5); undeclared lime rgba(214,255,63) and green rgba(52,199,89) in glows/tints",
+    "motion": "CSS transitions + scan/spin keyframes; prefers-reduced-motion covered (src/index.css:1003-1011)",
+    "spacing": "no --space-* scale; raw px/vh; 120 off-scale declarations",
+    "framework": "Vite 8 + React 19 + Tailwind 4 + shadcn/Radix; custom route switch; 7 routes x 3 locales; dev server :5173"
+  },
+  "preserve": ["palette", "type stack", "motion", "content", "wiring"],
+  "introduce": []
+}

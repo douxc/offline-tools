@@ -143,7 +143,7 @@ export function IdPhoto({ active = true }: { active?: boolean }) {
         title={t("idPhoto.clearTitle")} description={t("idPhoto.clearDescription", assets.length)}
         onConfirm={clearAll} trigger={<Button variant="outline" disabled={locked}><Trash2 />{t("idPhoto.clearTrigger")}</Button>} /> : undefined} />
       <section className="id-photo-editor" aria-label={t("idPhoto.editorLabel")}>
-        <div className="id-photo-heading"><div><p className="eyebrow">{t("img.eyebrow")}</p><h1>{t("idPhoto.title")}</h1><p>{t("idPhoto.lead")}</p></div><ToolTabs group="image" active="id-photo" /></div>
+        <div className="id-photo-heading"><div><h1>{t("idPhoto.title")}</h1><p>{t("idPhoto.lead")}</p></div><ToolTabs group="image" active="id-photo" /></div>
         <input ref={input} type="file" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" multiple hidden
           onChange={event => { void addFiles(Array.from(event.target.files ?? [])); event.target.value = ""; }} />
         {!assets.length ? <Card className="id-photo-empty"

@@ -1,0 +1,30 @@
+[
+  {
+    "mode": "redesign",
+    "depth": "full",
+    "scope": "site",
+    "shape": "Map / Diagram",
+    "theme": "Midnight",
+    "axes": "dark/grotesk-sans/cool",
+    "hero": "Index",
+    "nav": "banner over a sticky bar",
+    "footer": "letter close",
+    "imagery": "the site's og.png social card, compressed in the tool; no UI capture and no photographs",
+    "photos": [],
+    "entry": "offline browser toolkit",
+    "fingerprint": "map/centred/product-led/dark/index/technical",
+    "sections": [
+      "Hero (the six-tool map)",
+      "Notes",
+      "Before and after",
+      "Footer"
+    ],
+    "signature": "the tab-boundary format map and the og.png before/after, both on the first screen",
+    "waived": [
+      "7b: A4 paper",
+      "28b: user video"
+    ],
+    "prompt": "an offline browser toolkit for frame extraction, video and image compression, watermarking, ID photos and A4 layout, with no uploads",
+    "date": "2026-10-28"
+  }
+]

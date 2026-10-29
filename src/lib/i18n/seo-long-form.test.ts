@@ -5,6 +5,7 @@ import { SEO_LONG_FORM, seoLongFormFor, type SeoContentTool } from "./seo-long-f
 
 const TOOLS: SeoContentTool[] = [
   "video",
+  "video-compress",
   "compress",
   "watermark",
   "a4",
@@ -12,7 +13,7 @@ const TOOLS: SeoContentTool[] = [
 ];
 
 describe("正文 SEO 长文（三语）", () => {
-  it("三种语言 × 五个工具全部齐备", () => {
+  it("三种语言 × 六个工具全部齐备", () => {
     assert.deepEqual(Object.keys(SEO_LONG_FORM).sort(), ["en", "ja", "zh-CN"]);
     for (const locale of LOCALE_CODES) {
       for (const tool of TOOLS) {
@@ -80,6 +81,10 @@ describe("正文 SEO 长文（三语）", () => {
     assert.equal(
       seoLongFormFor("zh-CN", "video").title,
       "在线视频取帧：逐帧截图并导出原始画质图片",
+    );
+    assert.equal(
+      seoLongFormFor("zh-CN", "video-compress").title,
+      "在线视频压缩：在浏览器里重新编码为 WebM",
     );
     assert.equal(
       seoLongFormFor("zh-CN", "compress").title,

@@ -16,7 +16,7 @@ import type { ToolRoute } from "./tool-routes";
 /** viewport / robots 等与语言无关的 `<meta>` 取值。 */
 export const SITE_META = {
   viewport: "width=device-width, initial-scale=1.0",
-  themeColor: "#000000",
+  themeColor: "#02071d",
   robots:
     "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1",
   ogImageWidth: "1200",

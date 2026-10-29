@@ -12,8 +12,8 @@ const THEME_STORAGE_KEY = "offline-tools-theme";
 
 /** 页面底色:用于同步 meta[name="theme-color"],与 index.css 的 --background 对应。 */
 const SURFACE_COLOR: Record<Theme, string> = {
-  dark: "#000000",
-  light: "#f5f5f7",
+  dark: "oklch(14% 0.048 264)",
+  light: "oklch(96% 0.008 250)",
 };
 
 /**

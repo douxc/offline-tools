@@ -39,7 +39,7 @@ describe("ToolLinks 文案与链接随语言变化", () => {
   it("中文渲染中文工具名", () => {
     const html = render({}, "zh-CN");
     assert.match(html, /相关工具/);
-    assert.match(html, /视频取帧/);
+    assert.match(html, /切帧/);
     assert.match(html, /证件照/);
   });
 

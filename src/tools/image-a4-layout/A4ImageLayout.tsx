@@ -18,7 +18,6 @@ import {
   Image as ImageIcon,
   Plus,
   Printer,
-  Sparkles,
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -428,8 +427,10 @@ export function A4ImageLayout() {
       />
 
       <section className="image-editor a4-editor">
-        <div className="a4-mode-tabs">
-          <ToolTabs group="image" active="image-a4-layout" />
+        <div className="image-heading a4-head">
+          <div className="a4-mode-tabs">
+            <ToolTabs group="image" active="image-a4-layout" />
+          </div>
         </div>
 
         <div className="a4-actions no-print">
@@ -472,7 +473,6 @@ export function A4ImageLayout() {
           >
             <div className="image-drop-icon" aria-hidden="true">
               <ImageIcon />
-              <Sparkles />
             </div>
             <strong>{t("a4.emptyTitle")}</strong>
             <span>{t("a4.emptyHint")}</span>
@@ -560,7 +560,6 @@ export function A4ImageLayout() {
             </Card>
 
             <Card className="image-settings-panel a4-settings-panel">
-              <p className="panel-number">01</p>
               <h2>{t("a4.settingsTitle")}</h2>
 
               <div className="a4-setting">

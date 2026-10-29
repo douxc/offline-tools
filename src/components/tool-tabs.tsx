@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { groupLabelKey, toolLabelKey } from "@/lib/i18n/label-keys";
 import { useLocale } from "@/lib/i18n/locale-context";
@@ -18,27 +19,53 @@ type ToolTabsProps = {
  * 二级工具 tab（shadcn Tabs）：tabs = 当前分组内的工具路由，
  * 选中态由 Radix Tabs 提供（role=tab / aria-selected），
  * 每个 trigger 以 asChild 包裹真实链接，保留中键/Cmd 打开新标签。
+ *
+ * 窄屏上 tab 轨横向滚动；挂载与切换时把选中项滚到轨道中间，避免
+ * “选中的标签在屏幕外、看起来没有选中项”。隐藏的兄弟工具页跳过。
  */
 export function ToolTabs({ group, active }: ToolTabsProps) {
   const { locale, t } = useLocale();
   const { routes } = TOOL_GROUPS[group];
+  const frameRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const list = frameRef.current?.querySelector<HTMLElement>(".tool-tabs");
+    if (!list) return;
+    const align = () => {
+      const current = list.querySelector<HTMLElement>(
+        '[aria-selected="true"]',
+      );
+      if (!current || current.offsetParent === null) return;
+      const left =
+        current.offsetLeft - (list.clientWidth - current.offsetWidth) / 2;
+      list.scrollTo({ left: Math.max(0, left), behavior: "auto" });
+    };
+    align();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(align);
+    observer.observe(list);
+    return () => observer.disconnect();
+  }, [active, locale]);
+
   return (
-    <Tabs value={active}>
-      <TabsList
-        className="tool-tabs"
-        aria-label={t("tabs.label", t(groupLabelKey(group)))}
-      >
-        {routes.map((route) => (
-          <TabsTrigger key={route} value={route} asChild>
-            <a
-              href={toolHref(locale, route)}
-              onClick={(event) => navigateToTool(event, route)}
-            >
-              {t(toolLabelKey(route))}
-            </a>
-          </TabsTrigger>
-        ))}
-      </TabsList>
-    </Tabs>
+    <div className="tool-tabs-frame" ref={frameRef}>
+      <Tabs value={active}>
+        <TabsList
+          className="tool-tabs"
+          aria-label={t("tabs.label", t(groupLabelKey(group)))}
+        >
+          {routes.map((route) => (
+            <TabsTrigger key={route} value={route} asChild>
+              <a
+                href={toolHref(locale, route)}
+                onClick={(event) => navigateToTool(event, route)}
+              >
+                {t(toolLabelKey(route))}
+              </a>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+    </div>
   );
 }

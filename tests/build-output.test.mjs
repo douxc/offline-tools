@@ -112,7 +112,7 @@ test("build emits a static offline multi-page app", async () => {
 
   const parsedManifest = JSON.parse(manifest);
   assert.equal(parsedManifest.display, "standalone");
-  assert.equal(parsedManifest.theme_color, "#000000");
+  assert.equal(parsedManifest.theme_color, "#02071d");
   assert.ok(
     typeof parsedManifest.name === "string" && parsedManifest.name.length > 0,
     "manifest 应有名称",

@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { Check, ChevronLeft, ChevronRight, Download, Pause, Play, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -14,6 +15,7 @@ import { Card } from "@/components/ui/card";
 import { ToolHeader } from "@/components/tool-header";
 import { ToolSeoContent } from "@/components/tool-seo-content";
 import { ToolTabs } from "@/components/tool-tabs";
+import { toolLabelKey } from "@/lib/i18n/label-keys";
 import { useT } from "@/lib/i18n/locale-context";
 import { LicenseFooter } from "@/components/license-footer";
 import { Popconfirm } from "@/components/ui/popconfirm";
@@ -450,27 +452,24 @@ export function FrameExtractor() {
         }
       />
 
-      <ToolTabs group="video" active="video-frame" />
-
       {!videoUrl ? (
-        <section className="welcome">
-          <div className="welcome-copy">
-            <p className="eyebrow">{t("vf.eyebrow")}</p>
-            <h1>
-              {t("vf.titleLine1")}
-              <br />
-              <span>{t("vf.titleLine2")}</span>
-            </h1>
-            <p className="lead">
-              {t("vf.leadLine1")}
-              <br className="desktop-break" />
-              {t("vf.leadLine2")}
-            </p>
-            <div className="feature-row" aria-label={t("vf.featuresLabel")}>
-              <span>{t("vf.featureQuality")}</span>
-              <span>{t("vf.featureStep")}</span>
-              <span>{t("vf.featureOffline")}</span>
+        <section className="image-editor">
+          <div className="image-heading">
+            <div>
+              <h1>{t(toolLabelKey("video-frame"))}</h1>
+              <p className="tool-tagline">
+                {t("vf.titleLine1")} {t("vf.titleLine2")}
+              </p>
+              <p>
+                {t("vf.leadLine1")} {t("vf.leadLine2")}
+              </p>
             </div>
+            <ToolTabs group="video" active="video-frame" />
+          </div>
+          <div className="feature-row" aria-label={t("vf.featuresLabel")}>
+            <span>{t("vf.featureQuality")}</span>
+            <span>{t("vf.featureStep")}</span>
+            <span>{t("vf.featureOffline")}</span>
           </div>
 
           <div
@@ -484,12 +483,7 @@ export function FrameExtractor() {
             onDrop={handleDrop}
           >
             <div className="drop-visual" aria-hidden="true">
-              <span className="corner corner-tl" />
-              <span className="corner corner-tr" />
-              <span className="corner corner-bl" />
-              <span className="corner corner-br" />
-              <div className="play-triangle" />
-              <div className="scan-line" />
+              <Play />
             </div>
             <div className="drop-copy">
               <strong>{isDragging ? t("vf.dropActive") : t("vf.dropIdle")}</strong>
@@ -506,9 +500,6 @@ export function FrameExtractor() {
           </div>
 
           <div className="privacy-strip">
-            <span className="lock-symbol" aria-hidden="true">
-              ◉
-            </span>
             <div>
               <strong>{t("vf.privacyTitle")}</strong>
               <p>{t("vf.privacyBody")}</p>
@@ -519,17 +510,17 @@ export function FrameExtractor() {
         <section className="editor" aria-label={t("vf.editorLabel")}>
           <div className="editor-heading">
             <div>
-              <p className="eyebrow">{t("vf.previewEyebrow")}</p>
               <h1>{t("vf.editorTitle")}</h1>
+              <div className="file-meta" title={fileName}>
+                <span>{fileName}</span>
+                <small>
+                  {(fileSize / 1024 / 1024).toFixed(1)} MB
+                  {dimensions.width > 0 &&
+                    `, ${dimensions.width} × ${dimensions.height}`}
+                </small>
+              </div>
             </div>
-            <div className="file-meta" title={fileName}>
-              <span>{fileName}</span>
-              <small>
-                {(fileSize / 1024 / 1024).toFixed(1)} MB
-                {dimensions.width > 0 &&
-                  ` · ${dimensions.width} × ${dimensions.height}`}
-              </small>
-            </div>
+            <ToolTabs group="video" active="video-frame" />
           </div>
 
           <div className="workspace">
@@ -629,7 +620,7 @@ export function FrameExtractor() {
                     aria-label={t("vf.prevFrame")}
                     title={t("vf.prevFrameTitle")}
                   >
-                    <span aria-hidden="true">|‹</span>
+                    <ChevronLeft aria-hidden="true" />
                   </Button>
                   <Button
                     type="button"
@@ -639,7 +630,7 @@ export function FrameExtractor() {
                     aria-label={isPlaying ? t("vf.pause") : t("vf.play")}
                     title={t("vf.playPauseTitle")}
                   >
-                    <span aria-hidden="true">{isPlaying ? "Ⅱ" : "▶"}</span>
+                    {isPlaying ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
                   </Button>
                   <Button
                     type="button"
@@ -650,7 +641,7 @@ export function FrameExtractor() {
                     aria-label={t("vf.nextFrame")}
                     title={t("vf.nextFrameTitle")}
                   >
-                    <span aria-hidden="true">›|</span>
+                    <ChevronRight aria-hidden="true" />
                   </Button>
                   <div className="fps-control">
                     <span>{t("vf.fps")}</span>
@@ -679,7 +670,6 @@ export function FrameExtractor() {
 
             <Card className="export-panel" role="complementary">
               <div>
-                <p className="panel-number">01</p>
                 <h2>{t("vf.panelCurrent")}</h2>
                 <div className="time-readout">
                   <span>{timecode}</span>
@@ -688,7 +678,6 @@ export function FrameExtractor() {
               </div>
 
               <div className="control-group">
-                <p className="panel-number">02</p>
                 <span>{t("vf.format")}</span>
                 <ToggleGroup
                   type="single"
@@ -730,7 +719,6 @@ export function FrameExtractor() {
               )}
 
               <div className="control-group overlay-group">
-                <p className="panel-number">03</p>
                 <TextOverlayPanel
                   enabled={textEnabled}
                   onEnabledChange={setTextEnabled}
@@ -744,7 +732,6 @@ export function FrameExtractor() {
               </div>
 
               <div className="control-group batch-group">
-                <p className="panel-number">04</p>
                 <div className="quality-label">
                   <label htmlFor="batch-mode">{t("vf.batch")}</label>
                   <Toggle
@@ -836,7 +823,7 @@ export function FrameExtractor() {
                       cancelBatchRef.current = true;
                     }}
                   >
-                    <span aria-hidden="true">×</span>
+                    <X aria-hidden="true" />
                     {t("vf.stopExport", batchProgress.current, batchProgress.total)}
                   </Button>
                 ) : (
@@ -846,7 +833,7 @@ export function FrameExtractor() {
                     onClick={() => void exportBatch()}
                     disabled={!dimensions.width || !duration}
                   >
-                    <span aria-hidden="true">{exported ? "✓" : "↓"}</span>
+                    {exported ? <Check aria-hidden="true" /> : <Download aria-hidden="true" />}
                     {exported ? t("vf.exported") : t("vf.exportBatch")}
                   </Button>
                 )
@@ -857,7 +844,7 @@ export function FrameExtractor() {
                   onClick={() => void exportFrame()}
                   disabled={exporting || !dimensions.width}
                 >
-                  <span aria-hidden="true">{exported ? "✓" : "↓"}</span>
+                  {exported ? <Check aria-hidden="true" /> : <Download aria-hidden="true" />}
                   {exporting
                     ? t("vf.generating")
                     : exported

@@ -84,7 +84,7 @@ describe("词条完备性", () => {
   it("中文词条保留既有界面文案（迁移不得改写）", () => {
     assert.equal(zhCN["brand.name"], "离线工具");
     assert.equal(zhCN["header.privacyNote"], "本地处理 · 不上传文件");
-    assert.equal(zhCN["tool.video-frame"], "视频取帧");
+    assert.equal(zhCN["tool.video-frame"], "切帧");
     assert.equal(zhCN["tool.image-watermark"], "添加水印");
     assert.equal(zhCN["links.related"], "相关工具");
     assert.equal(zhCN["footer.thirdParty"], "第三方许可");

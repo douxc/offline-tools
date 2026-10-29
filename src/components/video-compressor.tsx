@@ -6,12 +6,14 @@ import {
   useRef,
   useState,
 } from "react";
+import { Download, Play } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ToolHeader } from "@/components/tool-header";
 import { ToolSeoContent } from "@/components/tool-seo-content";
 import { ToolTabs } from "@/components/tool-tabs";
+import { toolLabelKey } from "@/lib/i18n/label-keys";
 import { useT } from "@/lib/i18n/locale-context";
 import { LicenseFooter } from "@/components/license-footer";
 import { Popconfirm } from "@/components/ui/popconfirm";
@@ -345,27 +347,24 @@ export function VideoCompressor() {
         }
       />
 
-      <ToolTabs group="video" active="video-compress" />
-
       {!videoUrl ? (
-        <section className="welcome">
-          <div className="welcome-copy">
-            <p className="eyebrow">{t("vc.eyebrow")}</p>
-            <h1>
-              {t("vc.titleLine1")}
-              <br />
-              <span>{t("vc.titleLine2")}</span>
-            </h1>
-            <p className="lead">
-              {t("vc.leadLine1")}
-              <br className="desktop-break" />
-              {t("vc.leadLine2")}
-            </p>
-            <div className="feature-row" aria-label={t("vc.featureRowLabel")}>
-              <span>{t("vc.featureBitrate")}</span>
-              <span>{t("vc.featureScale")}</span>
-              <span>{t("vc.featureOffline")}</span>
+        <section className="image-editor">
+          <div className="image-heading">
+            <div>
+              <h1>{t(toolLabelKey("video-compress"))}</h1>
+              <p className="tool-tagline">
+                {t("vc.titleLine1")} {t("vc.titleLine2")}
+              </p>
+              <p>
+                {t("vc.leadLine1")} {t("vc.leadLine2")}
+              </p>
             </div>
+            <ToolTabs group="video" active="video-compress" />
+          </div>
+          <div className="feature-row" aria-label={t("vc.featureRowLabel")}>
+            <span>{t("vc.featureBitrate")}</span>
+            <span>{t("vc.featureScale")}</span>
+            <span>{t("vc.featureOffline")}</span>
           </div>
 
           <div
@@ -379,12 +378,7 @@ export function VideoCompressor() {
             onDrop={handleDrop}
           >
             <div className="drop-visual" aria-hidden="true">
-              <span className="corner corner-tl" />
-              <span className="corner corner-tr" />
-              <span className="corner corner-bl" />
-              <span className="corner corner-br" />
-              <div className="play-triangle" />
-              <div className="scan-line" />
+              <Play />
             </div>
             <div className="drop-copy">
               <strong>{isDragging ? t("vc.dropActive") : t("vc.dropIdle")}</strong>
@@ -401,9 +395,6 @@ export function VideoCompressor() {
           </div>
 
           <div className="privacy-strip">
-            <span className="lock-symbol" aria-hidden="true">
-              ◉
-            </span>
             <div>
               <strong>{t("vc.privacyTitle")}</strong>
               <p>{t("vc.privacyBody")}</p>
@@ -414,17 +405,17 @@ export function VideoCompressor() {
         <section className="editor" aria-label={t("vc.editorLabel")}>
           <div className="editor-heading">
             <div>
-              <p className="eyebrow">{t("vc.previewEyebrow")}</p>
               <h1>{t("vc.editorTitle")}</h1>
+              <div className="file-meta" title={fileName}>
+                <span>{fileName}</span>
+                <small>
+                  {formatBytes(fileSize)}
+                  {dimensions.width > 0 &&
+                    `, ${dimensions.width} × ${dimensions.height}`}
+                </small>
+              </div>
             </div>
-            <div className="file-meta" title={fileName}>
-              <span>{fileName}</span>
-              <small>
-                {formatBytes(fileSize)}
-                {dimensions.width > 0 &&
-                  ` · ${dimensions.width} × ${dimensions.height}`}
-              </small>
-            </div>
+            <ToolTabs group="video" active="video-compress" />
           </div>
 
           <div className="workspace">
@@ -483,12 +474,10 @@ export function VideoCompressor() {
 
             <Card className="export-panel" role="complementary">
               <div>
-                <p className="panel-number">01</p>
                 <h2>{t("vc.optionsTitle")}</h2>
               </div>
 
               <div className="control-group">
-                <p className="panel-number">02</p>
                 <span>{t("vc.bitrate")}</span>
                 <div className="fps-control">
                   <Select
@@ -510,7 +499,6 @@ export function VideoCompressor() {
               </div>
 
               <div className="control-group">
-                <p className="panel-number">03</p>
                 <span>{t("vc.targetWidth")}</span>
                 <input
                   className="settings-input"
@@ -539,7 +527,7 @@ export function VideoCompressor() {
                   onClick={() => void startCompress()}
                   disabled={!dimensions.width}
                 >
-                  <span aria-hidden="true">↓</span>
+                  <Download aria-hidden="true" />
                   {t("vc.start")}
                 </Button>
               )}
@@ -563,7 +551,7 @@ export function VideoCompressor() {
         </section>
       )}
 
-      <ToolSeoContent tool="video" />
+      <ToolSeoContent tool="video-compress" />
 
       <LicenseFooter />
 

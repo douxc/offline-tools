@@ -545,7 +545,6 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
       <section className="image-editor">
         <div className="image-heading">
           <div>
-            <p className="eyebrow">{t("img.eyebrow")}</p>
             <h1>
               {mode === "compress" ? t("img.titleCompress") : t("img.titleWatermark")}
             </h1>
@@ -571,7 +570,6 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
           >
             <div className="image-drop-icon" aria-hidden="true">
               <ImageIcon />
-              <Sparkles />
             </div>
             <strong>{t("img.dropIdle")}</strong>
             <span>{t("img.dropHint")}</span>
@@ -680,7 +678,6 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
             </Card>
 
             <Card className="image-settings-panel">
-              <p className="panel-number">01</p>
               <h2>{mode === "compress" ? t("img.compressSettings") : t("img.watermarkText")}</h2>
 
               {mode === "watermark" && (
@@ -764,7 +761,6 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
               )}
 
               <div className="image-processing-note">
-                <span className="status-dot" />
                 {mode === "compress"
                   ? t("img.compressNote")
                   : t("img.watermarkNote")}
@@ -802,7 +798,7 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
                     <span>
                       {t("img.doneCount", Object.keys(activeResults).length)}
                       {modeState.mode === "partial" &&
-                        ` · ${t(
+                        `, ${t(
                           "img.retryCount",
                           assets.length - Object.keys(activeResults).length,
                         )}`}

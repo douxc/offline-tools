@@ -1,3 +1,4 @@
+import { LogoMark } from "@/components/logo-mark";
 import { useT } from "@/lib/i18n/locale-context";
 
 /**
@@ -11,12 +12,18 @@ export function LicenseFooter() {
   const t = useT();
   return (
     <footer className="license-footer">
-      <span>{t("footer.license")}</span>
-      <span className="license-footer-analytics">
-        {t("footer.analyticsNote")}
-      </span>
-      <a href="/legal/THIRD_PARTY_NOTICES.md">{t("footer.thirdParty")}</a>
-      <a href="/legal/CORRESPONDING_SOURCE.md">{t("footer.source")}</a>
+      <div className="license-footer__brand">
+        <LogoMark className="license-footer__mark" />
+        <span>{t("brand.name")}</span>
+      </div>
+      <p className="license-footer__line">{t("footer.license")}</p>
+      <div className="license-footer__links">
+        <span className="license-footer-analytics">
+          {t("footer.analyticsNote")}
+        </span>
+        <a href="/legal/THIRD_PARTY_NOTICES.md">{t("footer.thirdParty")}</a>
+        <a href="/legal/CORRESPONDING_SOURCE.md">{t("footer.source")}</a>
+      </div>
     </footer>
   );
 }

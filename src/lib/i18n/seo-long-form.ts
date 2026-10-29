@@ -12,6 +12,7 @@ import type { LocaleCode } from "./locales";
 /** 组件对外暴露的工具标识（与 `ToolRoute` 不完全一一对应：压缩与水印各自成组）。 */
 export type SeoContentTool =
   | "video"
+  | "video-compress"
   | "compress"
   | "watermark"
   | "a4"
@@ -53,6 +54,26 @@ export const SEO_LONG_FORM: MultilingualSeoLongForm = {
         {
           title: "Your video is never uploaded",
           text: "Decoding, frame-by-frame preview and screenshot generation all happen in this browser. Nothing is sent to a server, which makes it suitable for private recordings, work footage and unreleased material.",
+        },
+      ],
+    },
+    "video-compress": {
+      eyebrow: "How to use",
+      title: "Online video compression: re-encode to WebM in the browser",
+      introduction:
+        "This compressor re-encodes a local video to WebM with a bitrate you choose and proportional scaling, keeping the original audio track. Decoding and encoding run in this browser tab; the file is never uploaded.",
+      details: [
+        {
+          title: "A bitrate and size you choose",
+          text: "Pick the target bitrate and the output keeps the video's aspect ratio; the file size follows the bitrate. The settings stay on this device.",
+        },
+        {
+          title: "The original audio track",
+          text: "The compressor keeps the original audio track in the WebM output. Re-encoding plays the video through once and records the result, so it takes roughly the video's running time.",
+        },
+        {
+          title: "Nothing is uploaded",
+          text: "The local file is decoded, re-encoded and downloaded in this tab; no account is required and no server receives the video.",
         },
       ],
     },
@@ -178,6 +199,26 @@ export const SEO_LONG_FORM: MultilingualSeoLongForm = {
         },
       ],
     },
+    "video-compress": {
+      eyebrow: "使用说明",
+      title: "在线视频压缩：在浏览器里重新编码为 WebM",
+      introduction:
+        "这个压缩工具用可调码率和等比缩放把本地视频重新编码为 WebM，并保留原音轨。解码与编码都在这个浏览器标签页里完成，文件不会上传。",
+      details: [
+        {
+          title: "码率与体积由你决定",
+          text: "选择目标码率，输出保持原视频的宽高比，文件体积随码率变化。设置留在本机。",
+        },
+        {
+          title: "保留原音轨",
+          text: "压缩后的 WebM 保留原音轨。重新编码会完整播放一遍视频并录制结果，因此大约需要视频本身的时长。",
+        },
+        {
+          title: "不上传文件",
+          text: "本地文件在这个标签页里解码、重新编码并下载；无需账户，也没有服务器接收视频。",
+        },
+      ],
+    },
     compress: {
       eyebrow: "使用说明",
       title: "在线图片压缩：批量减小 PNG、JPG 与 WebP 体积",
@@ -257,6 +298,26 @@ export const SEO_LONG_FORM: MultilingualSeoLongForm = {
         {
           title: "動画はアップロードされません",
           text: "デコード・コマ送りプレビュー・画像の生成はすべてこのブラウザ内で完結します。サーバーへ送信されないため、私的な録画や仕事の素材、未公開の動画にも向いています。",
+        },
+      ],
+    },
+    "video-compress": {
+      eyebrow: "使い方",
+      title: "オンライン動画圧縮：ブラウザで WebM に再エンコード",
+      introduction:
+        "この圧縮ツールは、選んだビットレートと比率を保った縮小でローカル動画を WebM に再エンコードし、元の音声トラックを残します。デコードとエンコードはこのタブの中で行われ、ファイルはアップロードされません。",
+      details: [
+        {
+          title: "ビットレートとサイズを選ぶ",
+          text: "目標のビットレートを選ぶと、出力は元の縦横比を保ち、ファイルサイズはビットレートに従います。設定はこの端末に残ります。",
+        },
+        {
+          title: "元の音声トラック",
+          text: "WebM 出力には元の音声トラックが残ります。再エンコードは動画を一度再生して記録するため、動画の長さに近い時間がかかります。",
+        },
+        {
+          title: "アップロードなし",
+          text: "ローカルファイルはこのタブでデコード・再エンコード・ダウンロードされます。アカウントもサーバーも不要です。",
         },
       ],
     },

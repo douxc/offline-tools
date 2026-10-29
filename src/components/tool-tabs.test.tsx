@@ -17,7 +17,7 @@ describe("ToolTabs", () => {
     const html = render({ group: "video", active: "video-frame" });
 
     assert.equal((html.match(/role="tab"/g) ?? []).length, 2);
-    assert.match(html, /data-state="active"[^>]*>视频取帧<\/a>/);
+    assert.match(html, /data-state="active"[^>]*>切帧<\/a>/);
     assert.match(html, /href="\/zh\/video-frame\/"/);
     assert.match(html, /href="\/zh\/video-compress\/"/);
     assert.match(html, /视频压缩/);

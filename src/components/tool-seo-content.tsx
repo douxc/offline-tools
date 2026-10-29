@@ -9,6 +9,7 @@ type ToolSeoContentProps = {
 
 const TOOL_ROUTE: Record<SeoContentTool, ToolRoute> = {
   video: "video-frame",
+  "video-compress": "video-compress",
   compress: "image-compress",
   watermark: "image-watermark",
   a4: "image-a4-layout",
@@ -28,7 +29,6 @@ export function ToolSeoContent({ tool }: ToolSeoContentProps) {
   return (
     <section className="seo-content" aria-labelledby={`${tool}-seo-title`}>
       <div className="seo-content-heading">
-        <p className="eyebrow">{current.eyebrow}</p>
         <h2 id={`${tool}-seo-title`}>{current.title}</h2>
         <p>{current.introduction}</p>
       </div>

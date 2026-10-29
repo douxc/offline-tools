@@ -43,3 +43,12 @@ License texts are preserved in:
 
 These components and offline-tools are provided without warranty, as described
 by their respective licenses and the root [`LICENSE`](LICENSE).
+
+## Mona Sans
+
+- Font: Mona Sans, Copyright 2022 The Mona Sans Project Authors
+  (<https://github.com/github/mona-sans>), with Reserved Font Name "Mona".
+- License: SIL Open Font License, Version 1.1. The full text is preserved in
+  [`MONA-SANS-OFL.txt`](MONA-SANS-OFL.txt) beside this notice.
+- Used for the interface display and body faces; the Latin subset is self-hosted
+  in `public/fonts/` so the offline promise holds after the first visit.
