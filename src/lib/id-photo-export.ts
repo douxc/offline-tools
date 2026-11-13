@@ -1,5 +1,7 @@
 import type { Dimensions, SourceRect } from "./id-photo-geometry";
 import { LocalizedError } from "./i18n/localized-error";
+import { downloadImages, type DownloadPort } from "./image-download";
+export type { DownloadPort } from "./image-download";
 
 export type PhotoOutput = { blob: Blob; fileName: string; width: number; height: number };
 export function photoMime(file: Pick<File, "type" | "name">) {
@@ -44,26 +46,6 @@ export async function encodePhoto(
   }
 }
 
-export type DownloadPort = {
-  createUrl: (blob: Blob) => string;
-  releaseUrl: (url: string) => void;
-  save: (url: string, name: string) => void;
-  later: (release: () => void) => void;
-};
-export function downloadPhotos(outputs: readonly PhotoOutput[], port: DownloadPort = {
-  createUrl: blob => URL.createObjectURL(blob),
-  releaseUrl: url => URL.revokeObjectURL(url),
-  save: (url, name) => {
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = name;
-    link.click();
-  },
-  later: release => { window.setTimeout(release, 2000); },
-}) {
-  for (const output of outputs) {
-    const url = port.createUrl(output.blob);
-    try { port.save(url, output.fileName); }
-    finally { port.later(() => port.releaseUrl(url)); }
-  }
+export function downloadPhotos(outputs: readonly PhotoOutput[], port?: DownloadPort) {
+  return downloadImages(outputs, "id-photos.zip", port);
 }

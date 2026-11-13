@@ -15,7 +15,7 @@ import { Popconfirm } from "@/components/ui/popconfirm";
 import { CENTERED_CROP, cropGeometry, resizeDimensions, validTarget, type CropPosition } from "@/lib/id-photo-geometry";
 import { DEFAULT_ID_PHOTO_PRESET, ID_PHOTO_PRESETS, ID_PHOTO_PRESET_LABEL_KEY, type IdPhotoPresetId } from "@/lib/id-photo-presets";
 import { importPhotos, releasePhoto, type PhotoAsset } from "@/lib/id-photo-assets";
-import { downloadPhotos, encodePhoto } from "@/lib/id-photo-export";
+import { downloadPhotos, encodePhoto, type PhotoOutput } from "@/lib/id-photo-export";
 import { activePhotoResults, PhotoBatch, type PhotoResult } from "@/lib/id-photo-state";
 import { deriveModeState } from "@/lib/tool-mode";
 import { CropPreview } from "./CropPreview";
@@ -37,6 +37,7 @@ export function IdPhoto({ active = true }: { active?: boolean }) {
   const [settingsVersion, setSettingsVersion] = useState(0);
   const [importing, setImporting] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [results, setResults] = useState<Record<string, PhotoResult>>({});
   const preset = ID_PHOTO_PRESETS.find(p => p.id === presetId) ?? DEFAULT_ID_PHOTO_PRESET;
@@ -136,6 +137,17 @@ export function IdPhoto({ active = true }: { active?: boolean }) {
     batch.cancel(); busy.current = false; setProcessing(false);
     toast.info(t("idPhoto.stopped"), { description: t("idPhoto.stoppedBody") });
   };
+  const download = async (outputs: readonly PhotoOutput[]) => {
+    if (downloading) return;
+    setDownloading(true);
+    try {
+      await downloadPhotos(outputs);
+    } catch {
+      toast.error(t("img.errDownload"));
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   return (
     <main className="app-shell image-app id-photo-app">
@@ -195,8 +207,8 @@ export function IdPhoto({ active = true }: { active?: boolean }) {
               <span>{processing ? t("idPhoto.progressHeld") : Object.keys(effectiveResults).length ? t("idPhoto.resultsReady", Object.keys(effectiveResults).length) : t("idPhoto.outputNote")}</span>
             </div>
             <div className="id-photo-downloads">
-              <Button variant="outline" disabled={locked || !selected || !effectiveResults[selected.id]} onClick={() => { if (selected && effectiveResults[selected.id]) downloadPhotos([effectiveResults[selected.id]]); }}><Download />{t("img.downloadCurrent")}</Button>
-              <Button variant="outline" disabled={locked || !modeState.actions.canDownload} onClick={() => downloadPhotos(assets.flatMap(asset => effectiveResults[asset.id] ? [effectiveResults[asset.id]] : []))}><Download />{t("img.downloadAll")}</Button>
+              <Button variant="outline" disabled={locked || downloading || !selected || !effectiveResults[selected.id]} onClick={() => { if (selected && effectiveResults[selected.id]) void download([effectiveResults[selected.id]]); }}><Download />{t("img.downloadCurrent")}</Button>
+              <Button variant="outline" disabled={locked || downloading || !modeState.actions.canDownload} onClick={() => void download(assets.flatMap(asset => effectiveResults[asset.id] ? [effectiveResults[asset.id]] : []))}>{downloading ? <LoaderCircle className="spin" /> : <Download />}{t(downloading ? "img.packaging" : Object.keys(effectiveResults).length > 3 ? "img.downloadZip" : "img.downloadAll")}</Button>
             </div>
           </Card>
         </div>}

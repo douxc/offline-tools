@@ -18,7 +18,8 @@ test("证件照空状态提供唯一导入操作、正确导航和许可说明",
   );
   assert.match(html, /<h1>证件照<\/h1>/);
   assert.match(html, /选择图片/);
-  assert.doesNotMatch(html, /处理全部|清空图片|下载当前图片/);
+  const buttons = Array.from(html.matchAll(/<button\b[^>]*>[\s\S]*?<\/button>/g), ([button]) => button).join("");
+  assert.doesNotMatch(buttons, /处理全部|清空图片|下载当前图片/);
   // 中文页面的 tab 链接带 /zh 前缀（站内链接跟随当前语言）
   assert.match(html, /href="\/zh\/id-photo\/"[^>]*aria-selected="true"/);
   assert.match(html, /GPL-3\.0-or-later/);

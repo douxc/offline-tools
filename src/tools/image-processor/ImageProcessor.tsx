@@ -34,6 +34,7 @@ import {
 import type { ToolRoute } from "@/lib/tool-navigation";
 import { deriveModeState } from "@/lib/tool-mode";
 import { trackImageProcessingFinished } from "@/lib/tool-analytics";
+import { downloadImages } from "@/lib/image-download";
 
 type ImageMode = "compress" | "watermark";
 
@@ -202,6 +203,7 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
   const [results, setResults] = useState<Record<string, ProcessedResult>>({});
   const [isDragging, setIsDragging] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   /** 处理取消标志:在逐张循环之间同步读取,停止后续处理并保留已完成结果。 */
   const cancelProcessingRef = useRef(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
@@ -495,11 +497,19 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
     window.setTimeout(() => URL.revokeObjectURL(url), 2000);
   };
 
-  const downloadAll = () => {
+  const downloadAll = async () => {
+    if (downloading) return;
     const completed = assets.flatMap((asset) =>
       activeResults[asset.id] ? [activeResults[asset.id]] : [],
     );
-    for (const result of completed) downloadResult(result);
+    setDownloading(true);
+    try {
+      await downloadImages(completed, `${mode === "compress" ? "compressed" : "watermarked"}-images.zip`);
+    } catch {
+      toast.error(t("img.errDownload"));
+    } finally {
+      setDownloading(false);
+    }
   };
 
   const handleDrop = (event: DragEvent<HTMLDivElement>) => {
@@ -812,9 +822,9 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
                         : t("img.outputBytes", formatBytes(totalOutput))}
                     </small>
                   </div>
-                  <Button type="button" size="sm" onClick={downloadAll}>
-                    <Download />
-                    {t("img.downloadAll")}
+                  <Button type="button" size="sm" disabled={downloading} onClick={() => void downloadAll()}>
+                    {downloading ? <LoaderCircle className="spin" /> : <Download />}
+                    {t(downloading ? "img.packaging" : Object.keys(activeResults).length > 3 ? "img.downloadZip" : "img.downloadAll")}
                   </Button>
                 </div>
               )}

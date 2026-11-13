@@ -153,7 +153,7 @@ export const SEO_LONG_FORM: MultilingualSeoLongForm = {
         },
         {
           title: "Pixel sizes and local downloads",
-          text: "Millimetre sizes are converted at 300 PPI and no print density metadata is written. This tool only handles sizing and cropping — check the requirements for your specific use. \u201cDownload all\u201d saves images one by one; if the browser blocks multiple downloads, use the single-image download.",
+          text: "Millimetre sizes are converted at 300 PPI and no print density metadata is written. This tool only handles sizing and cropping — check the requirements for your specific use. Up to 3 images download individually; larger batches automatically download as one ZIP archive. Single-image download is also available.",
         },
       ],
     },
@@ -175,7 +175,7 @@ export const SEO_LONG_FORM: MultilingualSeoLongForm = {
         },
         {
           title: "像素尺寸与本地下载",
-          text: "毫米尺寸按 300 PPI 换算为像素，不设置图片打印密度元数据。此工具只处理尺寸和裁切，背景与人像要求请参考具体用途。下载全部会逐张保存，若浏览器限制多文件下载，可使用单张下载。",
+          text: "毫米尺寸按 300 PPI 换算为像素，不设置图片打印密度元数据。此工具只处理尺寸和裁切，背景与人像要求请参考具体用途。下载 1–3 张时逐张保存，超过 3 张自动合并为一个 ZIP 包；也可单独下载当前图片。",
         },
       ],
     },
@@ -397,7 +397,7 @@ export const SEO_LONG_FORM: MultilingualSeoLongForm = {
         },
         {
           title: "ピクセルサイズと端末内ダウンロード",
-          text: "ミリ単位のサイズは 300 PPI でピクセルに換算し、印刷密度のメタデータは書き込みません。このツールはサイズとトリミングだけを扱います。背景や人物の要件は用途ごとにご確認ください。「すべてダウンロード」は 1 枚ずつ保存します。ブラウザが複数ファイルのダウンロードを制限する場合は、1 枚ずつのダウンロードをお使いください。",
+          text: "ミリ単位のサイズは 300 PPI でピクセルに換算し、印刷密度のメタデータは書き込みません。このツールはサイズとトリミングだけを扱います。背景や人物の要件は用途ごとにご確認ください。3 枚までは個別に保存し、4 枚以上は自動的に 1 つの ZIP にまとめてダウンロードします。現在の画像だけをダウンロードすることもできます。",
         },
       ],
     },

@@ -414,6 +414,9 @@ export const en = {
   "img.savedBytes": (size: string) => `Saved ${size}`,
   "img.outputBytes": (size: string) => `Output ${size}`,
   "img.downloadAll": "Download all",
+  "img.downloadZip": "Download ZIP",
+  "img.packaging": "Creating ZIP…",
+  "img.errDownload": "Download failed. Your results are kept; please try again.",
   "img.downloadCurrent": "Download current image",
 
   "idPhoto.clearTitle": "Clear all images?",

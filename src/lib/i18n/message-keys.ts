@@ -404,6 +404,9 @@ export type MessageDefinition = {
   "img.savedBytes": (size: string) => string;
   "img.outputBytes": (size: string) => string;
   "img.downloadAll": string;
+  "img.downloadZip": string;
+  "img.packaging": string;
+  "img.errDownload": string;
   "img.downloadCurrent": string;
 
   // ---- 底层错误消息与预设名（纯函数/worker 抛错误码，由调用方翻译） ----

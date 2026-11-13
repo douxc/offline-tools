@@ -388,6 +388,9 @@ export const zhCN = {
   "img.savedBytes": (size: string) => `共节省 ${size}`,
   "img.outputBytes": (size: string) => `输出 ${size}`,
   "img.downloadAll": "下载全部",
+  "img.downloadZip": "批量下载 ZIP 包",
+  "img.packaging": "正在生成 ZIP 包…",
+  "img.errDownload": "下载失败，请重试。处理结果已保留。",
   "img.downloadCurrent": "下载当前图片",
 
   "idPhoto.clearTitle": "确认清空全部图片？",

@@ -413,6 +413,9 @@ export const ja = {
   "img.savedBytes": (size: string) => `合計 ${size} 削減`,
   "img.outputBytes": (size: string) => `出力 ${size}`,
   "img.downloadAll": "すべてダウンロード",
+  "img.downloadZip": "ZIP で一括ダウンロード",
+  "img.packaging": "ZIP を作成中…",
+  "img.errDownload": "ダウンロードに失敗しました。処理結果は保持されています。もう一度お試しください。",
   "img.downloadCurrent": "現在の画像をダウンロード",
 
   "idPhoto.clearTitle": "すべての画像を消去しますか？",

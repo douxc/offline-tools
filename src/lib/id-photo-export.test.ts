@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { isLocalizedError } from "@/lib/i18n/localized-error";
 import { test } from "node:test";
+import JSZip from "jszip";
 import { encodePhoto, downloadPhotos, photoFileName } from "./id-photo-export";
 import { PhotoBatch, activePhotoResults } from "./id-photo-state";
 
@@ -52,6 +53,44 @@ test("有效结果统一用于计数和下载，逐张调整不影响其他结�
   const assets = [{ id: "a", revision: 1 }, { id: "b", revision: 0 }];
   assert.deepEqual(Object.keys(activePhotoResults(assets, { a: result, b: result }, "fixed:1")), ["b"]);
   assert.deepEqual(activePhotoResults(assets, { a: result, b: result }, "custom:2"), {});
+});
+
+test("3 张仍逐张下载，4 张合并为一个 ZIP 并保留每张图片的内容", async () => {
+  const blobs: Blob[] = [], names: string[] = [], released: string[] = [];
+  const port = {
+    createUrl: (blob: Blob) => { blobs.push(blob); return `blob:${blobs.length}`; },
+    releaseUrl: (url: string) => released.push(url),
+    save: (_url: string, name: string) => names.push(name),
+    later: (fn: () => void) => fn(),
+  };
+  const outputs = [1, 2, 3, 4].map(n => ({ blob: new Blob([`image-${n}`]), fileName: `photo-${n}.png`, width: 1, height: 1 }));
+  await downloadPhotos(outputs.slice(0, 3), port);
+  assert.deepEqual(names, ["photo-1.png", "photo-2.png", "photo-3.png"]);
+  blobs.length = names.length = released.length = 0;
+  await downloadPhotos(outputs, port);
+  assert.equal(names.length, 1);
+  assert.match(names[0], /\.zip$/);
+  assert.equal(blobs[0].type, "application/zip");
+  const zip = await JSZip.loadAsync(await blobs[0].arrayBuffer());
+  assert.deepEqual(Object.keys(zip.files), ["photo-1.png", "photo-2.png", "photo-3.png", "photo-4.png"]);
+  for (let n = 1; n <= 4; n++) assert.equal(await zip.file(`photo-${n}.png`)!.async("string"), `image-${n}`);
+  assert.deepEqual(released, ["blob:1"]);
+});
+
+test("ZIP 中重名图片不覆盖，也不占用已有的序号文件名", async () => {
+  let archive: Blob | undefined;
+  await downloadPhotos(["same.png", "same.png", "same_2.png", "same.png"].map((fileName, index) => ({
+    blob: new Blob([String(index)]), fileName, width: 1, height: 1,
+  })), {
+    createUrl: blob => { archive = blob; return "blob:zip"; },
+    releaseUrl: () => {}, save: () => {}, later: fn => fn(),
+  });
+  const zip = await JSZip.loadAsync(await archive!.arrayBuffer());
+  assert.deepEqual(Object.keys(zip.files).sort(), ["same.png", "same_2.png", "same_3.png", "same_4.png"]);
+  assert.equal(await zip.file("same.png")!.async("string"), "0");
+  assert.equal(await zip.file("same_2.png")!.async("string"), "2");
+  assert.equal(await zip.file("same_3.png")!.async("string"), "1");
+  assert.equal(await zip.file("same_4.png")!.async("string"), "3");
 });
 
 test("批处理部分失败保留成功结果且不自动下载", async () => {
