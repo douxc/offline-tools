@@ -212,19 +212,6 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
     () => assets.find((asset) => asset.id === selectedId) ?? assets[0],
     [assets, selectedId],
   );
-  // 页面模式由单一状态模型推导(interaction-modes):界面据此决定主操作,
-  // 而不是从散布的布尔量组合出互相矛盾的可见性。
-  const processedCount = useMemo(
-    () => assets.filter((asset) => results[`${asset.id}:${mode}:${quality}`])
-      .length,
-    [assets, results, mode, quality],
-  );
-  const modeState = deriveModeState({
-    assetCount: assets.length,
-    processedCount,
-    processing,
-    progress,
-  });
   const contextKey =
     mode === "compress"
       ? `compress:${quality}`
@@ -238,6 +225,14 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
       ),
     [contextKey, results],
   );
+  // Count the same current results that the preview and downloads use.
+  const processedCount = Object.keys(activeResults).length;
+  const modeState = deriveModeState({
+    assetCount: assets.length,
+    processedCount,
+    processing,
+    progress,
+  });
 
   const getCompressor = () => {
     compressorRef.current ??= new PngCompressor();
@@ -806,11 +801,11 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
                 <div className="image-results-summary">
                   <div>
                     <span>
-                      {t("img.doneCount", Object.keys(activeResults).length)}
+                      {t("img.doneCount", processedCount)}
                       {modeState.mode === "partial" &&
                         `, ${t(
                           "img.retryCount",
-                          assets.length - Object.keys(activeResults).length,
+                          assets.length - processedCount,
                         )}`}
                     </span>
                     <small>
@@ -824,7 +819,7 @@ export function ImageProcessor({ initialMode, route }: ImageProcessorProps) {
                   </div>
                   <Button type="button" size="sm" disabled={downloading} onClick={() => void downloadAll()}>
                     {downloading ? <LoaderCircle className="spin" /> : <Download />}
-                    {t(downloading ? "img.packaging" : Object.keys(activeResults).length > 3 ? "img.downloadZip" : "img.downloadAll")}
+                    {t(downloading ? "img.packaging" : processedCount > 3 ? "img.downloadZip" : "img.downloadAll")}
                   </Button>
                 </div>
               )}
